@@ -17,7 +17,8 @@ get_params <- function(overrides = list(),
     "b1" = 0.39722,
     "omega" = 0.6, # reduced infectiousness from older age groups
     "delta" = 7.632, # latency rate
-    "gamma" = 3.342, # infectious rate
+    "gamma_p" = 3.342, # infectious rate
+    "gamma_s" = ,
     "nu" = 0.132, # rate of waning immunity
     "phi" = 0.98456,
 
