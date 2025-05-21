@@ -1,5 +1,6 @@
-#' Calculate the contact matrix with unequal sized age groupings
-#' Uses the socialmixr package to access the POLYMOD data and calculate per-person mean contact matrix. Calculates the total contacts in the population.
+#' Calculate the contact matrix with age groupings smaller than 1-year
+#' Uses the socialmixr package to access the POLYMOD data and calculate per-person mean contact matrix.
+#' Calculates the total contacts in the population.
 #' Splits the total contacts into smaller age groupings by dividing them uniformly.
 #' @param country country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code. United Kingdom default.
 #' @param age.limits lower limits of the age groups to run the simulation
@@ -7,6 +8,13 @@
 #' @export
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
+
+  max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
+
+  if(max(age.limits) >= max_age){
+    age.limits <- age.limits[age.limits < max_age]
+    warning(paste("polymod participant ages only go up to", max_age, ". The ", age.limits[age.limits >= max_age], "age limits have therefore been omitted."))
+  }
 
   if(is.unsorted(age.limits)){
      age.limits <-  sort(age.limits)
@@ -43,14 +51,14 @@ create_contact_matrix <- function(country = "United Kingdom",
     stop("total contacts matrix is not symmetric")
   }
 
+  out <- list()
+
   if(any(age.limits %% 1 != 0)){
 
     nAges <- length(age.limits)
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
     max_age_default <- max(age.limits.default)
-    # assumes the same number of mean contacts for the closest age grouping
-    max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
 
     for(i in 1:nAges){
 
@@ -100,7 +108,7 @@ create_contact_matrix <- function(country = "United Kingdom",
     }
 
     rownames(matrix_out) <- colnames(matrix_out) <- age.limits
-  rownames(M) <- colnames(M) <- age.limits.default / D
+  rownames(M) <- colnames(M) <- age.limits.default
 
   mean_matrix_out <- matrix_out / D_out
 
@@ -117,15 +125,15 @@ create_contact_matrix <- function(country = "United Kingdom",
     stop("Adjusted matrix should be symmetric")
   }
 
-  out <- list("adjusted_matrix_contacts" = matrix_out,
-              "adjusted_matrix_mean" = mean_matrix_out,
-              "adjusted_population" = D_out
+  out <- append(out, list("adjusted_matrix_contacts" = matrix_out,
+                          "adjusted_matrix_mean" = mean_matrix_out,
+                          "adjusted_population" = D_out)
               )
   }
 
   out <- append(out, list("default_matrix_mean" = M,
                           "default_matrix_contacts" = total_contacts_M,
-                          "population" = D))
+                          "default_population" = D))
 
   return(out)
 }
