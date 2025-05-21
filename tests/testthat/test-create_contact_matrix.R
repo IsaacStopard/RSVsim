@@ -6,6 +6,9 @@ test_that("contact matrix", {
 
   countries <- c("United Kingdom", "Belgium", "Finland")
 
+  expect_error(create_contact_matrix(country = "France",
+                                     age.limits = seq(0, 70, 5)))
+
   for(i in 1:length(list_age_limits)){
     t_mat <- create_contact_matrix(country = countries[i],
                                    age.limits = list_age_limits[[i]])
