@@ -9,11 +9,9 @@
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
 
-  max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
-
-  if(max(age.limits) >= max_age){
-    age.limits <- age.limits[age.limits < max_age]
-    warning(paste("polymod participant ages only go up to", max_age, ". The ", age.limits[age.limits >= max_age], "age limits have therefore been omitted."))
+  if(max(age.limits) > 75){
+    warning(paste0("polymod ages groupings only go up to 75. Age limits above this have therefore been omitted."))
+    age.limits <- age.limits[age.limits <= 75]
   }
 
   if(is.unsorted(age.limits)){
@@ -58,6 +56,9 @@ create_contact_matrix <- function(country = "United Kingdom",
     nAges <- length(age.limits)
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
+
+    max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
+
     max_age_default <- max(age.limits.default)
 
     for(i in 1:nAges){
