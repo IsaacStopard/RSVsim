@@ -1,4 +1,7 @@
 #' Runs the RSV model
+#'
+#' Function to run the transmission model with cohort aging.
+#'
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param max_t Simulation maximum time. Default: 2000.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL} 1% RSV prevalence is assumed for people during the primary infection.
@@ -137,17 +140,4 @@ run_model <- function(parameters,
   pop_out <- pop_out[2:8]
   return(pop_out)
 }
-
-# move different sizes of the population proportional - so same number of population size would move each age group - so always balanced.
-# have a look at the burden studies - referenced in the online document
-# need to calibrate better in terms of adults vs children
-# proportional roles of each - check literature
-# other models have not validated the outputs in adults
-# time series data in children - incidence of detected disease (no prevalence information)
-# how to work out the annual burden
-# Trish Campbell individual based model of RSV - explicitly linking immune status of mothers and infants
-# need to assume about hospitalisation and how that varies with age
-
-# some models also stratify by primary and secondary infections
-# calculate Rt as an output - look at covid modelling - nimue model could feed in R0 - convert between beta
 

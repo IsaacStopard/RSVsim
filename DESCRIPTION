@@ -1,9 +1,10 @@
 Package: RSVsim
-Title: What the Package Does (One Line, Title Case)
+Title: RSV Transmission Model
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Isaac", "Stopard", , "isaacstopard@hotmail.co.uk", role = c("aut", "cre"))
+    person("Alexandra", "Hogan", , "alexandra.hogan@unsw.edu.au", role = c("aut", "cre"))
+Description: Simulates Respiratory Synctial Virus (RSV) transmission using a deterministic, ODE model.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
