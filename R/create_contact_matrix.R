@@ -9,8 +9,18 @@
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
 
+  if(!is.numeric(age.limits)){
+    stop("age.limits must be numeric")
+  }
+
+  if(!country %in% c("Italy", "Germany", "Luxembourg", "Netherlands", "Poland", "United Kingdom", "Finland", "Belgium")){
+    stop("for the polymod data the country must be one of the following characters:
+         Italy, Germany, Luxembourg, Netherlands, Poland, United Kingdom, Finland or Belgium")
+  }
+
+
   if(max(age.limits) > 75){
-    warning(paste0("polymod ages groupings only go up to 75. Age limits above this have therefore been omitted."))
+    warning(paste0("polymod age groupings only go up to 75. Age limits above this have therefore been omitted."))
     age.limits <- age.limits[age.limits <= 75]
   }
 

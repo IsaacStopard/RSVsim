@@ -3,7 +3,6 @@ output(time) <- TRUE
 nAges <- parameter()
 
 ## Model Parameters
-alpha <- parameter() # reduced susceptibility for infection in age group i
 b0 <- parameter()
 b1 <- parameter()
 phi <- parameter()
@@ -14,12 +13,14 @@ nu <- parameter()
 omega_vect <- parameter()
 prop_detected_vect <- parameter()
 sigma_vect <- parameter()
+alpha_vect <- parameter() # reduced susceptibility for infection in age group i
 mixing <- parameter()
 
 dim(mixing) <- c(nAges, nAges)
 dim(sigma_vect) <- nAges
 dim(omega_vect) <- nAges
 dim(prop_detected_vect) <- nAges
+dim(alpha_vect) <- nAges
 
 ## Derivatives for Flows Between Compartments
 ##------------------------------------------------------------------------------

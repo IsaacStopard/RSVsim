@@ -4,14 +4,21 @@
 #'
 #' @return Simulation output
 #' @export
-run_model <- function(params){
+run_model <- function(parameters,
+                      max_t = 2000,
+                      init_conds_from_file = 0, # choose whether to read in some existing ICs
+                      dt = 0.25,
+                      save_init_conds = 1 # choose whether to save final model state as ICs for next time
+                      ){
 
   # times
   T0 <- 0
-  max_t <- 2000
-  dt <- 0.25
 
   # runs the model with cohort ageing
+
+
+
+
 
 }
 

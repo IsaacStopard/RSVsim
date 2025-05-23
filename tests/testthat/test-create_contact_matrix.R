@@ -1,4 +1,4 @@
-test_that("contact matrix", {
+test_that("create_contact_matrix function", {
 
   expect_error(create_contact_matrix(country = "France",
                                      age.limits = seq(0, 70, 5)))
