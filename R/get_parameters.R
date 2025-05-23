@@ -58,7 +58,8 @@ get_parameters <- function(overrides = list(),
     "sigma_vect" = sigma_vect,
     "alpha_vect" = alpha_vect, # reduced susceptibility for infection in age group i
     "nAges" = nAges,
-    "mixing" = mixing # contact matrix
+    "mixing" = mixing, # contact matrix
+    "population" = 1861923
   )
 
   for (name in names(overrides)) {

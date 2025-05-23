@@ -1,14 +1,15 @@
 #' Runs the RSV model
-#'
-#' @param params List of parameters from \code{get_params} function
-#'
+#' @param parameters List of parameters from \code{get_params} function.
+#' @param max_t Simulation maximum time. Default: 2000.
+#' @param init_conds_from_file Existing initial conditions. Default: \code{NULL}.
+#' @param save_final_states Boolean. Choose whether to save final model state as initial conditions for next simulation. Default: \code{TRUE}.
 #' @return Simulation output
 #' @export
 run_model <- function(parameters,
                       max_t = 2000,
-                      init_conds_from_file = 0, # choose whether to read in some existing ICs
                       dt = 0.25,
-                      save_init_conds = 1 # choose whether to save final model state as ICs for next time
+                      init_conds_from_file = NULL,
+                      save_final_states = 1, #
                       ){
 
   # times
