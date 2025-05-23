@@ -7,6 +7,7 @@
 run_model(
   parameters,
   max_t = 2000,
+  dt = 0.25,
   init_conds = NULL,
   save_final_states = FALSE
 )
@@ -14,7 +15,9 @@ run_model(
 \arguments{
 \item{parameters}{List of parameters from \code{get_params} function.}
 
-\item{max_t}{Simulation maximum time. Default: 2000.}
+\item{max_t}{Simulation maximum time. Default: 2000 days.}
+
+\item{dt}{Time steps to run the model over. Default: 0.25 days.}
 
 \item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL} 1\% RSV prevalence is assumed for people during the primary infection.
 All other people are assumed to be susceptible to their primary infection.}

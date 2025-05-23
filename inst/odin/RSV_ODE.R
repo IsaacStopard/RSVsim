@@ -13,9 +13,9 @@ omega_vect <- parameter()
 prop_detected_vect <- parameter()
 sigma_vect <- parameter()
 alpha_vect <- parameter() # reduced susceptibility for infection in age group i
-mixing <- parameter()
+matrix_mean <- parameter()
 
-dim(mixing) <- c(nAges, nAges)
+dim(matrix_mean) <- c(nAges, nAges)
 dim(sigma_vect) <- nAges
 dim(omega_vect) <- nAges
 dim(prop_detected_vect) <- nAges
@@ -27,7 +27,7 @@ dim(alpha_vect) <- nAges
 # prevalence of infection in age group j multiplied by reduced infectiousness in age group j (due to immunity early in life)
 temp[] <- omega_vect[i] * (Is[i] + Ip[i]) / N[i]
 # contacts multiplied by prevalence
-s_ij[,] <- mixing[i,j] * temp[j]
+s_ij[,] <- matrix_mean[i,j] * temp[j]
 lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 * time / 12 + phi)) * sum(s_ij[i,])
 
 infect_p[] <- lambda[i] * sigma_vect[i] * Sp[i]

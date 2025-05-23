@@ -15,9 +15,7 @@ get_parameters(
 
 \item{age.limits}{Lower limits of the age groups to run the simulation for (must be in years).}
 
-\item{country}{Country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code.}
-
-\item{mixing}{Contact matrix.}
+\item{contact_matrx}{List of outputs from the \code{create_contact_matrix} function.}
 }
 \value{
 Parameter list.

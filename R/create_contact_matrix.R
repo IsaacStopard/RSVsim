@@ -7,7 +7,9 @@
 #'
 #' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
 #' @param age.limits Lower limits of the age groups to run the simulation. Ages must be in years.
-#' @return Contact matrix.
+#' @return List including the contact matrix (\code{_matrix_mean} is the mean per person, \code{_matrix_contacts} is the total contacts)
+#' for the \code{default_} (\code{socialmixr} output) or \code{adjusted_} (contacts distributed within year intervals).
+#' List also includes the population sizes used to calculate the total contacts and the maximum age in the contact data used.
 #' @export
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
@@ -64,13 +66,13 @@ create_contact_matrix <- function(country = "United Kingdom",
 
   out <- list()
 
+  max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
+
   if(any(age.limits %% 1 != 0)){
 
     nAges <- length(age.limits)
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
-
-    max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
 
     max_age_default <- max(age.limits.default)
 

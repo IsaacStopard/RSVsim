@@ -1,11 +1,10 @@
-#' get parameters for RSVsim
+#' Get parameters for RSVsim
 #'
-#' Provides the default parameters to run the RSV model
+#' Provides the default parameters to run the RSV model.
 #'
 #' @param overrides List of default parameters to change.
-#' @param country Country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code.
 #' @param age.limits Lower limits of the age groups to run the simulation for (must be in years).
-#' @param mixing Contact matrix.
+#' @param contact_matrx List of outputs from the \code{create_contact_matrix} function.
 #' @return Parameter list.
 #' @export
 

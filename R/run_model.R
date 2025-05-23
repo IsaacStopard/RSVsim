@@ -17,6 +17,13 @@ run_model <- function(parameters,
                       save_final_states = FALSE #
                       ){
 
+  # aging related parameters
+  # age differences in days
+  size_cohorts <- c(diff(parameters$age.limits * 365.25), parameters$max_age*365.25 - parameters$age.limits[length(parameters$age.limits)]*365.25)
+
+  transition_rate <- 1/size_cohorts
+  rel_sizes <- size_cohorts/sum(size_cohorts)
+
   # initial conditions: choose whether to reset here, or read in from csv file
   if(is.null(init_conds)) {
     parameters <- purrr::list_modify(
@@ -50,17 +57,8 @@ run_model <- function(parameters,
   T0 <- 0
 
   # runs the model with cohort ageing
-  mod <- RSV_ODE$new(pars = parameters,
-                     time = T0,
-                     seed = 123,
-                     deterministic = TRUE)
+  mod <- RSV_ODE$new()
 
-
-  # aging related parameters
-  size_cohorts <- c(diff(parameters$age.limits), parameters$max_age - parameters$age.limits[length(parameters$age.limits)])
-
-  transition_rate <- 1/size_cohorts
-  rel_sizes <- size_cohorts/sum(size_cohorts)
 
   pop_out <-
 
@@ -83,7 +81,7 @@ run_model <- function(parameters,
       pop_out$DetIncidence <- rbind(pop_out$DetIncidence, pop$DetIncidence[5,])
     }
 
-    # cohort ageing
+    # cohort aging
 
     # extract the final state from pop
     S <- as.vector(t(data.table::last(pop$S)))

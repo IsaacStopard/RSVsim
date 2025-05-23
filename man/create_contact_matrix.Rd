@@ -12,10 +12,12 @@ create_contact_matrix(
 \arguments{
 \item{country}{Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.}
 
-\item{age.limits}{Lower limits of the age groups to run the simulation.}
+\item{age.limits}{Lower limits of the age groups to run the simulation. Ages must be in years.}
 }
 \value{
-Contact matrix.
+List including the contact matrix (\code{_matrix_mean} is the mean per person, \code{_matrix_contacts} is the total contacts)
+for the \code{default_} (\code{socialmixr} output) or \code{adjusted_} (contacts distributed within year intervals).
+List also includes the population sizes used to calculate the total contacts and the maximum age in the contact data used.
 }
 \description{
 Uses the \code{socialmixr} package to access the POLYMOD data and calculate per-person mean contact matrix.
