@@ -3,7 +3,7 @@ Title: RSV Transmission Model
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Isaac", family = "Stopard", email = "isaacstopard@hotmail.co.uk", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-4612-5004")),
-    person(given = "Alexandra", family = "Hogan", email = "alexandra.hogan@unsw.edu.au", role = c("aut", "cre")))
+    person(given = "Alexandra", family = "Hogan", email = "alexandra.hogan@unsw.edu.au", role = c("aut")))
 Description: Deterministic, ODE model of Respiratory Synctial Virus (RSV) transmission.
 License: MIT + file LICENSE
 Encoding: UTF-8
