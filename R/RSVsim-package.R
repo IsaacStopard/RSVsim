@@ -6,8 +6,6 @@
 #'
 #' @section RSVsim functions:
 #' The RSVsim functions are \code{create_contact_matrix}, \code{get_parameters} and \code{run_model}.
-#'
-#' @docType _PACKAGE
 #' @name RSVsim
 #' @useDynLib RSVsim, .registration=TRUE
 ## usethis namespace: end

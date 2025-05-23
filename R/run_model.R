@@ -3,7 +3,8 @@
 #' Function to run the transmission model with cohort aging.
 #'
 #' @param parameters List of parameters from \code{get_params} function.
-#' @param max_t Simulation maximum time. Default: 2000.
+#' @param max_t Simulation maximum time. Default: 2000 days.
+#' @param dt Time steps to run the model over. Default: 0.25 days.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL} 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @param save_final_states Boolean. Choose whether to save final model state as initial conditions for next simulation. Default: \code{FALSE}.
@@ -11,6 +12,7 @@
 #' @export
 run_model <- function(parameters,
                       max_t = 2000,
+                      dt = 0.25,
                       init_conds = NULL,
                       save_final_states = FALSE #
                       ){
@@ -44,19 +46,16 @@ run_model <- function(parameters,
     )
   }
 
-  # runs the model with cohort ageing
-  mod <- RSV_ODE$new()
-
-  dust2::dust_system_create(mod,
-                            pars = parameters,
-                            n_particles = 1,
-                            time = 0,
-                            dt = NULL,
-                            seed = 123,
-                            deterministic = TRUE)
-
   # times
   T0 <- 0
+
+  # runs the model with cohort ageing
+  mod <- RSV_ODE$new(pars = parameters,
+                     time = T0,
+                     seed = 123,
+                     deterministic = TRUE)
+
+
   # aging related parameters
   size_cohorts <- c(diff(parameters$age.limits), parameters$max_age - parameters$age.limits[length(parameters$age.limits)])
 

@@ -18,5 +18,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Isaac Stopard \email{isaacstopard@hotmail.co.uk} (\href{https://orcid.org/0000-0003-4612-5004}{ORCID})
 
+Authors:
+\itemize{
+  \item Alexandra Hogan \email{alexandra.hogan@unsw.edu.au}
+}
+
 }
 \keyword{internal}

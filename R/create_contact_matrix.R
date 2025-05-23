@@ -6,7 +6,7 @@
 #' into smaller age groupings by dividing them uniformly.
 #'
 #' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
-#' @param age.limits Lower limits of the age groups to run the simulation.
+#' @param age.limits Lower limits of the age groups to run the simulation. Ages must be in years.
 #' @return Contact matrix.
 #' @export
 create_contact_matrix <- function(country = "United Kingdom",
