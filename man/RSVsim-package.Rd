@@ -3,9 +3,9 @@
 \docType{package}
 \name{RSVsim-package}
 \alias{RSVsim-package}
-\title{RSVsim: What the Package Does (One Line, Title Case)}
+\title{RSVsim: RSV Transmission Model}
 \description{
-What the package does (one paragraph).
+Deterministic, ODE model of Respiratory Synctial Virus (RSV) transmission.
 }
 \seealso{
 Useful links:
@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com}
+\strong{Maintainer}: Isaac Stopard \email{isaacstopard@hotmail.co.uk} (\href{https://orcid.org/0000-0003-4612-5004}{ORCID})
 
 }
 \keyword{internal}

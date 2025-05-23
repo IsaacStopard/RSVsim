@@ -3,9 +3,9 @@
 \docType{_PACKAGE}
 \name{RSVsim}
 \alias{RSVsim}
-\title{RSVsim: A package for simulating Respiratory Synctial Virus transmission.}
+\title{RSVsim: A package for simulating Respiratory Synctial Virus (RSV) transmission.}
 \description{
-RSVsim: A package for simulating Respiratory Synctial Virus transmission.
+RSVsim: A package for simulating Respiratory Synctial Virus (RSV) transmission.
 }
 \section{RSVsim functions}{
 

@@ -25,5 +25,5 @@ All other people are assumed to be susceptible to their primary infection.}
 Simulation output
 }
 \description{
-Runs the RSV model
+Function to run the transmission model with cohort aging.
 }
