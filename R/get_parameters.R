@@ -1,14 +1,17 @@
+#' get parameters for RSVsim
+#'
 #' Provides the default parameters to run the RSV model
-#' @param overrides list of default parameters to change: b0 (transmission rate coefficient),
-#' @param country country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code
-#' @param age.limits lower limits of the age groups to run the simulation for (must be in years)
-#' @param mixing contact matrix
-#' @return Simulation output
+#'
+#' @param overrides List of default parameters to change.
+#' @param country Country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code.
+#' @param age.limits Lower limits of the age groups to run the simulation for (must be in years).
+#' @param mixing Contact matrix.
+#' @return Parameter list.
 #' @export
 
 get_parameters <- function(overrides = list(),
-                       age.limits,
-                       mixing
+                           age.limits = c(seq(0,5,1/12), seq(10,70,5)),
+                           contact_matrix
                        ){
 
   # override parameters with any client specified ones
@@ -21,6 +24,12 @@ get_parameters <- function(overrides = list(),
   }
 
   nAges <- length(age.limits)
+
+  mixing <- if("adjusted_matrix_mean" %in% names(contact_matrix)){
+    contact_matrix$adjusted_matrix_mean
+  } else{
+    contact_matrix$default_matrix_mean
+  }
 
   if(!is.matrix(mixing) | ncol(mixing) != nAges | nrow(mixing) != nAges){
     stop("mixing must be a square matrix with the same age groups specified in age.limits")
@@ -58,7 +67,9 @@ get_parameters <- function(overrides = list(),
     "sigma_vect" = sigma_vect,
     "alpha_vect" = alpha_vect, # reduced susceptibility for infection in age group i
     "nAges" = nAges,
+    "age.limits" = age.limits,
     "mixing" = mixing, # contact matrix
+    "max_age" = contact_matrix$max_age,
     "population" = 1861923
   )
 

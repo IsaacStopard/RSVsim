@@ -1,10 +1,13 @@
-#' Calculate the contact matrix with age groupings smaller than 1-year
-#' Uses the socialmixr package to access the POLYMOD data and calculate per-person mean contact matrix.
-#' Calculates the total contacts in the population.
-#' Splits the total contacts into smaller age groupings by dividing them uniformly.
-#' @param country country for use in the \code{contact_matrix} function in the socialmixr package. Can be given as country name or 2 digit ISO code. United Kingdom default.
-#' @param age.limits lower limits of the age groups to run the simulation
-#' @return contact matrix
+#' Create contact matrix for RSVsim
+#'
+#' Uses the \code{socialmixr} package to access the POLYMOD data and calculate per-person mean contact matrix.
+#' If age groupings smaller than 1-year are required, the function calculates the total contacts in the
+#' population with the nearest integer age groupings (required for \code{socialmixr} package) and splits the total contacts
+#' into smaller age groupings by dividing them uniformly.
+#'
+#' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
+#' @param age.limits Lower limits of the age groups to run the simulation.
+#' @return Contact matrix.
 #' @export
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
@@ -144,7 +147,8 @@ create_contact_matrix <- function(country = "United Kingdom",
 
   out <- append(out, list("default_matrix_mean" = M,
                           "default_matrix_contacts" = total_contacts_M,
-                          "default_population" = D))
+                          "default_population" = D,
+                          "max_age" = max_age))
 
   return(out)
 }

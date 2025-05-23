@@ -18,6 +18,7 @@ Imports:
     dust2 (>= 0.3.22),
     monty (>= 0.3.28),
     odin2,
+    purrr,
     socialmixr,
     tidyr
 Depends: 
@@ -26,6 +27,6 @@ LinkingTo:
     cpp11 (>= 0.5.0),
     dust2 (>= 0.3.0),
     monty (>= 0.3.0)
-Remotes:  
+Remotes: 
     mrc-ide/dust2,
     mrc-ide/monty
