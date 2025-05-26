@@ -15,9 +15,8 @@ create_contact_matrix(
 \item{age.limits}{Lower limits of the age groups to run the simulation. Ages must be in years.}
 }
 \value{
-List including the contact matrix (\code{_matrix_mean} is the mean per person, \code{_matrix_contacts} is the total contacts)
-for the \code{default_} (\code{socialmixr} output) or \code{adjusted_} (contacts distributed within year intervals).
-List also includes the population sizes used to calculate the total contacts and the maximum age in the contact data used.
+List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
+the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 }
 \description{
 Uses the \code{socialmixr} package to access the POLYMOD data and calculate per-person mean contact matrix.

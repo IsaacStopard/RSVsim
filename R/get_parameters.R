@@ -3,14 +3,12 @@
 #' Provides the default parameters to run the RSV model.
 #'
 #' @param overrides List of default parameters to change.
-#' @param age.limits Lower limits of the age groups to run the simulation for (must be in years).
-#' @param contact_matrx List of outputs from the \code{create_contact_matrix} function.
+#' @param contact_population_list List of outputs from the \code{create_contact_matrix} function.
 #' @return Parameter list.
 #' @export
 
 get_parameters <- function(overrides = list(),
-                           age.limits = c(seq(0,5,1/12), seq(10,70,5)),
-                           contact_matrix
+                           contact_population_list
                        ){
 
   # override parameters with any client specified ones
@@ -18,58 +16,71 @@ get_parameters <- function(overrides = list(),
     stop('overrides must be a list')
   }
 
-  if(!is.numeric(age.limits)){
-    stop("age.limits must be numeric")
+  if(!is.list(contact_population_list)){
+    stop("contact_population_list must be a list")
   }
 
-  nAges <- length(age.limits)
-
-  mixing <- if("adjusted_matrix_mean" %in% names(contact_matrix)){
-    contact_matrix$adjusted_matrix_mean
-  } else{
-    contact_matrix$default_matrix_mean
+  if(is.list(contact_population_list)){
+    for(name in c("matrix_mean", "age.limits", "age_distribution")){
+      if(!name %in% names(contact_population_list)){
+        stop(paste("contact_population_list must contain", name, sep = " "))
+        }
+    }
   }
 
-  if(!is.matrix(mixing) | ncol(mixing) != nAges | nrow(mixing) != nAges){
-    stop("mixing must be a square matrix with the same age groups specified in age.limits")
-  }
+  parameters <- with(contact_population_list,
+       {
+         nAges <- length(age.limits)
 
-  alpha_vect <- sigma_vect <- prop_detected_vect <- omega_vect <- rep(NA, nAges)
+         if(!is.matrix(matrix_mean)){
+           stop("contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+         }
 
-  omega_vect[age.limits >= 5] <- 0.35
-  omega_vect[age.limits < 5] <- 1
+         if(is.matrix(matrix_mean) & ncol(matrix_mean) != nAges |
+            is.matrix(matrix_mean) & nrow(matrix_mean) != nAges){
+           stop("contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+         }
 
-  sigma_vect[age.limits <= 1/12] <- 0.7
-  sigma_vect[age.limits > 1/12 & age.limits <= 2/12] <- 0.8
-  sigma_vect[age.limits > 2/12 & age.limits <= 3/12] <- 0.9
-  sigma_vect[age.limits > 3/12] <- 1
+         alpha_vect <- sigma_vect <- prop_detected_vect <- omega_vect <- rep(NA, nAges)
 
-  prop_detected_vect[age.limits <= 3 * 1/12] <- 0.424
-  prop_detected_vect[age.limits > 3 * 1/12 & age.limits <= 6 * 1/12] <- 0.088
-  prop_detected_vect[age.limits > 6 * 1/12 & age.limits <= 1] <- 0.047
-  prop_detected_vect[age.limits > 1 & age.limits <= 2] <- 0.02
-  prop_detected_vect[age.limits > 2] <- 0
+         omega_vect[age.limits >= 5] <- 0.35
+         omega_vect[age.limits < 5] <- 1
 
-  alpha_vect[nAges >= 10] <- 0.3
-  alpha_vect[nAges < 10] <- 0.4
+         sigma_vect[age.limits <= 1/12] <- 0.7
+         sigma_vect[age.limits > 1/12 & age.limits <= 2/12] <- 0.8
+         sigma_vect[age.limits > 2/12 & age.limits <= 3/12] <- 0.9
+         sigma_vect[age.limits > 3/12] <- 1
 
-  parameters <- list(
-    "b0" = 0.087, # transmission rate coefficient
-    "b1" = -0.193, # amplitude of seasonal forcing
-    "phi" = 1.536, # phase shift of seasonal forcing
-    "delta" = 1/4, # inverse of the latent period
-    "gamma_s" = 1/8, # inverse of the infectious period of subsequent (secondary +) infections
-    "gamma_p" = 1/9, # inverse of the infectious period of first (primary) infections
-    "nu" = 1/200, # inverse of the duration of natural immunity
-    "omega_vect" = omega_vect,
-    "prop_detected_vect" = prop_detected_vect,
-    "sigma_vect" = sigma_vect,
-    "alpha_vect" = alpha_vect, # reduced susceptibility for infection in age group i
-    "nAges" = nAges,
-    "age.limits" = age.limits,
-    "mixing" = mixing, # contact matrix
-    "max_age" = contact_matrix$max_age,
-    "population" = 1861923
+         prop_detected_vect[age.limits <= 3 * 1/12] <- 0.424
+         prop_detected_vect[age.limits > 3 * 1/12 & age.limits <= 6 * 1/12] <- 0.088
+         prop_detected_vect[age.limits > 6 * 1/12 & age.limits <= 1] <- 0.047
+         prop_detected_vect[age.limits > 1 & age.limits <= 2] <- 0.02
+         prop_detected_vect[age.limits > 2] <- 0
+
+         alpha_vect[nAges >= 10] <- 0.3
+         alpha_vect[nAges < 10] <- 0.4
+
+         parameters <- list(
+           "b0" = 0.087, # transmission rate coefficient
+           "b1" = -0.193, # amplitude of seasonal forcing
+           "phi" = 1.536, # phase shift of seasonal forcing
+           "delta" = 1/4, # inverse of the latent period
+           "gamma_s" = 1/8, # inverse of the infectious period of subsequent (secondary +) infections
+           "gamma_p" = 1/9, # inverse of the infectious period of first (primary) infections
+           "nu" = 1/200, # inverse of the duration of natural immunity
+           "omega_vect" = omega_vect,
+           "prop_detected_vect" = prop_detected_vect,
+           "sigma_vect" = sigma_vect,
+           "alpha_vect" = alpha_vect, # reduced susceptibility for infection in age group i
+           "nAges" = nAges,
+           "age.limits" = age.limits,
+           "matrix_mean" = matrix_mean, # contact matrix
+           "max_age" = max_age,
+           "total_population" = 1861923
+         )
+
+
+         }
   )
 
   for (name in names(overrides)) {

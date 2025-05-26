@@ -7,9 +7,8 @@
 #'
 #' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
 #' @param age.limits Lower limits of the age groups to run the simulation. Ages must be in years.
-#' @return List including the contact matrix (\code{_matrix_mean} is the mean per person, \code{_matrix_contacts} is the total contacts)
-#' for the \code{default_} (\code{socialmixr} output) or \code{adjusted_} (contacts distributed within year intervals).
-#' List also includes the population sizes used to calculate the total contacts and the maximum age in the contact data used.
+#' @return List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
+#' the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 #' @export
 create_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
@@ -64,9 +63,11 @@ create_contact_matrix <- function(country = "United Kingdom",
     stop("total contacts matrix is not symmetric")
   }
 
-  out <- list()
 
   max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
+
+  out <- list("age.limits" = age.limits,
+              "max_age" = max_age)
 
   if(any(age.limits %% 1 != 0)){
 
@@ -141,16 +142,21 @@ create_contact_matrix <- function(country = "United Kingdom",
     stop("Adjusted matrix should be symmetric")
   }
 
-  out <- append(out, list("adjusted_matrix_contacts" = matrix_out,
-                          "adjusted_matrix_mean" = mean_matrix_out,
-                          "adjusted_population" = D_out)
+  out <- append(out, list("matrix_contacts" = matrix_out,
+                          "matrix_mean" = mean_matrix_out,
+                          "population" = D_out,
+                          "age_distribution" = D_out/sum(D_out))
               )
+  } else{
+    out <- append(out, list("matrix_mean" = M,
+                          "matrix_contacts" = total_contacts_M,
+                          "population" = D,
+                          "age_distribution" = D/sum(D)))
   }
 
-  out <- append(out, list("default_matrix_mean" = M,
-                          "default_matrix_contacts" = total_contacts_M,
-                          "default_population" = D,
-                          "max_age" = max_age))
+  if(abs(sum(out$age_distribution) - 1) > 1E-5){
+    stop("age_distribution does not sum to 1")
+  }
 
   return(out)
 }

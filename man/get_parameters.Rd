@@ -2,24 +2,18 @@
 % Please edit documentation in R/get_parameters.R
 \name{get_parameters}
 \alias{get_parameters}
-\title{get parameters for RSVsim}
+\title{Get parameters for RSVsim}
 \usage{
-get_parameters(
-  overrides = list(),
-  age.limits = c(seq(0, 5, 1/12), seq(10, 70, 5)),
-  contact_matrix
-)
+get_parameters(overrides = list(), contact_population_list)
 }
 \arguments{
 \item{overrides}{List of default parameters to change.}
 
-\item{age.limits}{Lower limits of the age groups to run the simulation for (must be in years).}
-
-\item{contact_matrx}{List of outputs from the \code{create_contact_matrix} function.}
+\item{contact_population_list}{List of outputs from the \code{create_contact_matrix} function.}
 }
 \value{
 Parameter list.
 }
 \description{
-Provides the default parameters to run the RSV model
+Provides the default parameters to run the RSV model.
 }
