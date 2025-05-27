@@ -28,7 +28,7 @@ dim(alpha_vect) <- nAges
 temp[] <- omega_vect[i] * (Is[i] + Ip[i]) / N[i]
 # contacts multiplied by prevalence
 s_ij[,] <- matrix_mean[i,j] * temp[j]
-lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 * time / 12 + phi)) * sum(s_ij[i,])
+lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 * time / 365.25 + phi)) * sum(s_ij[i,])
 
 infect_p[] <- lambda[i] * sigma_vect[i] * Sp[i]
 infect_s[] <- lambda[i] * sigma_vect[i] * alpha_vect[i] * Ss[i]
@@ -46,8 +46,8 @@ deriv(R[1:nAges]) <- gamma_p * Ip[i] + gamma_s * Is[i] - nu * R[i]
 
 N[1:nAges] <- Ss[i] + Es[i] + Is[i] + Sp[i] + Ep[i] + Ip[i] + R[i]
 
-deriv(Incidence[1:nAges]) <- infect_s[i] + infect_p[i]
-deriv(DetIncidence[1:nAges]) <- prop_detected_vect[i] * infect_s[i] + prop_detected_vect[i] * infect_p[i]
+output(Incidence[1:nAges]) <- infect_s[i] + infect_p[i]
+output(DetIncidence[1:nAges]) <- prop_detected_vect[i] * infect_s[i] + prop_detected_vect[i] * infect_p[i]
 
 ## Initial states:
 initial(Sp[1:nAges]) <- Sp0[i]
@@ -57,8 +57,8 @@ initial(Ss[1:nAges]) <- Ss0[i]
 initial(Es[1:nAges]) <- Es0[i]
 initial(Is[1:nAges]) <- Is0[i]
 initial(R[1:nAges]) <- R0[i]
-initial(Incidence[1:nAges]) <- Incidence0[i]
-initial(DetIncidence[1:nAges]) <- DetIncidence0[i]
+#initial(Incidence[1:nAges]) <- Incidence0[i]
+#initial(DetIncidence[1:nAges]) <- DetIncidence0[i]
 
 ##Initial vectors
 Sp0 <- parameter()
@@ -68,8 +68,8 @@ Ss0 <- parameter()
 Es0 <- parameter()
 Is0 <- parameter()
 R0 <- parameter()
-Incidence0 <- parameter()
-DetIncidence0 <- parameter()
+# Incidence0 <- parameter()
+# DetIncidence0 <- parameter()
 
 ##Dimensions of the different "vectors" used
 # For the State Variables
@@ -92,8 +92,8 @@ dim(Es0) <- nAges
 dim(Is0) <- nAges
 dim(R0) <- nAges
 
-dim(Incidence0) <- nAges
-dim(DetIncidence0) <- nAges
+# dim(Incidence0) <- nAges
+# dim(DetIncidence0) <- nAges
 dim(lambda) <- nAges
 dim(s_ij) <- c(nAges,nAges)
 dim(temp) <- nAges

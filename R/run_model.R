@@ -53,14 +53,11 @@ run_model <- function(parameters,
         Ss0 = rep_z,
         Es0 = rep_z,
         Is0 = rep_z,
-        R0 = rep_z,
-        DetIncidence0 = rep_z,
-        Incidence0 = rep_z
+        R0 = rep_z
       )
   } else{
     parameters <- with(init_conds,{
-      for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0",
-                    "R0", "DetIncidence0", "Incidence0")){
+      for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0")){
         if(length(get(name)) != parameters$nAges){
           stop(paste("Initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
         }
@@ -73,9 +70,7 @@ run_model <- function(parameters,
         Ss0 = Ss0,
         Es0 = Es0,
         Is0 = Is0,
-        R0 = R0,
-        DetIncidence0 = DetIncidence0,
-        Incidence0 = Incidence0
+        R0 = R0
       )
       }
     )
@@ -195,8 +190,7 @@ run_model <- function(parameters,
       dplyr::bind_rows(out_list) |>
       dplyr::left_join(data.frame(age = parameters$age.limits,
                                   age_chr = age_chr), by = dplyr::join_by(age)) |>
-      dplyr::select(-age) |>
-      dplyr::rename(age = age_chr) |> as.data.frame()
+      as.data.frame()
       )
     )
 }

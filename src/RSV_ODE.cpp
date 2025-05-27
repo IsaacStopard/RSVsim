@@ -24,8 +24,6 @@
 // [[dust2::parameter(Es0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Is0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(R0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Incidence0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(DetIncidence0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 class RSV_ODE {
 public:
   RSV_ODE() = delete;
@@ -63,8 +61,6 @@ public:
       dust2::array::dimensions<1> Es0;
       dust2::array::dimensions<1> Is0;
       dust2::array::dimensions<1> R0;
-      dust2::array::dimensions<1> Incidence0;
-      dust2::array::dimensions<1> DetIncidence0;
       dust2::array::dimensions<1> lambda;
       dust2::array::dimensions<2> s_ij;
       dust2::array::dimensions<1> temp;
@@ -91,8 +87,6 @@ public:
     std::vector<real_type> Es0;
     std::vector<real_type> Is0;
     std::vector<real_type> R0;
-    std::vector<real_type> Incidence0;
-    std::vector<real_type> DetIncidence0;
   };
   struct internal_state {
     std::vector<real_type> N;
@@ -101,6 +95,8 @@ public:
     std::vector<real_type> lambda;
     std::vector<real_type> infect_p;
     std::vector<real_type> infect_s;
+    std::vector<real_type> Incidence;
+    std::vector<real_type> DetIncidence;
   };
   using data_type = dust2::no_data;
   static dust2::packing packing_state(const shared_state& shared) {
@@ -138,8 +134,6 @@ public:
     dim.Es0.set({static_cast<size_t>(nAges)});
     dim.Is0.set({static_cast<size_t>(nAges)});
     dim.R0.set({static_cast<size_t>(nAges)});
-    dim.Incidence0.set({static_cast<size_t>(nAges)});
-    dim.DetIncidence0.set({static_cast<size_t>(nAges)});
     dim.lambda.set({static_cast<size_t>(nAges)});
     dim.s_ij.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
     dim.temp.set({static_cast<size_t>(nAges)});
@@ -169,10 +163,6 @@ public:
     dust2::r::read_real_array(parameters, dim.Is0, Is0.data(), "Is0", true);
     std::vector<real_type> R0(dim.R0.size);
     dust2::r::read_real_array(parameters, dim.R0, R0.data(), "R0", true);
-    std::vector<real_type> Incidence0(dim.Incidence0.size);
-    dust2::r::read_real_array(parameters, dim.Incidence0, Incidence0.data(), "Incidence0", true);
-    std::vector<real_type> DetIncidence0(dim.DetIncidence0.size);
-    dust2::r::read_real_array(parameters, dim.DetIncidence0, DetIncidence0.data(), "DetIncidence0", true);
     shared_state::odin_internals_type odin;
     odin.packing.state = dust2::packing{
       {"Sp", std::vector<size_t>(dim.Sp.dim.begin(), dim.Sp.dim.end())},
@@ -186,7 +176,7 @@ public:
       {"DetIncidence", std::vector<size_t>(dim.DetIncidence.dim.begin(), dim.DetIncidence.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_mean, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0, DetIncidence0};
+    return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_mean, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> N(shared.dim.N.size);
@@ -195,7 +185,9 @@ public:
     std::vector<real_type> lambda(shared.dim.lambda.size);
     std::vector<real_type> infect_p(shared.dim.infect_p.size);
     std::vector<real_type> infect_s(shared.dim.infect_s.size);
-    return internal_state{N, temp, s_ij, lambda, infect_p, infect_s};
+    std::vector<real_type> Incidence(shared.dim.Incidence.size);
+    std::vector<real_type> DetIncidence(shared.dim.DetIncidence.size);
+    return internal_state{N, temp, s_ij, lambda, infect_p, infect_s, Incidence, DetIncidence};
   }
   static void update_shared(cpp11::list parameters, shared_state& shared) {
     shared.b0 = dust2::r::read_real(parameters, "b0", shared.b0);
@@ -217,8 +209,6 @@ public:
     dust2::r::read_real_array(parameters, shared.dim.Es0, shared.Es0.data(), "Es0", false);
     dust2::r::read_real_array(parameters, shared.dim.Is0, shared.Is0.data(), "Is0", false);
     dust2::r::read_real_array(parameters, shared.dim.R0, shared.R0.data(), "R0", false);
-    dust2::r::read_real_array(parameters, shared.dim.Incidence0, shared.Incidence0.data(), "Incidence0", false);
-    dust2::r::read_real_array(parameters, shared.dim.DetIncidence0, shared.DetIncidence0.data(), "DetIncidence0", false);
   }
   static void update_internal(const shared_state& shared, internal_state& internal) {
   }
@@ -244,12 +234,6 @@ public:
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       state[i - 1 + shared.odin.offset.state[6]] = shared.R0[i - 1];
     }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[7]] = shared.Incidence0[i - 1];
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[8]] = shared.DetIncidence0[i - 1];
-    }
   }
   static void rhs(real_type time, const real_type* state, const shared_state& shared, internal_state& internal, real_type* state_deriv) {
     const auto * Sp = state + 0;
@@ -271,7 +255,7 @@ public:
       }
     }
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
-      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) * time / 12 + shared.phi)) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
+      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) * time / static_cast<real_type>(365.25) + shared.phi)) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
     }
     for (size_t i = 1; i <= shared.dim.infect_p.size; ++i) {
       internal.infect_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];
@@ -300,12 +284,46 @@ public:
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       state_deriv[i - 1 + shared.odin.offset.state[6]] = shared.gamma_p * Ip[i - 1] + shared.gamma_s * Is[i - 1] - shared.nu * R[i - 1];
     }
+  }
+  static void output(real_type time, real_type* state, const shared_state& shared, internal_state& internal) {
+    const auto * Sp = state + 0;
+    const auto * Ep = state + shared.odin.offset.state[1];
+    const auto * Ip = state + shared.odin.offset.state[2];
+    const auto * Ss = state + shared.odin.offset.state[3];
+    const auto * Es = state + shared.odin.offset.state[4];
+    const auto * Is = state + shared.odin.offset.state[5];
+    const auto * R = state + shared.odin.offset.state[6];
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[7]] = internal.infect_s[i - 1] + internal.infect_p[i - 1];
+      internal.N[i - 1] = Ss[i - 1] + Es[i - 1] + Is[i - 1] + Sp[i - 1] + Ep[i - 1] + Ip[i - 1] + R[i - 1];
+    }
+    for (size_t i = 1; i <= shared.dim.temp.size; ++i) {
+      internal.temp[i - 1] = shared.omega_vect[i - 1] * (Is[i - 1] + Ip[i - 1]) / internal.N[i - 1];
+    }
+    for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
+      for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
+        internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_mean[i - 1 + (j - 1) * shared.dim.matrix_mean.mult[1]] * internal.temp[j - 1];
+      }
+    }
+    for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
+      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) * time / static_cast<real_type>(365.25) + shared.phi)) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
+    }
+    for (size_t i = 1; i <= shared.dim.infect_p.size; ++i) {
+      internal.infect_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];
+    }
+    for (size_t i = 1; i <= shared.dim.infect_s.size; ++i) {
+      internal.infect_s[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * shared.alpha_vect[i - 1] * Ss[i - 1];
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[8]] = shared.prop_detected_vect[i - 1] * internal.infect_s[i - 1] + shared.prop_detected_vect[i - 1] * internal.infect_p[i - 1];
+      internal.Incidence[i - 1] = internal.infect_s[i - 1] + internal.infect_p[i - 1];
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.DetIncidence[i - 1] = shared.prop_detected_vect[i - 1] * internal.infect_s[i - 1] + shared.prop_detected_vect[i - 1] * internal.infect_p[i - 1];
+    }
+    std::copy(internal.Incidence.begin(), internal.Incidence.end(), state + shared.odin.offset.state[7]);
+    std::copy(internal.DetIncidence.begin(), internal.DetIncidence.end(), state + shared.odin.offset.state[8]);
+  }
+  static size_t size_output() {
+    return 2;
   }
 };
 

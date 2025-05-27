@@ -124,7 +124,7 @@ create_contact_matrix <- function(country = "United Kingdom",
     }
     }
 
-    rownames(matrix_out) <- colnames(matrix_out) <- age.limits
+  rownames(matrix_out) <- colnames(matrix_out) <- age.limits
   rownames(M) <- colnames(M) <- age.limits.default
 
   mean_matrix_out <- matrix_out / D_out
