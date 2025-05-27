@@ -1,14 +1,14 @@
 #' Runs the RSV model
 #'
 #' Function to run the transmission model with cohort aging.
+#' Cohorts are aged at time intervals of the smallest age group given in \code{parameters[["age.limits"]]}.
 #'
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param max_t Simulation maximum time. Default: 2000 days.
 #' @param dt Time steps to run the model over. Default: 0.25 days.
-#' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL} 1% RSV prevalence is assumed for people during the primary infection.
+#' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
-#' @param save_final_states Boolean. Choose whether to save final model state as initial conditions for next simulation. Default: \code{FALSE}.
-#' @return Simulation output
+#' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
 run_model <- function(parameters,
                       max_t = 2000,
@@ -17,6 +17,14 @@ run_model <- function(parameters,
                       ){
 
   ##########################################################
+  # labels for the ages
+  age_chr <- c(paste0("[",round(parameters$age.limits[1], digits = 2),",", round(parameters$age.limits[2], digits = 2),"]"))
+
+  for(i in 2:(parameters$nAges - 1)){
+    age_chr <- c(age_chr, c(paste0("[",round(parameters$age.limits[i], digits = 2),",", round(parameters$age.limits[i+1], digits = 2),")")))
+  }
+
+  age_chr <- c(age_chr, paste0("[",round(parameters$age.limits[parameters$nAges], digits = 2),",", round(parameters$max_age, digits = 2),")"))
 
   # age differences in days
   size_cohorts <- with(parameters,
@@ -183,7 +191,13 @@ run_model <- function(parameters,
   }
 
   return(
-    dplyr::bind_rows(out_list)
+    invisible(
+      dplyr::bind_rows(out_list) |>
+      dplyr::left_join(data.frame(age = parameters$age.limits,
+                                  age_chr = age_chr), by = dplyr::join_by(age)) |>
+      dplyr::select(-age) |>
+      dplyr::rename(age = age_chr) |> as.data.frame()
+      )
     )
 }
 

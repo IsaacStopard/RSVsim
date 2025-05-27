@@ -1,3 +1,13 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+test_that("run_model function works", {
+
+  contact_population_list <- create_contact_matrix()
+  parameters <- get_parameters(contact_population_list = contact_population_list)
+
+  sim <- run_model(parameters = parameters,
+                   max_t = 2000,
+                   dt = 0.25,
+                   init_conds = NULL)
+
+  expect_true(sum(is.na(sim)) == 0)
+
 })

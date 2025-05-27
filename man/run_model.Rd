@@ -4,13 +4,7 @@
 \alias{run_model}
 \title{Runs the RSV model}
 \usage{
-run_model(
-  parameters,
-  max_t = 2000,
-  dt = 0.25,
-  init_conds = NULL,
-  save_final_states = FALSE
-)
+run_model(parameters, max_t = 2000, dt = 0.25, init_conds = NULL)
 }
 \arguments{
 \item{parameters}{List of parameters from \code{get_params} function.}
@@ -19,14 +13,13 @@ run_model(
 
 \item{dt}{Time steps to run the model over. Default: 0.25 days.}
 
-\item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL} 1\% RSV prevalence is assumed for people during the primary infection.
+\item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection.
 All other people are assumed to be susceptible to their primary infection.}
-
-\item{save_final_states}{Boolean. Choose whether to save final model state as initial conditions for next simulation. Default: \code{FALSE}.}
 }
 \value{
-Simulation output
+Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 }
 \description{
 Function to run the transmission model with cohort aging.
+Cohorts are aged at time intervals of the smallest age group given in \code{parameters[["age.limits"]]}.
 }

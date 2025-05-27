@@ -28,9 +28,10 @@ get_parameters <- function(overrides = list(),
     }
   }
 
+  nAges <- length(contact_population_list$age.limits)
+
   parameters <- with(contact_population_list,
        {
-         nAges <- length(age.limits)
 
          if(!is.matrix(matrix_mean)){
            stop("contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
