@@ -13,8 +13,7 @@
 run_model <- function(parameters,
                       max_t = 2000,
                       dt = 0.25,
-                      init_conds = NULL,
-                      save_final_states = FALSE #
+                      init_conds = NULL
                       ){
 
   ##########################################################
@@ -83,16 +82,23 @@ run_model <- function(parameters,
                                         deterministic = TRUE
                                         ) |> invisible()
 
-  # do not change this
-  # the order is determined by the order in the odin RSV_ODE.R file
-  states <- dust2::dust_unpack_index(RSV_dust)
-  states <- lapply(1:length(states), function(i){rep(names(states[i]), length(states[[i]]))}) |> unlist()
-
-  ages <- rep(parameters$age.limits, length(unique(states)))
 
   dust2::dust_system_set_state_initial(RSV_dust)
 
-  out_df <- vector(mode = "list", length = n_steps)
+  # do not change this
+  # the order is determined by the order in the odin RSV_ODE.R file
+  states <- dust2::dust_unpack_index(RSV_dust)
+
+  states <- lapply(1:length(states), function(i){rep(names(states[i]), length(states[[i]]))}) |> unlist()
+
+  n_states <- length(unique(states))
+
+  ages <- rep(parameters$age.limits, n_states)
+
+  incidence_i <- which(states %in% c("Incidence", "DetIncidence"))
+
+  # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
+  out_list <- vector(mode = "list", length = n_steps)
 
   for(i in 1:n_steps){
 
@@ -103,22 +109,28 @@ run_model <- function(parameters,
     }
 
     out <- dust2::dust_system_simulate(RSV_dust,
-                                times = times_in)
+                                       times = times_in)
 
-    out_df[[i]] <- out |> as.data.frame()
+    # checking the total population is correct
+    if(!all(abs(out[-incidence_i,] |> colSums() - parameters$total_population) < 1E-5)){
+      stop("Population does not sum to the correct number")
+    }
 
-    colnames(out_df[[i]]) <- times_in
+    out_list[[i]] <- out |> as.data.frame()
 
-    out_df[[i]] <- out_df[[i]] |> dplyr::mutate(state = states, age = ages) |>
+    colnames(out_list[[i]]) <- times_in
+
+    out_list[[i]] <- out_list[[i]] |> dplyr::mutate(state = states, age = ages) |>
       tidyr::pivot_longer(cols = 1:length(times_in),
                           values_to = "value",
                           names_to = "time") |>
       dplyr::mutate(time = as.numeric(time)) |>
       dplyr::arrange(factor(state,
-                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "Incidence", "DetIncidence")),
+                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence")),
                             age)
 
-    next_state <- out_df[[i]] |>
+    # calculating the initial states
+    next_state <- out_list[[i]] |>
       dplyr::filter(time == max(time)) |>
       dplyr::group_by(state) |>
       dplyr::mutate(transition_ct = value * transition_rate,
@@ -127,106 +139,51 @@ run_model <- function(parameters,
     # check NAs are in the correct place
     if(!all(
       next_state[which(is.na(next_state$lag_transition)), "age"] == 0) |
-       sum(is.na(next_state$lag_transition)) != 9){
-      stop("error calculating the cohort aging")
+       sum(is.na(next_state$lag_transition)) != n_states){
+      stop("error when lagging the cohort aging")
     }
 
+    # filling in births to keep the population size constant
     next_state <- next_state |> dplyr::ungroup() |>
       dplyr::mutate(lag_transition =
                       ifelse(is.na(lag_transition) & age == 0 & state == "Sp",
                              rel_sizes[1] * transition_rate[1] * parameters$total_population,
-                             ifelse(is.na(lag_transition) & age == 0,
-                                    0, lag_transition)))
+                             ifelse(is.na(lag_transition) & age == 0, 0,
+                                    lag_transition)
+                             )
+                    )
 
     if(
-      abs(next_state |> dplyr::filter(age == max(age) & state %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R")) |>
-          dplyr::ungroup() |> dplyr::select(transition_ct) |> as.vector() |> unlist() |> sum() -
-      rel_sizes[1] * transition_rate[1] * parameters$total_population) > 1E-5){
+      abs(
+        next_state |> dplyr::filter(age == max(age) &
+                                      state %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R")
+                                      ) |> dplyr::ungroup() |>
+          dplyr::select(transition_ct) |> as.vector() |> unlist() |> sum() -
+        rel_sizes[1] * transition_rate[1] * parameters$total_population
+        ) > 1E-5){
       stop("births are not correct to keep the population size constant")
     }
 
     next_state <- next_state |>
       dplyr::mutate(next_value = value - transition_ct + lag_transition) |>
-      dplyr::ungroup() |> dplyr::select(next_value) |>
+      dplyr::select(next_value) |>
       unlist() |> unname() |> as.vector()
+
+    if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-7){
+      stop("total population for the next cohort states is not correct")
+    }
 
     dust2::dust_system_set_state(sys = RSV_dust,
                                  state = next_state)
+
+    if(all(dust2::dust_system_state(RSV_dust) != next_state)){
+      stop("states have not been updated")
+    }
+
   }
 
-  while (T0 <= max_t){
-
-    # solve the odes first
-    t <- seq(from = T0, to = T0 + 1, by = dt)
-    m <- mod$run(t)
-    pop <- mod$transform_variables(m)
-
-    if (T0 == 0){
-      pop_out <- pop
-    } else {
-      pop_out$time <- c(pop_out$time, pop$time[5])
-      pop_out$S <- rbind(pop_out$S, pop$S[5,])
-      pop_out$E <- rbind(pop_out$E, pop$E[5,])
-      pop_out$I <- rbind(pop_out$I, pop$I[5,])
-      pop_out$R <- rbind(pop_out$R, pop$R[5,])
-      pop_out$Incidence <- rbind(pop_out$Incidence, pop$Incidence[5,])
-      pop_out$DetIncidence <- rbind(pop_out$DetIncidence, pop$DetIncidence[5,])
-    }
-
-    # cohort aging
-
-    # extract the final state from pop
-    S <- as.vector(t(data.table::last(pop$S)))
-    E <- as.vector(t(data.table::last(pop$E)))
-    I <- as.vector(t(data.table::last(pop$I)))
-    R <- as.vector(t(data.table::last(pop$R)))
-    Incidence <- as.vector(t(data.table::last(pop$Incidence)))
-    DetIncidence <- as.vector(t(data.table::last(pop$DetIncidence)))
-
-    # initialise the new initial condition vectors
-    I0 <- rel_sizes*0
-    S0 <- rel_sizes*0
-    E0 <- rel_sizes*0
-    R0 <- rel_sizes*0
-    Incidence <- rel_sizes*0
-    DetIncidence <- rel_sizes*0
-
-    # then fill them in
-    S0[1] <- perth_pop * rel_sizes[1]
-
-    for(i in c(2:nAges)){
-      S0[i] = S[(i - 1)] * trans_rate[(i-1)] + S[i] - S[i] * trans_rate[i]
-      E0[i] = E[(i - 1)] * trans_rate[(i-1)] + E[i] - E[i] * trans_rate[i]
-      I0[i] = I[(i - 1)] * trans_rate[(i-1)] + I[i] - I[i] * trans_rate[i]
-      R0[i] = R[(i - 1)] * trans_rate[(i-1)] + R[i] - R[i] * trans_rate[i]
-      Incidence0[i] = Incidence[(i - 1)] * trans_rate[(i-1)] + Incidence[i] - Incidence[i] * trans_rate[i]
-      DetIncidence0[i] = DetIncidence[(i - 1)] * trans_rate[(i-1)] + DetIncidence[i] - DetIncidence[i] * trans_rate[i]
-    }
-
-    pars <- list(
-      b0 = b0,
-      b1 = b1,
-      phi = phi,
-      delta = delta,
-      gamma = gamma,
-      nu = nu,
-      prop_detected_vect = prop_detected_vect,
-      sigma_vect = sigma_vect,
-      omega_vect = omega_vect,
-      mixing = mixing,
-      S0 = S0,
-      E0 = E0,
-      I0 = I0,
-      R0 = R0,
-      Incidence0 = Incidence0,
-      DetIncidence0 = DetIncidence0
+  return(
+    dplyr::bind_rows(out_list)
     )
-
-    mod <- x(user = pars)
-    T0 <- T0 + 1
-
-  }
-  pop_out <- pop_out[2:8]
-  return(pop_out)
 }
 
