@@ -57,8 +57,6 @@ initial(Ss[1:nAges]) <- Ss0[i]
 initial(Es[1:nAges]) <- Es0[i]
 initial(Is[1:nAges]) <- Is0[i]
 initial(R[1:nAges]) <- R0[i]
-#initial(Incidence[1:nAges]) <- Incidence0[i]
-#initial(DetIncidence[1:nAges]) <- DetIncidence0[i]
 
 ##Initial vectors
 Sp0 <- parameter()
@@ -68,8 +66,6 @@ Ss0 <- parameter()
 Es0 <- parameter()
 Is0 <- parameter()
 R0 <- parameter()
-# Incidence0 <- parameter()
-# DetIncidence0 <- parameter()
 
 ##Dimensions of the different "vectors" used
 # For the State Variables
@@ -92,8 +88,6 @@ dim(Es0) <- nAges
 dim(Is0) <- nAges
 dim(R0) <- nAges
 
-# dim(Incidence0) <- nAges
-# dim(DetIncidence0) <- nAges
 dim(lambda) <- nAges
 dim(s_ij) <- c(nAges,nAges)
 dim(temp) <- nAges
