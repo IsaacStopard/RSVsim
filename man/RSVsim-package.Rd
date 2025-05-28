@@ -11,6 +11,7 @@ Deterministic, ODE model of Respiratory Synctial Virus (RSV) transmission.
 Useful links:
 \itemize{
   \item \url{https://github.com/IsaacStopard/RSVsim}
+  \item \url{https://isaacstopard.github.io/RSVsim/}
   \item Report bugs at \url{https://github.com/IsaacStopard/RSVsim/issues}
 }
 
