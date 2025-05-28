@@ -20,13 +20,13 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/IsaacStopard/RSVsim/graph/badge.svg)](https://app.codecov.io/gh/IsaacStopard/RSVsim)
 <!-- badges: end -->
 
-RSVsim 
+A deterministic, ODE model of Respiratory Synctial Virus (RSV) transmission.  
 
 ## Installation
 
 You can install the development version of RSVsim from [GitHub](https://github.com/) with:
 
-``` r
+```r
 # install.packages("pak")
 pak::pak("IsaacStopard/RSVsim")
 ```

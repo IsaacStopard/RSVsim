@@ -23,6 +23,7 @@ Imports:
     purrr,
     socialmixr,
     stats,
+    tibble,
     tidyr
 Depends: 
     R (>= 4.4.0)
