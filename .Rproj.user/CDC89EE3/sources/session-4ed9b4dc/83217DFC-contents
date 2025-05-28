@@ -1,0 +1,33 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# RSVsim
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/IsaacStopard/RSVsim/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/IsaacStopard/RSVsim/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/IsaacStopard/RSVsim/graph/badge.svg)](https://app.codecov.io/gh/IsaacStopard/RSVsim)
+<!-- badges: end -->
+
+A deterministic, ODE model of Respiratory Synctial Virus (RSV) transmission.  
+
+## Installation
+
+You can install the development version of RSVsim from [GitHub](https://github.com/) with:
+
+```r
+# install.packages("pak")
+pak::pak("IsaacStopard/RSVsim")
+```
+
