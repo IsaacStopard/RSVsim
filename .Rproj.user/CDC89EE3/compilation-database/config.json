@@ -1,0 +1,25 @@
+{
+    "args": [
+        "-std=gnu++17",
+        "-I/Library/Frameworks/R.framework/Resources/include",
+        "-DNDEBUG",
+        "-I/opt/R/arm64/include",
+        "-fPIC",
+        "-falign-functions=64",
+        "-I/Users/z5238812/Library/R/arm64/4.4/library/cpp11/include",
+        "-I/Users/z5238812/Library/R/arm64/4.4/library/dust2/include",
+        "-I/Users/z5238812/Library/R/arm64/4.4/library/monty/include",
+        "-DEIGEN_DONT_VECTORIZE",
+        "-I/Library/Developer/CommandLineTools/usr/lib/clang/17.0.0/include",
+        "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1",
+        "-I/Library/Developer/CommandLineTools/usr/lib/clang/17/include",
+        "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
+        "-I/Library/Developer/CommandLineTools/usr/include"
+    ],
+    "pch": "cpp11",
+    "is_cpp": true,
+    "hash": "17483925211747967040",
+    "compiler": "12929467647670848684",
+    "rversion": "4.4.3",
+    "dbversion": 4
+}

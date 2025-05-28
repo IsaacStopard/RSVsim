@@ -1,0 +1,305 @@
+[
+    {
+        "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+        "file_last_write": 1748330114.0,
+        "definitions": [
+            {
+                "usr": "c:@S@RSV_ODE",
+                "kind": 2,
+                "parent_name": "",
+                "name": "RSV_ODE",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 27,
+                "column": 7,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@shared_state",
+                "kind": 3,
+                "parent_name": "",
+                "name": "shared_state",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 32,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@shared_state@S@odin_internals_type",
+                "kind": 3,
+                "parent_name": "",
+                "name": "odin_internals_type",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 33,
+                "column": 12,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@shared_state@S@odin_internals_type@S@RSV_ODE.cpp@2324",
+                "kind": 3,
+                "parent_name": "",
+                "name": "(unnamed struct at /Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp:34:7)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 34,
+                "column": 7,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@shared_state@S@odin_internals_type@S@RSV_ODE.cpp@2386",
+                "kind": 3,
+                "parent_name": "",
+                "name": "(unnamed struct at /Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp:37:7)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 37,
+                "column": 7,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@shared_state@S@dim_type",
+                "kind": 3,
+                "parent_name": "",
+                "name": "dim_type",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 41,
+                "column": 12,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@S@internal_state",
+                "kind": 3,
+                "parent_name": "",
+                "name": "internal_state",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 91,
+                "column": 10,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@packing_state#&1$@S@RSV_ODE@S@shared_state#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "packing_state(const shared_state &)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 102,
+                "column": 25,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@build_shared#$@N@cpp11@S@r_vector>#*$@S@SEXPREC#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "build_shared(cpp11::list)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 105,
+                "column": 23,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@build_internal#&1$@S@RSV_ODE@S@shared_state#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "build_internal(const shared_state &)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 181,
+                "column": 25,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@update_shared#$@N@cpp11@S@r_vector>#*$@S@SEXPREC#&$@S@RSV_ODE@S@shared_state#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "update_shared(cpp11::list, shared_state &)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 192,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@update_internal#&1$@S@RSV_ODE@S@shared_state#&$@S@RSV_ODE@S@internal_state#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "update_internal(const shared_state &, internal_state &)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 213,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@initial#d#&1$@S@RSV_ODE@S@shared_state#&$@S@RSV_ODE@S@internal_state#&$@N@monty@N@random@S@xoshiro_state>#k#Vl4#V$@N@monty@N@random@E@scrambler2#*d#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "initial(real_type, const shared_state &, internal_state &, rng_state_type &, real_type *)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 215,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@rhs#d#*1d#&1$@S@RSV_ODE@S@shared_state#&$@S@RSV_ODE@S@internal_state#*d#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "rhs(real_type, const real_type *, const shared_state &, internal_state &, real_type *)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 238,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@output#d#*d#&1$@S@RSV_ODE@S@shared_state#&$@S@RSV_ODE@S@internal_state#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "output(real_type, real_type *, const shared_state &, internal_state &)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 288,
+                "column": 15,
+                "hidden": false
+            },
+            {
+                "usr": "c:@S@RSV_ODE@F@size_output#S",
+                "kind": 7,
+                "parent_name": "RSV_ODE",
+                "name": "size_output",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 325,
+                "column": 17,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_alloc#$@N@cpp11@S@r_vector>#*$@S@SEXPREC#$@N@cpp11@S@sexp#S0_#S3_#S3_#S3_#S3_#S3_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_alloc(cpp11::list, cpp11::sexp, cpp11::list, cpp11::sexp, cpp11::sexp, cpp11::sexp, cpp11::sexp, cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 334,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_internals#$@N@cpp11@S@sexp#b#b#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_internals(cpp11::sexp, bool, bool)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 339,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_run_to_time#$@N@cpp11@S@sexp#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_run_to_time(cpp11::sexp, cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 343,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_state#$@N@cpp11@S@sexp#S0_#S0_#S0_#b#b#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_state(cpp11::sexp, cpp11::sexp, cpp11::sexp, cpp11::sexp, bool, bool)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 348,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_time#$@N@cpp11@S@sexp#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_time(cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 353,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_set_state_initial#$@N@cpp11@S@sexp#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_set_state_initial(cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 358,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_set_state#$@N@cpp11@S@sexp#$@N@cpp11@S@r_vector>#*$@S@SEXPREC#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_set_state(cpp11::sexp, cpp11::list)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 363,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_reorder#$@N@cpp11@S@sexp#$@N@cpp11@S@r_vector>#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_reorder(cpp11::sexp, cpp11::integers)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 368,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_rng_state#$@N@cpp11@S@sexp#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_rng_state(cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 373,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_set_rng_state#$@N@cpp11@S@sexp#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_set_rng_state(cpp11::sexp, cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 378,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_set_time#$@N@cpp11@S@sexp#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_set_time(cpp11::sexp, cpp11::sexp)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 383,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_update_pars#$@N@cpp11@S@sexp#$@N@cpp11@S@r_vector>#*$@S@SEXPREC#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_update_pars(cpp11::sexp, cpp11::list)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 388,
+                "column": 6,
+                "hidden": false
+            },
+            {
+                "usr": "c:@F@dust2_system_RSV_ODE_simulate#$@N@cpp11@S@sexp#S0_#S0_#b#b#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dust2_system_RSV_ODE_simulate(cpp11::sexp, cpp11::sexp, cpp11::sexp, bool, bool)",
+                "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/RSV_ODE.cpp",
+                "line": 393,
+                "column": 6,
+                "hidden": false
+            }
+        ],
+        "hidden": false
+    },
+    {
+        "file": "/Users/z5238812/Documents/GitHub/RSVsim/src/cpp11.cpp",
+        "file_last_write": 1748330897.0,
+        "definitions": [],
+        "hidden": true
+    }
+]

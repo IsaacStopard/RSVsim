@@ -1,0 +1,23 @@
+contact_population_list <- create_contact_matrix()
+
+# contact_population_list$matrix_mean <- matrix(1, nrow = length(contact_population_list$age.limits), ncol = length(contact_population_list$age.limits))
+
+parameters <- get_parameters(overrides = list(),
+                                     contact_population_list = contact_population_list)
+
+out_w_cohort <- RSVsim::run_model(parameters = parameters,
+                                  max_t = 3650,
+                                  dt = 1,
+                                  init_conds = NULL)
+
+ggplot(data = subset(out_w_cohort,
+                     state %in% c("Sp", "Ss", "Ip", "Is", "R") & age %in% c(0, 1, 2, 5, 20, 40, 50)),
+                   aes(x = time, y = value, col = state, group = factor(state))) +
+  geom_line() +
+  facet_wrap(~age, scales = "free_y")
+
+ggplot(data = subset(out_w_cohort,
+                     state %in% c("Incidence") & age %in% c(0, 1, 2, 5, 20, 40, 50)),
+       aes(x = time, y = value, col = state, group = factor(state))) +
+  geom_line() +
+  facet_wrap(~age, scales = "free_y")
