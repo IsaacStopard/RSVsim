@@ -1,8 +1,9 @@
 pandoc: 3.1.11
 pkgdown: 2.1.3
 pkgdown_sha: ~
-articles: {}
-last_built: 2025-05-27T23:15Z
+articles:
+  Introduction: Introduction.html
+last_built: 2025-05-28T01:01Z
 urls:
   reference: https://isaacstopard.github.io/RSVsim/reference
   article: https://isaacstopard.github.io/RSVsim/articles
