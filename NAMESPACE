@@ -3,4 +3,5 @@
 export(create_contact_matrix)
 export(get_parameters)
 export(run_model)
+importFrom(stats,na.omit)
 useDynLib(RSVsim, .registration=TRUE)

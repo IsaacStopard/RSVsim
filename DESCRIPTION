@@ -19,10 +19,10 @@ BugReports: https://github.com/IsaacStopard/RSVsim/issues
 Imports: 
     dplyr,
     dust2 (>= 0.3.22),
-    monty (>= 0.3.28),
-    odin2 (>= 0.3.24),
+    ggplot2,
     purrr,
     socialmixr,
+    stats,
     tidyr
 Depends: 
     R (>= 4.4.0)
