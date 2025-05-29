@@ -98,7 +98,7 @@ run_model <- function(parameters,
 
   ages <- rep(parameters$age.limits, n_states)
 
-  incidence_i <- which(states %in% c("Incidence", "DetIncidence"))
+  incidence_i <- which(states %in% c("Incidence", "DetIncidence", "prev", "prev_p", "prev_s"))
 
   # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
   out_list <- vector(mode = "list", length = n_steps)

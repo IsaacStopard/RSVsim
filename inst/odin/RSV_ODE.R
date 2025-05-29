@@ -48,6 +48,9 @@ N[1:nAges] <- Ss[i] + Es[i] + Is[i] + Sp[i] + Ep[i] + Ip[i] + R[i]
 
 output(Incidence[1:nAges]) <- infect_s[i] + infect_p[i]
 output(DetIncidence[1:nAges]) <- prop_detected_vect[i] * infect_s[i] + prop_detected_vect[i] * infect_p[i]
+output(prev[1:nAges]) <- (Ip[i] + Is[i])/N[i]
+output(prev_p[1:nAges]) <- Ip[i]/N[i]
+output(prev_s[1:nAges]) <- Is[i]/N[i]
 
 ## Initial states:
 initial(Sp[1:nAges]) <- Sp0[i]
@@ -80,6 +83,9 @@ dim(Is) <- nAges
 dim(N) <- nAges
 dim(Incidence) <- nAges
 dim(DetIncidence) <- nAges
+dim(prev) <- nAges
+dim(prev_s) <- nAges
+dim(prev_p) <- nAges
 dim(Sp0) <- nAges
 dim(Ep0) <- nAges
 dim(Ip0) <- nAges

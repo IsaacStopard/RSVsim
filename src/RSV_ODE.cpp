@@ -35,7 +35,7 @@ public:
         dust2::packing state;
       } packing;
       struct {
-        std::array<size_t, 9> state;
+        std::array<size_t, 12> state;
       } offset;
     } odin;
     struct dim_type {
@@ -54,6 +54,9 @@ public:
       dust2::array::dimensions<1> N;
       dust2::array::dimensions<1> Incidence;
       dust2::array::dimensions<1> DetIncidence;
+      dust2::array::dimensions<1> prev;
+      dust2::array::dimensions<1> prev_s;
+      dust2::array::dimensions<1> prev_p;
       dust2::array::dimensions<1> Sp0;
       dust2::array::dimensions<1> Ep0;
       dust2::array::dimensions<1> Ip0;
@@ -95,6 +98,9 @@ public:
     std::vector<real_type> lambda;
     std::vector<real_type> infect_p;
     std::vector<real_type> infect_s;
+    std::vector<real_type> prev;
+    std::vector<real_type> prev_p;
+    std::vector<real_type> prev_s;
     std::vector<real_type> Incidence;
     std::vector<real_type> DetIncidence;
   };
@@ -127,6 +133,9 @@ public:
     dim.N.set({static_cast<size_t>(nAges)});
     dim.Incidence.set({static_cast<size_t>(nAges)});
     dim.DetIncidence.set({static_cast<size_t>(nAges)});
+    dim.prev.set({static_cast<size_t>(nAges)});
+    dim.prev_s.set({static_cast<size_t>(nAges)});
+    dim.prev_p.set({static_cast<size_t>(nAges)});
     dim.Sp0.set({static_cast<size_t>(nAges)});
     dim.Ep0.set({static_cast<size_t>(nAges)});
     dim.Ip0.set({static_cast<size_t>(nAges)});
@@ -173,7 +182,10 @@ public:
       {"Is", std::vector<size_t>(dim.Is.dim.begin(), dim.Is.dim.end())},
       {"R", std::vector<size_t>(dim.R.dim.begin(), dim.R.dim.end())},
       {"Incidence", std::vector<size_t>(dim.Incidence.dim.begin(), dim.Incidence.dim.end())},
-      {"DetIncidence", std::vector<size_t>(dim.DetIncidence.dim.begin(), dim.DetIncidence.dim.end())}
+      {"DetIncidence", std::vector<size_t>(dim.DetIncidence.dim.begin(), dim.DetIncidence.dim.end())},
+      {"prev", std::vector<size_t>(dim.prev.dim.begin(), dim.prev.dim.end())},
+      {"prev_p", std::vector<size_t>(dim.prev_p.dim.begin(), dim.prev_p.dim.end())},
+      {"prev_s", std::vector<size_t>(dim.prev_s.dim.begin(), dim.prev_s.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
     return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_mean, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0};
@@ -185,9 +197,12 @@ public:
     std::vector<real_type> lambda(shared.dim.lambda.size);
     std::vector<real_type> infect_p(shared.dim.infect_p.size);
     std::vector<real_type> infect_s(shared.dim.infect_s.size);
+    std::vector<real_type> prev(shared.dim.prev.size);
+    std::vector<real_type> prev_p(shared.dim.prev_p.size);
+    std::vector<real_type> prev_s(shared.dim.prev_s.size);
     std::vector<real_type> Incidence(shared.dim.Incidence.size);
     std::vector<real_type> DetIncidence(shared.dim.DetIncidence.size);
-    return internal_state{N, temp, s_ij, lambda, infect_p, infect_s, Incidence, DetIncidence};
+    return internal_state{N, temp, s_ij, lambda, infect_p, infect_s, prev, prev_p, prev_s, Incidence, DetIncidence};
   }
   static void update_shared(cpp11::list parameters, shared_state& shared) {
     shared.b0 = dust2::r::read_real(parameters, "b0", shared.b0);
@@ -299,6 +314,15 @@ public:
     for (size_t i = 1; i <= shared.dim.temp.size; ++i) {
       internal.temp[i - 1] = shared.omega_vect[i - 1] * (Is[i - 1] + Ip[i - 1]) / internal.N[i - 1];
     }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.prev[i - 1] = (Ip[i - 1] + Is[i - 1]) / internal.N[i - 1];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.prev_p[i - 1] = Ip[i - 1] / internal.N[i - 1];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.prev_s[i - 1] = Is[i - 1] / internal.N[i - 1];
+    }
     for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
       for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
         internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_mean[i - 1 + (j - 1) * shared.dim.matrix_mean.mult[1]] * internal.temp[j - 1];
@@ -321,9 +345,12 @@ public:
     }
     std::copy(internal.Incidence.begin(), internal.Incidence.end(), state + shared.odin.offset.state[7]);
     std::copy(internal.DetIncidence.begin(), internal.DetIncidence.end(), state + shared.odin.offset.state[8]);
+    std::copy(internal.prev.begin(), internal.prev.end(), state + shared.odin.offset.state[9]);
+    std::copy(internal.prev_p.begin(), internal.prev_p.end(), state + shared.odin.offset.state[10]);
+    std::copy(internal.prev_s.begin(), internal.prev_s.end(), state + shared.odin.offset.state[11]);
   }
   static size_t size_output() {
-    return 2;
+    return 5;
   }
 };
 
