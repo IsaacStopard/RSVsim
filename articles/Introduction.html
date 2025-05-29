@@ -153,6 +153,7 @@ be susceptible to their primary infection.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">RSVsim</span><span class="fu">::</span><span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
 <span>                         max_t <span class="op">=</span> <span class="fl">3650</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                         cohort_step_size <span class="op">=</span> <span class="fl">365.25</span><span class="op">/</span><span class="fl">12</span>,</span>
 <span>                         dt <span class="op">=</span> <span class="fl">0.5</span>, <span class="co"># time step to get model outputs for</span></span>
 <span>                         init_conds <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
