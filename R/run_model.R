@@ -5,6 +5,7 @@
 #'
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param max_t Simulation maximum time. Default: 2000 days.
+#' @param dt Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.
 #' @param dt Time steps to run the model over. Default: 0.25 days.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
@@ -12,6 +13,7 @@
 #' @export
 run_model <- function(parameters,
                       max_t = 2000,
+                      cohort_step_size = 365.25/12,
                       dt = 0.25,
                       init_conds = NULL
                       ){
@@ -32,8 +34,6 @@ run_model <- function(parameters,
                        )
 
   # running for the time of the smallest cohort
-  cohort_step_size <- floor(min(size_cohorts))
-
   transition_rate <- cohort_step_size/size_cohorts
 
   rel_sizes <- size_cohorts/sum(size_cohorts)

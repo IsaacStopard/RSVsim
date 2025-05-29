@@ -4,7 +4,13 @@
 \alias{run_model}
 \title{Runs the RSV model}
 \usage{
-run_model(parameters, max_t = 2000, dt = 0.25, init_conds = NULL)
+run_model(
+  parameters,
+  max_t = 2000,
+  cohort_step_size = 365.25/12,
+  dt = 0.25,
+  init_conds = NULL
+)
 }
 \arguments{
 \item{parameters}{List of parameters from \code{get_params} function.}

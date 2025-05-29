@@ -66,6 +66,7 @@ To run the model the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob
 ```{r}
 out <- RSVsim::run_model(parameters = parameters,
                          max_t = 3650, # maximum time to run the model for
+                         cohort_step_size = 365.25/12,
                          dt = 0.5, # time step to get model outputs for
                          init_conds = NULL)
 

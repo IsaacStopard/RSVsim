@@ -5,6 +5,7 @@ test_that("run_model function works", {
 
   sim <- run_model(parameters = parameters,
                    max_t = 2000,
+                   cohort_step_size = 365.25/12,
                    dt = 0.25,
                    init_conds = NULL)
 
