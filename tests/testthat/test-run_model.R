@@ -4,8 +4,8 @@ test_that("run_model function works", {
   parameters <- get_parameters(contact_population_list = contact_population_list)
 
   sim <- run_model(parameters = parameters,
-                   max_t = 2000,
-                   cohort_step_size = 365.25/12,
+                   max_t = 3650,
+                   cohort_step_size = 10,
                    dt = 0.25,
                    init_conds = NULL)
 

@@ -12,8 +12,8 @@
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
 run_model <- function(parameters,
-                      max_t = 2000,
-                      cohort_step_size = 365.25/12,
+                      max_t = 3650,
+                      cohort_step_size = 10,
                       dt = 0.25,
                       init_conds = NULL
                       ){
@@ -129,7 +129,7 @@ run_model <- function(parameters,
                           names_to = "time") |>
       dplyr::mutate(time = as.numeric(time)) |>
       dplyr::arrange(factor(state,
-                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence")),
+                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence", "prev", "prev_p", "prev_s")),
                             age)
 
     # calculating the initial states
@@ -182,6 +182,8 @@ run_model <- function(parameters,
     if(all(dust2::dust_system_state(RSV_dust) != next_state)){
       stop("states have not been updated")
     }
+
+    out_list[[i]] <- out_list[[i]] |> tidyr::pivot_wider(names_from = state, values_from = value)
 
   }
 

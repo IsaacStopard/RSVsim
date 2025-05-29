@@ -62,7 +62,7 @@ get_parameters <- function(overrides = list(),
          alpha_vect[nAges < 10] <- 0.4
 
          parameters <- list(
-           "b0" = 0.087 * 3, # transmission rate coefficient
+           "b0" = 0.15, # transmission rate coefficient 0.087
            "b1" = -0.193, # amplitude of seasonal forcing
            "phi" = 1.536 * 30.436875, # phase shift of seasonal forcing
            "delta" = 1/4, # inverse of the latent period

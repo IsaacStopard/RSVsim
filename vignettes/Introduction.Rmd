@@ -47,8 +47,8 @@ matrix_mean_plot <- contact_population_list$matrix_mean |>
   tidyr::pivot_longer(-age_y, names_to = "age_x", values_to = "mean_contacts")
 
 ggplot(data = matrix_mean_plot, 
-aes(x = age_x, y = age_y, fill = mean_contacts)) + 
-geom_tile() +
+       aes(x = age_x, y = age_y, fill = mean_contacts)) + 
+  geom_tile() +
   xlab("Age") + ylab("Age") + theme_bw()
 ```
 
@@ -56,32 +56,46 @@ geom_tile() +
 To obtain a list of the default parameters to run the model the [R/get_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/get_parameters.R) function. The parameters can be changed by using the overrides argument.
 
 ```{r}
-parameters <- RSVsim::get_parameters(overrides = list("b0" = 1), 
+parameters <- RSVsim::get_parameters(overrides = list("b0" = 0.15), 
                                      contact_population_list = contact_population_list)
 ```
 
 ## Running the model
-To run the model the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function is used. Cohort aging is used to age the population at each time the smallest age group has completed the time within that age group. If no initial conditions are given it is assumed there is one percent prevalence in the primary infection compartment and everyone else is susceptible to primary infection. All new borns are assumed to be susceptible to their primary infection.
+To run the model the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function is used. Cohort aging is used to age the population at each time the smallest age group has completed the time within that age group. If no initial conditions are given it is assumed there is one percent prevalence in the primary infection compartment and everyone else is susceptible to primary infection. All new borns are assumed to be susceptible to their primary infection. Below we plot the simulated number of people that are susceptible and infected, with the line type indicating whether the infection is primary or secondary.
 
 ```{r}
 out <- RSVsim::run_model(parameters = parameters,
                          max_t = 3650, # maximum time to run the model for
-                         cohort_step_size = 365.25/12,
+                         cohort_step_size = 10, # time at which to age people
                          dt = 0.5, # time step to get model outputs for
                          init_conds = NULL)
 
-ggplot(data = out |> dplyr::filter(state %in% c("Sp", "Ip", "Ss", "Is") & time > (3650 - 365 * 3)), 
-       aes(x = time, y = value, col = state)) +
-  geom_line() +
-  facet_wrap(~age_chr, scales = "free_y") + theme_bw()
+ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3))) +
+  geom_line(aes(x = time, y = Sp), linetype = 1) +
+  geom_line(aes(x = time, y = Ss), linetype = 2) +
+  geom_line(aes(x = time, y = Ip), col = "skyblue", linetype = 1) +
+  geom_line(aes(x = time, y = Is), col = "skyblue", linetype = 2) +
+  facet_wrap(~age_chr, scales = "free_y") + theme_bw() +
+  xlab("Days") +
+  ylab("Number of susceptible (black) or infected (blue) people")
 ```
 
-The incidence and detected incidence are also calculated. Age-specific detection probabilities are used, and in the default parameters we assume no one is tested over the age of 2 years old.
+The incidence, detected incidence and prevalence are also calculated. Age-specific detection probabilities are used, and in the default parameters we assume no one is tested over the age of 2 years old.
 
 ```{r}
-ggplot(data = out |> dplyr::filter(state %in% c("Incidence", "DetIncidence") & time > (3650 - 365 * 3)), 
-       aes(x = time, y = value, col = state)) +
+ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3)), 
+       aes(x = time, y = DetIncidence)) +
   geom_line() +
-  facet_wrap(~age_chr, scales = "free_y") + theme_bw()
+  facet_wrap(~age_chr) + theme_bw() +
+  ylab("Detected incidence") +
+  xlab("Days")
 ```
-
+```{r}
+ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3)), 
+       aes(x = time, y = prev)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::percent) +
+  facet_wrap(~age_chr) + theme_bw() +
+  ylab("Prevalence") +
+  xlab("Days")
+```
