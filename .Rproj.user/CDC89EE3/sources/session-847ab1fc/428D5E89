@@ -1,0 +1,26 @@
+{
+    "id": "428D5E89",
+    "path": "~/Documents/GitHub/RSVsim/R/run_model.R",
+    "project_path": "R/run_model.R",
+    "type": "r_source",
+    "hash": "4265530208",
+    "contents": "",
+    "dirty": true,
+    "created": 1748483481636.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "100,91",
+        "scrollLine": "95"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1748491222,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1748491222871,
+    "read_only": false,
+    "read_only_alternatives": []
+}
