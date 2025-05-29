@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   Introduction: Introduction.html
-last_built: 2025-05-29T04:44Z
+last_built: 2025-05-29T05:35Z
 urls:
   reference: https://isaacstopard.github.io/RSVsim/reference
   article: https://isaacstopard.github.io/RSVsim/articles
