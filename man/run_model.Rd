@@ -17,6 +17,8 @@ run_model(
 
 \item{max_t}{Simulation maximum time. Default: 2000 days.}
 
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.}
+
 \item{dt}{Time steps to run the model over. Default: 0.25 days.}
 
 \item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection.

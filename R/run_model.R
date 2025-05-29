@@ -5,7 +5,7 @@
 #'
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param max_t Simulation maximum time. Default: 2000 days.
-#' @param dt Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.
+#' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.
 #' @param dt Time steps to run the model over. Default: 0.25 days.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
