@@ -105,11 +105,12 @@ obtain the contact matrix for the age groupings to the nearest whole
 year, using the POLYMOD data (<a href="https://doi.org/10.1371/journal.pmed.0050074" class="external-link uri">https://doi.org/10.1371/journal.pmed.0050074</a>). This
 contact matrix is calculated such that the total contacts in the
 population are symmetric (assuming population data from World Population
-Prospects of the United Nations). Within age groupings less than one
-year old these contacts are divided evenly according to the size of the
-age grouping (in years).</p>
-<p>The function takes two arguments the country to obtain the POLYMOD
-contact data from and the age limits for the age groupings.</p>
+Prospects of the United Nations). Within age groups less than one year,
+these contacts are divided evenly according to the size of the age group
+(in years).</p>
+<p>The function takes two arguments: (1) the country to obtain the
+POLYMOD contact data from and (2) the lower age limits of the age
+groups.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu">RSVsim</span><span class="fu">::</span><span class="fu"><a href="../reference/create_contact_matrix.html">create_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in RSVsim::create_contact_matrix(country = "United Kingdom", age.limits = age.limits): Not all age.limits are integers.</span></span>
@@ -133,9 +134,11 @@ contact data from and the age limits for the age groupings.</p>
 <div class="section level2">
 <h2 id="default-parameters">Default parameters<a class="anchor" aria-label="anchor" href="#default-parameters"></a>
 </h2>
-<p>To obtain a list of the default parameters to run the model the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/get_parameters.R" class="external-link">R/get_parameters.R</a>
-function. The parameters can be changed by using the overrides
-argument.</p>
+<p>To obtain a list of the default parameters to run the model use the
+<a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/get_parameters.R" class="external-link">R/get_parameters.R</a>
+function. The parameters can be changed by using the overrides argument;
+for example we override b0 (the transmission rate coefficient) with a
+value of 0.15.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu">RSVsim</span><span class="fu">::</span><span class="fu"><a href="../reference/get_parameters.html">get_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span>, </span>
 <span>                                     contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span></code></pre></div>
@@ -144,12 +147,14 @@ argument.</p>
 <h2 id="running-the-model">Running the model<a class="anchor" aria-label="anchor" href="#running-the-model"></a>
 </h2>
 <p>To run the model the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R" class="external-link">R/run_model.R</a>
-function is used. Cohort aging is used to age the population at each
-time the smallest age group has completed the time within that age
-group. If no initial conditions are given it is assumed there is one
-percent prevalence in the primary infection compartment and everyone
+function is used. Cohort aging is used to age the population. At each
+time, a proportion of each cohort is aged, with this proportion
+determined by the length of time before people are aged
+(cohort_step_size) as a proportion of the total length of time in each
+age group. If no initial conditions are given, it is assumed there is
+one percent prevalence in the primary infection compartment and everyone
 else is susceptible to primary infection. All new borns are assumed to
-be susceptible to their primary infection. Below we plot the simulated
+be susceptible to their primary infection. Below, we plot the simulated
 number of people that are susceptible and infected, with the line type
 indicating whether the infection is primary or secondary.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -169,8 +174,9 @@ indicating whether the infection is primary or secondary.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of susceptible (black) or infected (blue) people"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Introduction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>The incidence, detected incidence and prevalence are also calculated.
-Age-specific detection probabilities are used, and in the default
-parameters we assume no one is tested over the age of 2 years old.</p>
+To calculate the detected incidence age-specific detection probabilities
+are used, and in the default parameters we assume no one over the age of
+2 years old is tested.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">out</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="op">(</span><span class="fl">3650</span> <span class="op">-</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">DetIncidence</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
