@@ -9,20 +9,23 @@ run_model(
   max_t = 3650,
   cohort_step_size = 10,
   dt = 0.25,
-  init_conds = NULL
+  init_conds = NULL,
+  warm_up = NULL
 )
 }
 \arguments{
 \item{parameters}{List of parameters from \code{get_params} function.}
 
-\item{max_t}{Simulation maximum time. Default: 2000 days.}
+\item{max_t}{Simulation maximum time. Default: 3650 days.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.}
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.}
 
 \item{dt}{Time steps to run the model over. Default: 0.25 days.}
 
 \item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection.
 All other people are assumed to be susceptible to their primary infection.}
+
+\item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
 }
 \value{
 Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.

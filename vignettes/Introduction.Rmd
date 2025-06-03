@@ -19,7 +19,7 @@ library(RSVsim)
 library(ggplot2)
 
 # specifying the some age limits to use with the model
-age.limits <- c(seq(0, 1, 0.2), seq(10, 60, 20))
+age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 20))
 ```
 
 In this vignette, we give an overview of the mathematical model of RSV transmission, and how to run the model using this package.
@@ -57,7 +57,8 @@ To obtain a list of the default parameters to run the model use the [R/get_param
 
 ```{r}
 parameters <- RSVsim::get_parameters(overrides = list("b0" = 0.15), 
-                                     contact_population_list = contact_population_list)
+                                     contact_population_list = contact_population_list,
+                                     fitted = NULL)
 ```
 
 ## Running the model
@@ -68,9 +69,10 @@ out <- RSVsim::run_model(parameters = parameters,
                          max_t = 3650, # maximum time to run the model for
                          cohort_step_size = 10, # time at which to age people
                          dt = 0.5, # time step to get model outputs for
-                         init_conds = NULL)
+                         init_conds = NULL,
+                         warm_up = 3650 - 365 * 3)
 
-ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3))) +
+ggplot(data = out) +
   geom_line(aes(x = time, y = Sp), linetype = 1) +
   geom_line(aes(x = time, y = Ss), linetype = 2) +
   geom_line(aes(x = time, y = Ip), col = "skyblue", linetype = 1) +
@@ -83,7 +85,7 @@ ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3))) +
 The incidence, detected incidence and prevalence are also calculated. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume no one over the age of 2 years old is tested.
 
 ```{r}
-ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3)), 
+ggplot(data = out, 
        aes(x = time, y = DetIncidence)) +
   geom_line() +
   facet_wrap(~age_chr) + theme_bw() +
@@ -91,7 +93,7 @@ ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3)),
   xlab("Days")
 ```
 ```{r}
-ggplot(data = out |> dplyr::filter(time > (3650 - 365 * 3)), 
+ggplot(data = out), 
        aes(x = time, y = prev)) +
   geom_line() +
   scale_y_continuous(labels = scales::percent) +

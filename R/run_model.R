@@ -4,18 +4,21 @@
 #' Cohorts are aged at time intervals of the smallest age group given in \code{parameters[["age.limits"]]}.
 #'
 #' @param parameters List of parameters from \code{get_params} function.
-#' @param max_t Simulation maximum time. Default: 2000 days.
-#' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 30.4375 days.
+#' @param max_t Simulation maximum time. Default: 3650 days.
+#' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.
 #' @param dt Time steps to run the model over. Default: 0.25 days.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
+#' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
+
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
 run_model <- function(parameters,
                       max_t = 3650,
                       cohort_step_size = 10,
                       dt = 0.25,
-                      init_conds = NULL
+                      init_conds = NULL,
+                      warm_up = NULL
                       ){
 
   ##########################################################
@@ -59,7 +62,7 @@ run_model <- function(parameters,
     parameters <- with(init_conds,{
       for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0")){
         if(length(get(name)) != parameters$nAges){
-          stop(paste("Initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
+          stop(paste("run_model: initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
         }
       }
       purrr::list_modify(
@@ -116,7 +119,7 @@ run_model <- function(parameters,
 
     # checking the total population is correct
     if(!all(abs(out[-incidence_i,] |> colSums() - parameters$total_population) < 1E-5)){
-      stop("Population does not sum to the correct number")
+      stop("run_model: population does not sum to the correct number")
     }
 
     out_list[[i]] <- out |> as.data.frame()
@@ -143,7 +146,7 @@ run_model <- function(parameters,
     if(!all(
       next_state[which(is.na(next_state$lag_transition)), "age"] == 0) |
        sum(is.na(next_state$lag_transition)) != n_states){
-      stop("error when lagging the cohort aging")
+      stop("run_model: error when lagging the cohort aging")
     }
 
     # filling in births to keep the population size constant
@@ -164,7 +167,7 @@ run_model <- function(parameters,
           dplyr::select(transition_ct) |> as.vector() |> unlist() |> sum() -
         rel_sizes[1] * transition_rate[1] * parameters$total_population
         ) > 1E-5){
-      stop("births are not correct to keep the population size constant")
+      stop("run_model: births are not correct to keep the population size constant")
     }
 
     next_state <- next_state |>
@@ -173,27 +176,31 @@ run_model <- function(parameters,
       unlist() |> unname() |> as.vector()
 
     if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-7){
-      stop("total population for the next cohort states is not correct")
+      stop("run_model: total population for the next cohort states is not correct")
     }
 
     dust2::dust_system_set_state(sys = RSV_dust,
                                  state = next_state)
 
     if(all(dust2::dust_system_state(RSV_dust) != next_state)){
-      stop("states have not been updated")
+      stop("run_model: states have not been updated")
     }
 
     out_list[[i]] <- out_list[[i]] |> tidyr::pivot_wider(names_from = state, values_from = value)
 
   }
 
-  return(
-    invisible(
-      dplyr::bind_rows(out_list) |>
+  out <- invisible(
+    dplyr::bind_rows(out_list) |>
       dplyr::left_join(data.frame(age = parameters$age.limits,
                                   age_chr = age_chr), by = dplyr::join_by(age)) |>
       as.data.frame()
       )
-    )
+
+  if(!is.null(warm_up)){
+    out <- out |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
+  }
+
+  return(out)
 }
 

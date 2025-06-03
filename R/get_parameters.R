@@ -4,26 +4,28 @@
 #'
 #' @param overrides List of default parameters to change.
 #' @param contact_population_list List of outputs from the \code{create_contact_matrix} function.
+#' @param fitted Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.
 #' @return Parameter list.
 #' @export
 
 get_parameters <- function(overrides = list(),
-                           contact_population_list
+                           contact_population_list,
+                           fitted = NULL
                        ){
 
   # override parameters with any client specified ones
   if (!is.list(overrides)) {
-    stop('overrides must be a list')
+    stop('get_parameters: overrides must be a list')
   }
 
   if(!is.list(contact_population_list)){
-    stop("contact_population_list must be a list")
+    stop("get_parameters: contact_population_list must be a list")
   }
 
   if(is.list(contact_population_list)){
     for(name in c("matrix_mean", "age.limits", "age_distribution")){
       if(!name %in% names(contact_population_list)){
-        stop(paste("contact_population_list must contain", name, sep = " "))
+        stop(paste("get_parameters: contact_population_list must contain", name, sep = " "))
         }
     }
   }
@@ -34,12 +36,12 @@ get_parameters <- function(overrides = list(),
        {
 
          if(!is.matrix(matrix_mean)){
-           stop("contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+           stop("get_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
          }
 
          if(is.matrix(matrix_mean) & ncol(matrix_mean) != nAges |
             is.matrix(matrix_mean) & nrow(matrix_mean) != nAges){
-           stop("contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+           stop("get_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
          }
 
          alpha_vect <- sigma_vect <- prop_detected_vect <- omega_vect <- rep(NA, nAges)
@@ -79,22 +81,34 @@ get_parameters <- function(overrides = list(),
            "max_age" = max_age,
            "total_population" = 1861923
          )
-
-
          }
   )
 
   for (name in names(overrides)) {
     if (!(name %in% names(parameters))) {
-      stop(paste('unknown parameter', name, sep=' '))
+      stop(paste('get_parameters: unknown parameter:', name, sep=' '))
     }
 
     if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect") &
        length(overrides[[name]]) != nAges){
-      stop(paste(name, 'is not correct length', sep = ' '))
+      stop(paste("get_parameters:", name, 'is not correct length', sep = ' '))
     }
 
     parameters[[name]] <- overrides[[name]]
+  }
+
+  if(!is.null(fitted)){
+
+    names_all <- names(parameters)
+
+    for(name in fitted){
+      if (!name %in% names_all) {
+        stop(paste('get_parameters: unknown fitted parameter:', name, sep=' '))
+      } else{
+        parameters <- parameters[-which(names_all == name)]
+      }
+    }
+
   }
 
   return(parameters)
