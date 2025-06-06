@@ -22,8 +22,10 @@ Imports:
     ggplot2,
     purrr,
     readr,
+    scales,
     socialmixr,
     stats,
+    tibble,
     tidyr
 Depends: 
     R (>= 4.3.0)
