@@ -1,0 +1,11 @@
+"0","# adding noise to the incidence values and selecting samples every 5 days
+df <- data.frame(time = model_simulation$time,
+                 incidence = rnbinom(n = nrow(model_simulation), lambda = model_simulation$Incidence),
+                 age_chr = model_simulation$age_chr) |> 
+  subset(time %% 5 == 0)
+"
+"2","G1;H1;Errorh in rnbinom(n = nrow(model_simulation), lambda = model_simulation$Incidence) : 
+  unused argument (lambda = model_simulation$Incidence)
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

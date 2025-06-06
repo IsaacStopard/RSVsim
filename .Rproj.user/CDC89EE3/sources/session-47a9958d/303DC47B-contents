@@ -1,0 +1,6 @@
+df <- expand.grid(t = seq(0, 365.25, 0.5), phase_shift = seq(0, 360, 20)) |> 
+  dplyr::mutate(wave = cos(2 * pi / 365.25 * (t + phase_shift)))
+
+ggplot(data = df, aes(x = t, y = wave, col = phase_shift)) + 
+  geom_line() +
+  facet_wrap(~phase_shift)

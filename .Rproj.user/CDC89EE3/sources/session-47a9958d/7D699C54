@@ -1,0 +1,26 @@
+{
+    "id": "7D699C54",
+    "path": "~/Documents/GitHub/RSVsim/tests/testthat/test-run_model.R",
+    "project_path": "tests/testthat/test-run_model.R",
+    "type": "r_source",
+    "hash": "198211125",
+    "contents": "",
+    "dirty": false,
+    "created": 1749183332503.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "12,35",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1749184012,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1749184012241,
+    "read_only": false,
+    "read_only_alternatives": []
+}

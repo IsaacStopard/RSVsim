@@ -1,0 +1,9 @@
+"0","parameters <- RSVsim::get_parameters(overrides = list(""b0"" = 0.15), 
+                                     contact_population_list = contact_population_list,
+                                     fitted = NULL)
+"
+"2","G1;H1;Errorh in RSVsim::get_parameters(overrides = list(b0 = 0.15), contact_population_list = contact_population_list,  : 
+  unused argument (fitted = NULL)
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

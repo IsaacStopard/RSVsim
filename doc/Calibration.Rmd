@@ -1,0 +1,102 @@
+---
+title: "Calibration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Calibration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this vignette we will show how to calibrate the model to age-specific incidence data. To calibrate the model we vary the b0 (transmission rate coefficient), b1 (amplitude of seasonal forcing) and phi (phase shift of seasonality) parameters.
+
+```{r setup}
+library(RSVsim)
+library(ggplot2)
+
+```
+
+We begin by simulating some data using the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function, to do so, we arbitrarily select a b0 value of 0.15, b1 value of 0.25 and phi value of 10 days. We then add noise to this count data by drawing random samples from a negative binomial distribution with greater variance than the poisson distribution and a mean equivalent to the simulated incidence values.
+
+```{r}
+# getting the model parameters
+age.limits <- c(seq(0, 5, 1), seq(10, 70, 20))
+
+contact_population_list <- create_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+
+parameters <- get_parameters(overrides = list("b0" = 0.15, 
+                                              "b1" = 0.25, 
+                                              "phi" = 10),
+                             contact_population_list = contact_population_list)
+
+# running the model
+model_simulation <- run_model(parameters = parameters, 
+                              warm_up = 365 * 9, 
+                              max_t = 365 * 10)
+
+# adding noise to the incidence values and selecting samples every 5 days
+set.seed(123)
+df <- data.frame(time = model_simulation$time,
+                 incidence = as.integer(rnbinom(n = nrow(model_simulation), mu = model_simulation$Incidence, size = 50)),
+                 age_chr = model_simulation$age_chr) |> 
+  subset(time %% 5 == 0)
+
+
+```
+The [R/get_calibration_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function can be used to obtain the age groupings, times and parameter values required for each dataset of age-specific incidence data within a list of data frames. Each data frame must contain a time (numeric), incidence (integer) and age_chr (character) columns. age_chr is the age grouping. Assuming incidence is Poisson distributed the [R/calibration_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function can be used to calculate the log-likelihood; the minimise argument specifies whether this value should be multiplied by -1, so that the maximum likelihood can be estimated using an optimisation algorithm that minimises this value. In the [R/constrained_max_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) we use the nmlinb function <https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R> to estimate the parameters that give the maximum likelihood.
+
+```{r}
+
+data <- list("sim" = df)
+
+fixed_parameter_list <- get_calibration_parameters(data = data,
+                                                   data_populations = rep(parameters$total_population, length(data)),
+                                                   warm_up = 365 * 9)
+
+calibration_likelihood(fitted_parameters = c("b0" = 0.15, "b1" = 0.25, "phi" = 10),
+                       fixed_parameter_list = fixed_parameter_list,
+                       minimise = FALSE,
+                       data = data,
+                       cohort_step_size = 10,
+                       dt = 0.25) |> print()
+
+fitted_values <- constrained_max_likelihood(fixed_parameter_list = fixed_parameter_list,
+                                            data = data,
+                                            scale_parameters = list(lower = c(0.01, 0, 0), upper = c(10, 1, 365.25)),
+                                            cohort_step_size = 10,
+                                            dt = 0.25)
+
+```
+We can then use these fitted parameter values to simulate transmission.
+
+```{r}
+
+parameters_fit <- get_parameters(overrides = list("b0" = fitted_values$par[1], 
+                                                  "b1" = fitted_values$par[2], 
+                                                  "phi" = fitted_values$par[3]),
+                                 contact_population_list = contact_population_list)
+
+model_simulation_fit <- run_model(parameters_fit, 
+                                  warm_up = 365 * 9, 
+                                  max_t = 365 * 10)
+
+# visualising the simulated data and fitted model
+ggplot(data = df |> 
+         dplyr::mutate(age_chr = 
+                         factor(df$age_chr, 
+                                levels = c("[0,1)", "[1,2)", "[2,3)", "[3,4)", "[4,5)", "[5,10)", "[10,30)", "[30,50)", "[50,70)", "[70,90)"))), 
+       aes(x = time, y = incidence, col = age_chr)) + 
+  geom_point() + 
+  theme_classic() +
+  geom_line(data = model_simulation_fit, inherit.aes = FALSE, 
+            aes(x = time, y = Incidence, group = age_chr, col = age_chr)
+            )
+
+
+```
