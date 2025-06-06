@@ -268,7 +268,7 @@ public:
       }
     }
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
-      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) * time / static_cast<real_type>(365.25) + shared.phi)) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
+      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) / static_cast<real_type>(365.25) * (time + shared.phi))) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
     }
     for (size_t i = 1; i <= shared.dim.infect_p.size; ++i) {
       internal.infect_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];
@@ -327,7 +327,7 @@ public:
       }
     }
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
-      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) * time / static_cast<real_type>(365.25) + shared.phi)) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
+      internal.lambda[i - 1] = shared.b0 * (1 + shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) / static_cast<real_type>(365.25) * (time + shared.phi))) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
     }
     for (size_t i = 1; i <= shared.dim.infect_p.size; ++i) {
       internal.infect_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];

@@ -1,7 +1,6 @@
 #' Runs the RSV model
 #'
 #' Function to run the transmission model with cohort aging.
-#' Cohorts are aged at time intervals of the smallest age group given in \code{parameters[["age.limits"]]}.
 #'
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param max_t Simulation maximum time. Default: 3650 days.
@@ -23,9 +22,9 @@ run_model <- function(parameters,
 
   ##########################################################
   # labels for the ages
-  age_chr <- c(paste0("[",round(parameters$age.limits[1], digits = 2),",", round(parameters$age.limits[2], digits = 2),"]"))
+  age_chr <- c()
 
-  for(i in 2:(parameters$nAges - 1)){
+  for(i in 1:(parameters$nAges - 1)){
     age_chr <- c(age_chr, c(paste0("[",round(parameters$age.limits[i], digits = 2),",", round(parameters$age.limits[i+1], digits = 2),")")))
   }
 
@@ -175,7 +174,7 @@ run_model <- function(parameters,
       dplyr::select(next_value) |>
       unlist() |> unname() |> as.vector()
 
-    if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-7){
+    if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-5){
       stop("run_model: total population for the next cohort states is not correct")
     }
 

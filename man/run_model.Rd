@@ -32,5 +32,4 @@ Simulation output (dataframe). In the dataframe, age refers to the lowest age in
 }
 \description{
 Function to run the transmission model with cohort aging.
-Cohorts are aged at time intervals of the smallest age group given in \code{parameters[["age.limits"]]}.
 }

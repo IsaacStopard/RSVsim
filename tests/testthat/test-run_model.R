@@ -10,5 +10,6 @@ test_that("run_model function works", {
                    init_conds = NULL)
 
   expect_true(sum(is.na(sim)) == 0)
+  expect_true(max(sim$time) <= 3650)
 
 })

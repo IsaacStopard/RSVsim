@@ -2,14 +2,33 @@
 % Please edit documentation in R/calibration_functions.R
 \name{calibration_likelihood}
 \alias{calibration_likelihood}
-\title{Specifics the model likelihood}
+\title{Calculate the likelihood of observing incidence data given the model outputs}
 \usage{
-calibration_likelihood(b0, fixed_parameters, ..., data)
+calibration_likelihood(
+  fitted_parameters,
+  fixed_parameter_list,
+  data,
+  minimise = FALSE,
+  scale_parameters = NULL,
+  ...
+)
 }
 \arguments{
-\item{b0}{Vector of parameter names that we want to fit.}
+\item{fitted_parameters}{Vector of parameters that we want to fit. Names must include "b0", "b1" and "phi".}
 
-\item{fixed_parameters}{List of parameters that are fixed.}
+\item{fixed_parameter_list}{List of parameters that are fixed.}
+
+\item{data}{List of data frames of incidence data. For all data frames "incidence", "time" and "age_chr" columns must be included.
+For incidence data frames a "value" column is needed to contain the incidence values.
+For the prevalence data frame a "sample" column is required with the number of people tested and a "positive" column with the number of people that test positive.}
+
+\item{minimise}{Boolean operator indicating whether the log-likelihood should be multiplied by -1.
+This is useful is trying to estimate the maximum likelihood with an optimisation algorithm that estimates the minimum.}
+
+\item{scale_parameters}{List of lower and upper boundaries on the fitted parameters.
+Default: \code{NULL}. If \code{NULL} the parameters are not transformed.
+If a list is provided the parameters log-likelihood is calculated assuming the \code{fitted_parameters}
+have already been scaled between 0 and 1 with the given lower and upper limits.}
 
 \item{...}{
   Arguments passed on to \code{\link[=run_model]{run_model}}
@@ -19,11 +38,14 @@ calibration_likelihood(b0, fixed_parameters, ..., data)
     \item{\code{dt}}{Time steps to run the model over. Default: 0.25 days.}
     \item{\code{init_conds}}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection.
 All other people are assumed to be susceptible to their primary infection.}
+    \item{\code{warm_up}}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
   }}
 }
 \value{
 Log-likelihood.
 }
 \description{
-Function to run the model and calculate the likelihood.
+Function to run the model and calculate the likelihood. A poisson likelihood is used for incidence.
+The parameters must be constrained, such that b0 is greater than 0, b1 is between 0 and 1 and phi is between 0 and 365.25.
+The incidence data must be provided as a count.
 }

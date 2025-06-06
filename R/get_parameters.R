@@ -98,10 +98,8 @@ get_parameters <- function(overrides = list(),
   }
 
   if(!is.null(fitted)){
-
-    names_all <- names(parameters)
-
     for(name in fitted){
+      names_all <- names(parameters)
       if (!name %in% names_all) {
         stop(paste('get_parameters: unknown fitted parameter:', name, sep=' '))
       } else{
