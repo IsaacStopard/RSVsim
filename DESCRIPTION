@@ -24,15 +24,13 @@ Imports:
     readr,
     socialmixr,
     stats,
-    tibble,
     tidyr
 Depends: 
     R (>= 4.3.0)
 LinkingTo: 
     cpp11 (>= 0.5.0),
     dust2 (>= 0.3.0),
-    monty (>= 0.3.0),
-    odin2
+    monty (>= 0.3.0)
 Remotes: 
     mrc-ide/dust2,
     mrc-ide/monty,

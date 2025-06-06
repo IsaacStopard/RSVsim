@@ -26,7 +26,7 @@ library(ggplot2)
 We begin by simulating some data using the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function, to do so, we arbitrarily select a b0 value of 0.15, b1 value of 0.25 and phi value of 10 days. We then add noise to this count data by drawing random samples from a negative binomial distribution with greater variance than the poisson distribution and a mean equivalent to the simulated incidence values.
 
 ```{r}
-# getting the model parameters
+
 age.limits <- c(seq(0, 5, 1), seq(10, 70, 20))
 
 contact_population_list <- create_contact_matrix(country = "United Kingdom", age.limits = age.limits)
@@ -36,12 +36,10 @@ parameters <- get_parameters(overrides = list("b0" = 0.15,
                                               "phi" = 10),
                              contact_population_list = contact_population_list)
 
-# running the model
 model_simulation <- run_model(parameters = parameters, 
                               warm_up = 365 * 9, 
                               max_t = 365 * 10)
 
-# adding noise to the incidence values and selecting samples every 5 days
 set.seed(123)
 df <- data.frame(time = model_simulation$time,
                  incidence = as.integer(rnbinom(n = nrow(model_simulation), mu = model_simulation$Incidence, size = 50)),
@@ -100,8 +98,7 @@ model_simulation_fit <- run_model(parameters_fit,
                                   warm_up = 365 * 9, 
                                   max_t = 365 * 10)
 
-# visualising the simulated data and fitted model
-ggplot(data = df |> 
+ggplot2::ggplot(data = df |> 
          dplyr::mutate(age_chr = 
                          factor(df$age_chr, 
                                 levels = c("[0,1)", "[1,2)", "[2,3)", "[3,4)", "[4,5)", "[5,10)", "[10,30)", "[30,50)", "[50,70)", "[70,90)"))), 
@@ -111,7 +108,6 @@ ggplot(data = df |>
   geom_line(data = model_simulation_fit, inherit.aes = FALSE, 
             aes(x = time, y = Incidence, group = age_chr, col = age_chr)
             )
-
 
 ```
 ## Bayesian parameter estimation

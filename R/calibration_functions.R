@@ -161,6 +161,7 @@ calibration_likelihood <- function(fitted_parameters,
 #'
 #' Helper function to assess the times and ages in the data, and return suitable parameters to run the model. Initial parameter values are set to 0.
 #' @inheritParams calibration_likelihood
+#' @inheritParams run_model
 #' @return List of fitted parameter values for b0, b1 and phi.
 #' @export
 constrained_max_likelihood <- function(fixed_parameter_list,
@@ -179,7 +180,7 @@ constrained_max_likelihood <- function(fixed_parameter_list,
     start_optim <- c(0.1, 0.5, 100)
   }
 
-  out <- nlminb(start = start_optim,
+  out <- stats::nlminb(start = start_optim,
                 objective = calibration_likelihood,
                 lower = lower_optim,
                 upper = upper_optim,
