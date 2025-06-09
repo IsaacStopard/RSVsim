@@ -1,10 +1,10 @@
-test_that("create_contact_matrix function", {
+test_that("RSVsim_contact_matrix function", {
 
-  expect_error(create_contact_matrix(country = "France",
-                                     age.limits = seq(0, 70, 5)))
+  testthat::expect_error(RSVsim_contact_matrix(country = "France",
+                                               age.limits = seq(0, 70, 5)))
 
-  expect_no_warning(create_contact_matrix(country = "United Kingdom",
-                                          age.limits = seq(0, 70, 5)))
+  testthat::expect_no_warning(RSVsim_contact_matrix(country = "United Kingdom",
+                                                    age.limits = seq(0, 70, 5)))
 
   list_age_limits <- list(c(seq(0, 5, 1), seq(10, 75, 5)),
                           c(seq(0, 5, 1/12), seq(10, 90, 5)),
@@ -16,7 +16,7 @@ test_that("create_contact_matrix function", {
 
     age.limits <- list_age_limits[[i]]
 
-    t_mat <- create_contact_matrix(country = countries[i],
+    t_mat <- RSVsim_contact_matrix(country = countries[i],
                                    age.limits = age.limits)
 
     # checking the matrix is numeric

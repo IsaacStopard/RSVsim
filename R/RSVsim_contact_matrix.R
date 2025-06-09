@@ -10,7 +10,7 @@
 #' @return List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
 #' the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 #' @export
-create_contact_matrix <- function(country = "United Kingdom",
+RSVsim_contact_matrix <- function(country = "United Kingdom",
                                   age.limits = c(seq(0,5,1/12), seq(10,70,5))){
 
   if(!is.numeric(age.limits)){

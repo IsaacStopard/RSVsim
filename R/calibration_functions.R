@@ -1,18 +1,18 @@
-#' Get parameters for the calibration_likelihood function from the data
+#' Get parameters for the RSVsim_log_likelihood function from the data
 #'
 #' Helper function to assess the times and ages in the data, and return suitable parameters to run the model.
 #' @param data List of data frames of incidence data. For all data frames "incidence", "time" and "age_chr" columns must be included.
 #' For incidence data frames a "value" column is needed to contain the incidence values.
 #' For the prevalence data frame a "sample" column is required with the number of people tested and a "positive" column with the number of people that test positive.
 #' @param data_populations Vector of total population sizes for each dataframe in \code{data}.
-#' @inheritParams create_contact_matrix
-#' @inheritParams run_model
+#' @inheritParams RSVsim_contact_matrix
+#' @inheritParams RSVsim_run_model
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
-get_calibration_parameters <- function(data,
-                                       data_populations,
-                                       country = "United Kingdom",
-                                       warm_up = NULL){
+RSVsim_calibration_parameters <- function(data,
+                                          data_populations,
+                                          country = "United Kingdom",
+                                          warm_up = NULL){
 
   n_d <- length(names(data))
 
@@ -62,11 +62,11 @@ get_calibration_parameters <- function(data,
      number <- readr::parse_number(split)}
      ) |> unlist() |> unique() |> sort()
 
-   contact_population_list <- create_contact_matrix(country = country, age.limits = age.limits)
+   contact_population_list <- RSVsim_contact_matrix(country = country, age.limits = age.limits)
 
-   fixed_parameters <- get_parameters(overrides = list("total_population" = data_populations[i]),
-                                      contact_population_list = contact_population_list,
-                                      fitted = c("b0", "b1", "phi"))
+   fixed_parameters <- RSVsim_parameters(overrides = list("total_population" = data_populations[i]),
+                                         contact_population_list = contact_population_list,
+                                         fitted = c("b0", "b1", "phi"))
 
    out_t <- list("fixed_parameters" = fixed_parameters,
                  "max_t" = max_t,
@@ -86,23 +86,23 @@ get_calibration_parameters <- function(data,
 #' The incidence data must be provided as a count.
 #' @param fitted_parameters Vector of parameters that we want to fit. Names must include "b0", "b1" and "phi".
 #' @param fixed_parameter_list List of parameters that are fixed.
-#' @inheritParams get_calibration_parameters
+#' @inheritParams RSVsim_calibration_parameters
 #' @param minimise Boolean operator indicating whether the log-likelihood should be multiplied by -1.
 #' This is useful is trying to estimate the maximum likelihood with an optimisation algorithm that estimates the minimum.
 #' @param scale_parameters List of lower and upper boundaries on the fitted parameters.
 #' Default: \code{NULL}. If \code{NULL} the parameters are not transformed.
 #' If a list is provided the parameters log-likelihood is calculated assuming the \code{fitted_parameters}
 #' have already been scaled between 0 and 1 with the given lower and upper limits.
-#' @inheritDotParams run_model max_t cohort_step_size dt init_conds warm_up
+#' @inheritDotParams RSVsim_run_model max_t cohort_step_size dt init_conds warm_up
 #' @return Log-likelihood.
 #' @export
-calibration_likelihood <- function(fitted_parameters,
-                                   fixed_parameter_list,
-                                   data,
-                                   minimise = FALSE,
-                                   scale_parameters = NULL,
-                                   ...
-                                   ){
+RSVsim_log_likelihood <- function(fitted_parameters,
+                                  fixed_parameter_list,
+                                  data,
+                                  minimise = FALSE,
+                                  scale_parameters = NULL,
+                                  ...
+                                  ){
 
   if(!is.null(scale_parameters)){
     fitted_parameters <- fitted_parameters * (scale_parameters$upper - scale_parameters$lower) + scale_parameters$lower
@@ -130,13 +130,13 @@ calibration_likelihood <- function(fitted_parameters,
                                      phi = phi)
 
     if(!all(param_names %in% names(parameters))){
-      stop(paste("calibration_likelihood: not all required parameters are included for dataset at position", i,"in fixed_parameter_list", sep = " "))
+      stop(paste("RSVsim_log_likelihood: not all required parameters are included for dataset at position", i,"in fixed_parameter_list", sep = " "))
     }
 
-    out <- run_model(parameters = parameters,
-                     max_t = fixed_parameter_list[[i]]$max_t,
-                     warm_up = fixed_parameter_list[[i]]$warm_up,
-                     ...)
+    out <- RSVsim_run_model(parameters = parameters,
+                            max_t = fixed_parameter_list[[i]]$max_t,
+                            warm_up = fixed_parameter_list[[i]]$warm_up,
+                            ...)
 
     data[[i]] <- dplyr::left_join(data[[i]], out[,c("time", "Incidence", "age_chr")], by = c("time", "age_chr")) |>
       dplyr::mutate(log_likelihood = dpois(x = incidence, lambda = Incidence, log = TRUE))
@@ -160,15 +160,15 @@ calibration_likelihood <- function(fitted_parameters,
 #' Constrained maximum-likelihood estimation of the b0, b1 and phi parameters from incidence data.
 #'
 #' Helper function to assess the times and ages in the data, and return suitable parameters to run the model. Initial parameter values are set to 0.
-#' @inheritParams calibration_likelihood
-#' @inheritParams run_model
+#' @inheritParams RSVsim_log_likelihood
+#' @inheritParams RSVsim_run_model
 #' @return List of fitted parameter values for b0, b1 and phi.
 #' @export
-constrained_max_likelihood <- function(fixed_parameter_list,
-                                       data,
-                                       scale_parameters,
-                                       cohort_step_size,
-                                       dt){
+RSVsim_max_likelihood <- function(fixed_parameter_list,
+                                  data,
+                                  scale_parameters,
+                                  cohort_step_size,
+                                  dt){
 
   if(!is.null(scale_parameters)){
     lower_optim <- rep(0, 3)
@@ -181,16 +181,16 @@ constrained_max_likelihood <- function(fixed_parameter_list,
   }
 
   out <- stats::nlminb(start = start_optim,
-                objective = calibration_likelihood,
-                lower = lower_optim,
-                upper = upper_optim,
-                control = list("trace" = 1, "rel.tol" = 1e-10),
-                fixed_parameter_list = fixed_parameter_list,
-                data = data,
-                minimise = TRUE,
-                scale_parameters = scale_parameters,
-                cohort_step_size = cohort_step_size,
-                dt = dt)
+                       objective = RSVsim_log_likelihood,
+                       lower = lower_optim,
+                       upper = upper_optim,
+                       control = list("trace" = 1, "rel.tol" = 1e-10),
+                       fixed_parameter_list = fixed_parameter_list,
+                       data = data,
+                       minimise = TRUE,
+                       scale_parameters = scale_parameters,
+                       cohort_step_size = cohort_step_size,
+                       dt = dt)
 
   if(!is.null(scale_parameters)){
     out$par <- out$par * (scale_parameters$upper - scale_parameters$lower) + scale_parameters$lower

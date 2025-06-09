@@ -23,22 +23,22 @@ library(ggplot2)
 ```
 ## Simulating some synthetic data
 
-We begin by simulating some data using the [R/run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function, to do so, we arbitrarily select a b0 value of 0.15, b1 value of 0.25 and phi value of 10 days. We then add noise to this count data by drawing random samples from a negative binomial distribution with greater variance than the poisson distribution and a mean equivalent to the simulated incidence values.
+We begin by simulating some data using the [R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_run_model.R) function, to do so, we arbitrarily select a b0 value of 0.15, b1 value of 0.25 and phi value of 10 days. We then add noise to this count data by drawing random samples from a negative binomial distribution with greater variance than the poisson distribution and a mean equivalent to the simulated incidence values.
 
 ```{r}
 
 age.limits <- c(seq(0, 5, 1), seq(10, 70, 20))
 
-contact_population_list <- create_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
 
-parameters <- get_parameters(overrides = list("b0" = 0.15, 
+parameters <- RSVsim_parameters(overrides = list("b0" = 0.15, 
                                               "b1" = 0.25, 
                                               "phi" = 10),
                              contact_population_list = contact_population_list)
 
-model_simulation <- run_model(parameters = parameters, 
-                              warm_up = 365 * 9, 
-                              max_t = 365 * 10)
+model_simulation <- RSVsim_run_model(parameters = parameters, 
+                                     warm_up = 365 * 9, 
+                                     max_t = 365 * 10)
 
 set.seed(123)
 df <- data.frame(time = model_simulation$time,
@@ -50,37 +50,37 @@ df <- data.frame(time = model_simulation$time,
 ```
 ## Likelihood calculation
 
-The [R/get_calibration_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function can be used to obtain the age groupings, times and parameter values required for each dataset of age-specific incidence data within a list of data frames. Each data frame must contain a time (numeric), incidence (integer) and age_chr (character) columns. age_chr is the age grouping. 
+The [R/RSVsim_calibration_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function can be used to obtain the age groupings, times and parameter values required for each dataset of age-specific incidence data within a list of data frames. Each data frame must contain a time (numeric), incidence (integer) and age_chr (character) columns. age_chr is the age grouping. 
 
-We assume that the incidence, $I_{a,t}$, in age group, $a$, at time, $t$, is Poisson distributed and calculate the log-likelihood in the [R/calibration_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function:
+We assume that the incidence, $I_{a,t}$, in age group, $a$, at time, $t$, is Poisson distributed and calculate the log-likelihood in the [R/RSVsim_log_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) function:
 $I_{a,t} \sim Poisson(\lambda_{a,t})$, where $\lambda_{a,t}$ is the corresponding model simulated incidence. The minimise argument specifies whether this value should be multiplied by -1, so that the maximum likelihood can be estimated using an optimisation algorithm that minimises this value.
 
 ```{r}
 
 data <- list("sim" = df)
 
-fixed_parameter_list <- get_calibration_parameters(data = data,
-                                                   data_populations = rep(parameters$total_population, length(data)),
-                                                   warm_up = 365 * 9)
+fixed_parameter_list <- RSVsim_calibration_parameters(data = data,
+                                                      data_populations = rep(parameters$total_population, length(data)),
+                                                      warm_up = 365 * 9)
 
-calibration_likelihood(fitted_parameters = c("b0" = 0.15, "b1" = 0.25, "phi" = 10),
-                       fixed_parameter_list = fixed_parameter_list,
-                       minimise = FALSE,
-                       data = data,
-                       cohort_step_size = 10,
-                       dt = 0.25) |> print()
+RSVsim_log_likelihood(fitted_parameters = c("b0" = 0.15, "b1" = 0.25, "phi" = 10),
+                      fixed_parameter_list = fixed_parameter_list,
+                      minimise = FALSE,
+                      data = data,
+                      cohort_step_size = 10,
+                      dt = 0.25) |> print()
 
 ```
 ## Maximum likelihood estimation
-In the [R/constrained_max_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) we use the nmlinb function <https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R> to estimate the parameters that give the maximum likelihood.
+In the [R/RSVsim_max_likelihood.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R) we use the nmlinb function <https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R> to estimate the parameters that give the maximum likelihood.
 
 ```{r}
 
-fitted_values <- constrained_max_likelihood(fixed_parameter_list = fixed_parameter_list,
-                                            data = data,
-                                            scale_parameters = list(lower = c(0.01, 0, 0), upper = c(10, 1, 365.25)),
-                                            cohort_step_size = 10,
-                                            dt = 0.25)
+fitted_values <- RSVsim_max_likelihood(fixed_parameter_list = fixed_parameter_list,
+                                       data = data,
+                                       scale_parameters = list(lower = c(0.01, 0, 0), upper = c(10, 1, 365.25)),
+                                       cohort_step_size = 10,
+                                       dt = 0.25)
 
 print(fitted_values$par)
 
@@ -89,14 +89,14 @@ We can then use these fitted parameter values to simulate transmission.
 
 ```{r}
 
-parameters_fit <- get_parameters(overrides = list("b0" = fitted_values$par[1], 
-                                                  "b1" = fitted_values$par[2], 
-                                                  "phi" = fitted_values$par[3]),
-                                 contact_population_list = contact_population_list)
+parameters_fit <- RSVsim_parameters(overrides = list("b0" = fitted_values$par[1], 
+                                                     "b1" = fitted_values$par[2], 
+                                                     "phi" = fitted_values$par[3]),
+                                    contact_population_list = contact_population_list)
 
-model_simulation_fit <- run_model(parameters_fit, 
-                                  warm_up = 365 * 9, 
-                                  max_t = 365 * 10)
+model_simulation_fit <- RSVsim_run_model(parameters_fit, 
+                                         warm_up = 365 * 9, 
+                                         max_t = 365 * 10)
 
 ggplot2::ggplot(data = df |> 
          dplyr::mutate(age_chr = 
@@ -111,4 +111,4 @@ ggplot2::ggplot(data = df |>
 
 ```
 ## Bayesian parameter estimation
-
+Fit the b0, b1 and phi parameters using MCMC.

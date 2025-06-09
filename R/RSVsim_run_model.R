@@ -12,13 +12,13 @@
 
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
-run_model <- function(parameters,
-                      max_t = 3650,
-                      cohort_step_size = 10,
-                      dt = 0.25,
-                      init_conds = NULL,
-                      warm_up = NULL
-                      ){
+RSVsim_run_model <- function(parameters,
+                             max_t = 3650,
+                             cohort_step_size = 10,
+                             dt = 0.25,
+                             init_conds = NULL,
+                             warm_up = NULL
+                             ){
 
   ##########################################################
   # labels for the ages
@@ -61,7 +61,7 @@ run_model <- function(parameters,
     parameters <- with(init_conds,{
       for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0")){
         if(length(get(name)) != parameters$nAges){
-          stop(paste("run_model: initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
+          stop(paste("RSVsim_run_model: initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
         }
       }
       purrr::list_modify(
@@ -118,7 +118,7 @@ run_model <- function(parameters,
 
     # checking the total population is correct
     if(!all(abs(out[-incidence_i,] |> colSums() - parameters$total_population) < 1E-5)){
-      stop("run_model: population does not sum to the correct number")
+      stop("RSVsim_run_model: population does not sum to the correct number")
     }
 
     out_list[[i]] <- out |> as.data.frame()
@@ -145,7 +145,7 @@ run_model <- function(parameters,
     if(!all(
       next_state[which(is.na(next_state$lag_transition)), "age"] == 0) |
        sum(is.na(next_state$lag_transition)) != n_states){
-      stop("run_model: error when lagging the cohort aging")
+      stop("RSVsim_run_model: error when lagging the cohort aging")
     }
 
     # filling in births to keep the population size constant
@@ -166,7 +166,7 @@ run_model <- function(parameters,
           dplyr::select(transition_ct) |> as.vector() |> unlist() |> sum() -
         rel_sizes[1] * transition_rate[1] * parameters$total_population
         ) > 1E-5){
-      stop("run_model: births are not correct to keep the population size constant")
+      stop("RSVsim_run_model: births are not correct to keep the population size constant")
     }
 
     next_state <- next_state |>
@@ -175,14 +175,14 @@ run_model <- function(parameters,
       unlist() |> unname() |> as.vector()
 
     if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-5){
-      stop("run_model: total population for the next cohort states is not correct")
+      stop("RSVsim_run_model: total population for the next cohort states is not correct")
     }
 
     dust2::dust_system_set_state(sys = RSV_dust,
                                  state = next_state)
 
     if(all(dust2::dust_system_state(RSV_dust) != next_state)){
-      stop("run_model: states have not been updated")
+      stop("RSVsim_run_model: states have not been updated")
     }
 
     out_list[[i]] <- out_list[[i]] |> tidyr::pivot_wider(names_from = state, values_from = value)

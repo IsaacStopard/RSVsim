@@ -8,24 +8,24 @@
 #' @return Parameter list.
 #' @export
 
-get_parameters <- function(overrides = list(),
+RSVsim_parameters <- function(overrides = list(),
                            contact_population_list,
                            fitted = NULL
                        ){
 
   # override parameters with any client specified ones
   if (!is.list(overrides)) {
-    stop('get_parameters: overrides must be a list')
+    stop('RSVsim_parameters: overrides must be a list')
   }
 
   if(!is.list(contact_population_list)){
-    stop("get_parameters: contact_population_list must be a list")
+    stop("RSVsim_parameters: contact_population_list must be a list")
   }
 
   if(is.list(contact_population_list)){
     for(name in c("matrix_mean", "age.limits", "age_distribution")){
       if(!name %in% names(contact_population_list)){
-        stop(paste("get_parameters: contact_population_list must contain", name, sep = " "))
+        stop(paste("RSVsim_parameters: contact_population_list must contain", name, sep = " "))
         }
     }
   }
@@ -36,12 +36,12 @@ get_parameters <- function(overrides = list(),
        {
 
          if(!is.matrix(matrix_mean)){
-           stop("get_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+           stop("RSVsim_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
          }
 
          if(is.matrix(matrix_mean) & ncol(matrix_mean) != nAges |
             is.matrix(matrix_mean) & nrow(matrix_mean) != nAges){
-           stop("get_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
+           stop("RSVsim_parameters: contact_population_list$matrix_mean must be a square matrix with the same age groups specified in age.limits")
          }
 
          alpha_vect <- sigma_vect <- prop_detected_vect <- omega_vect <- rep(NA, nAges)
@@ -51,14 +51,14 @@ get_parameters <- function(overrides = list(),
 
          sigma_vect[age.limits <= 1/12] <- 0.7
          sigma_vect[age.limits > 1/12 & age.limits <= 2/12] <- 0.8
-         sigma_vect[age.limits > 2/12 & age.limits <= 3/12] <- 0.9
-         sigma_vect[age.limits > 3/12] <- 1
+         sigma_vect[age.limits > 2/12 & age.limits < 3/12] <- 0.9
+         sigma_vect[age.limits >= 3/12] <- 1
 
          prop_detected_vect[age.limits <= 3 * 1/12] <- 0.424
          prop_detected_vect[age.limits > 3 * 1/12 & age.limits <= 6 * 1/12] <- 0.088
          prop_detected_vect[age.limits > 6 * 1/12 & age.limits <= 1] <- 0.047
-         prop_detected_vect[age.limits > 1 & age.limits <= 2] <- 0.02
-         prop_detected_vect[age.limits > 2] <- 0
+         prop_detected_vect[age.limits > 1 & age.limits < 2] <- 0.02
+         prop_detected_vect[age.limits >= 2] <- 0
 
          alpha_vect[nAges >= 10] <- 0.3
          alpha_vect[nAges < 10] <- 0.4
@@ -86,12 +86,12 @@ get_parameters <- function(overrides = list(),
 
   for (name in names(overrides)) {
     if (!(name %in% names(parameters))) {
-      stop(paste('get_parameters: unknown parameter:', name, sep=' '))
+      stop(paste('RSVsim_parameters: unknown parameter:', name, sep=' '))
     }
 
     if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect") &
        length(overrides[[name]]) != nAges){
-      stop(paste("get_parameters:", name, 'is not correct length', sep = ' '))
+      stop(paste("RSVsim_parameters:", name, 'is not correct length', sep = ' '))
     }
 
     parameters[[name]] <- overrides[[name]]
@@ -101,7 +101,7 @@ get_parameters <- function(overrides = list(),
     for(name in fitted){
       names_all <- names(parameters)
       if (!name %in% names_all) {
-        stop(paste('get_parameters: unknown fitted parameter:', name, sep=' '))
+        stop(paste('RSVsim_parameters: unknown fitted parameter:', name, sep=' '))
       } else{
         parameters <- parameters[-which(names_all == name)]
       }
