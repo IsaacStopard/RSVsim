@@ -75,7 +75,7 @@ phi (phase shift of seasonality) parameters.</p>
 <div class="section level2">
 <h2 id="simulating-some-synthetic-data">Simulating some synthetic data<a class="anchor" aria-label="anchor" href="#simulating-some-synthetic-data"></a>
 </h2>
-<p>We begin by simulating some data using the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R" class="external-link">R/run_model.R</a>
+<p>We begin by simulating some data using the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_run_model.R" class="external-link">R/RSVsim_run_model.R</a>
 function, to do so, we arbitrarily select a b0 value of 0.15, b1 value
 of 0.25 and phi value of 10 days. We then add noise to this count data
 by drawing random samples from a negative binomial distribution with
@@ -85,18 +85,18 @@ the simulated incidence values.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="va">age.limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">70</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_contact_matrix.html">create_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span>
+<span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
 <span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
-<span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_parameters.html">get_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, </span>
+<span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, </span>
 <span>                                              <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, </span>
 <span>                                              <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
 <span>                             contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_simulation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>, </span>
-<span>                              warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
-<span>                              max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model_simulation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>, </span>
+<span>                                     warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
+<span>                                     max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">time</span>,</span>
@@ -107,7 +107,7 @@ the simulated incidence values.</p>
 <div class="section level2">
 <h2 id="likelihood-calculation">Likelihood calculation<a class="anchor" aria-label="anchor" href="#likelihood-calculation"></a>
 </h2>
-<p>The <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/get_calibration_parameters.R</a>
+<p>The <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_calibration_parameters.R</a>
 function can be used to obtain the age groupings, times and parameter
 values required for each dataset of age-specific incidence data within a
 list of data frames. Each data frame must contain a time (numeric),
@@ -119,7 +119,7 @@ in age group,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi><annotation encoding="application/x-tex">a</annotation></semantics></math>,
 at time,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
-is Poisson distributed and calculate the log-likelihood in the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/calibration_likelihood.R</a>
+is Poisson distributed and calculate the log-likelihood in the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_log_likelihood.R</a>
 function:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>I</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>∼</mo><mi>P</mi><mi>o</mi><mi>i</mi><mi>s</mi><mi>s</mi><mi>o</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>λ</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">I_{a,t} \sim Poisson(\lambda_{a,t})</annotation></semantics></math>,
 where
@@ -132,36 +132,36 @@ minimises this value.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sim"</span> <span class="op">=</span> <span class="va">df</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_calibration_parameters.html">get_calibration_parameters</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                                   data_populations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">parameters</span><span class="op">$</span><span class="va">total_population</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                                                   warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in create_contact_matrix(country = country, age.limits = age.limits):</span></span>
+<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_calibration_parameters.html">RSVsim_calibration_parameters</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                                                      data_populations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">parameters</span><span class="op">$</span><span class="va">total_population</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                                                      warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits):</span></span>
 <span><span class="co">#&gt; polymod age groupings only go up to 75. Age limits above this have therefore</span></span>
 <span><span class="co">#&gt; been omitted.</span></span>
 <span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
 <span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/calibration_likelihood.html">calibration_likelihood</a></span><span class="op">(</span>fitted_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                       fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
-<span>                       minimise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                       data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                       cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>                       dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/RSVsim_log_likelihood.html">RSVsim_log_likelihood</a></span><span class="op">(</span>fitted_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>                      fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
+<span>                      minimise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                      data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                      cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                      dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] -4601.531</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="maximum-likelihood-estimation">Maximum likelihood estimation<a class="anchor" aria-label="anchor" href="#maximum-likelihood-estimation"></a>
 </h2>
-<p>In the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/constrained_max_likelihood.R</a>
+<p>In the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_max_likelihood.R</a>
 we use the nmlinb function <a href="https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R" class="external-link uri">https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R</a>
 to estimate the parameters that give the maximum likelihood.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">fitted_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/constrained_max_likelihood.html">constrained_max_likelihood</a></span><span class="op">(</span>fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
-<span>                                            data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                            scale_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span>, <span class="fl">365.25</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                                            cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>                                            dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="va">fitted_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_max_likelihood.html">RSVsim_max_likelihood</a></span><span class="op">(</span>fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
+<span>                                       data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                                       scale_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span>, <span class="fl">365.25</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                                       cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                                       dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   0:     357043.42: 0.250000 0.250000 0.250000</span></span>
 <span><span class="co">#&gt;   1:     354149.03: 0.214626 0.225355 0.245967</span></span>
 <span><span class="co">#&gt;   2:     343990.30: 0.139042 0.183648 0.239063</span></span>
@@ -316,14 +316,14 @@ to estimate the parameters that give the maximum likelihood.</p>
 transmission.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">parameters_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_parameters.html">get_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
-<span>                                                  <span class="st">"b1"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
-<span>                                                  <span class="st">"phi"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>                                 contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
+<span><span class="va">parameters_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
+<span>                                                     <span class="st">"b1"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
+<span>                                                     <span class="st">"phi"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                                    contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_simulation_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span><span class="va">parameters_fit</span>, </span>
-<span>                                  warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
-<span>                                  max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model_simulation_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span><span class="va">parameters_fit</span>, </span>
+<span>                                         warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
+<span>                                         max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span> <span class="op">|&gt;</span> </span>
 <span>         <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age_chr <span class="op">=</span> </span>
@@ -336,7 +336,8 @@ transmission.</p>
 <span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">Incidence</span>, group <span class="op">=</span> <span class="va">age_chr</span>, col <span class="op">=</span> <span class="va">age_chr</span><span class="op">)</span></span>
 <span>            <span class="op">)</span></span></code></pre></div>
 <p><img src="Calibration_files/figure-html/unnamed-chunk-5-1.png" width="700">
-## Bayesian parameter estimation</p>
+## Bayesian parameter estimation Fit the b0, b1 and phi parameters using
+MCMC.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
