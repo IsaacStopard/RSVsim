@@ -4,14 +4,18 @@
 \alias{RSVsim_parameters}
 \title{Get parameters for RSVsim}
 \usage{
-RSVsim_parameters(overrides = list(), contact_population_list, fitted = NULL)
+RSVsim_parameters(
+  overrides = list(),
+  contact_population_list,
+  fitted_parameter_names = NULL
+)
 }
 \arguments{
 \item{overrides}{List of default parameters to change.}
 
 \item{contact_population_list}{List of outputs from the \code{create_contact_matrix} function.}
 
-\item{fitted}{Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.}
+\item{fitted_parameter_names}{Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.}
 }
 \value{
 Parameter list.

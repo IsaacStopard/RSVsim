@@ -1,82 +1,64 @@
 #' Get parameters for the RSVsim_log_likelihood function from the data
 #'
-#' Helper function to assess the times and ages in the data, and return suitable parameters to run the model.
-#' @param data List of data frames of incidence data. For all data frames "incidence", "time" and "age_chr" columns must be included.
-#' For incidence data frames a "value" column is needed to contain the incidence values.
-#' For the prevalence data frame a "sample" column is required with the number of people tested and a "positive" column with the number of people that test positive.
-#' @param data_populations Vector of total population sizes for each dataframe in \code{data}.
+#' Helper function to assess the times and ages in the data, and return a list of suitable fixed parameters and
+#' the model control option values given as arguments to the function.
+#' @param data Data frame of incidence data: "incidence", "time" and "age_chr" columns must be included.
+#' @inheritParams RSVsim_parameters
 #' @inheritParams RSVsim_contact_matrix
-#' @inheritParams RSVsim_run_model
+#' @inheritParams RSVsim_run_model_dust
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
-RSVsim_calibration_parameters <- function(data,
-                                          data_populations,
+RSVsim_calibration_parameters <- function(fitted_parameter_names = c("b0", "b1", "phi"),
+                                          data,
+                                          overrides = list(),
                                           country = "United Kingdom",
+                                          cohort_step_size = 10,
                                           warm_up = NULL){
 
-  n_d <- length(names(data))
-
-  out <- vector(mode = "list", length = n_d)
-
-  for(name in names(data)){
-    for(column_name in c("time", "age_chr", "incidence")){
-
-      if(!column_name %in% colnames(data[[name]])){
-        stop(paste("Cannot find the", column_name, "column in the", name, "data frame.", sep = " "))
-        }
-
-      if(column_name == "incidence"){
-        if(!all(is.integer(data[[name]][[column_name]]))){
-          stop(paste("Not all values in the", column_name , "column in the", name, "data frame are integers", sep = " "))
-        }
-        }
-
-      if(column_name == "time"){
-        if(!all(is.numeric(data[[name]][[column_name]]))){
-          stop(paste("Not all values in the", column_name , "column in the", name, "data frame are numeric", sep = " "))
-        }
-        }
-
-      if(column_name == "age_chr"){
-        if(!all(is.character(data[[name]][[column_name]]))){
-          stop(paste("Not all values in the", column_name, "column in the", name, "data frame are characters or factors", sep = " "))
-        }
-        }
-
+  if(!all(is.integer(data[,"incidence"]))){
+    stop("Not all values in incidence_data are integers")
     }
-  }
 
-  for(i in 1:n_d){
+  if(!all(is.numeric(data[,"time"]))){
+    stop("Not all values in time_data are numeric")
+    }
 
-   df <- data[[i]]
+  if(!all(is.character(data[,"age_chr"]))){
+    stop("Not all values in age_chr_data are characters")
+    }
 
-   max_t <- max(df$time)
+   max_t <- max(data$time)
+
+   times <- sort(unique(data$time))
+
    if(!is.null(warm_up)){
      max_t <- max_t + warm_up
+     times <- times + warm_up
    }
 
-   age_chr <- unique(df$age_chr)
+   times <- sort(unique(c(times, seq(0, max_t, cohort_step_size / 20))))
+
+   age_chr <- unique(data$age_chr)
 
    age.limits <- lapply(age_chr, function(i){
      split <- strsplit(i, ",") |> unlist()
-     number <- readr::parse_number(split)}
-     ) |> unlist() |> unique() |> sort()
+     number <- readr::parse_number(split)}) |>
+     unlist() |> unique() |> sort()
 
    contact_population_list <- RSVsim_contact_matrix(country = country, age.limits = age.limits)
 
-   fixed_parameters <- RSVsim_parameters(overrides = list("total_population" = data_populations[i]),
+   fixed_parameters <- RSVsim_parameters(overrides = overrides,
                                          contact_population_list = contact_population_list,
-                                         fitted = c("b0", "b1", "phi"))
+                                         fitted_parameter_names = fitted_parameter_names
+                                         )
 
-   out_t <- list("fixed_parameters" = fixed_parameters,
-                 "max_t" = max_t,
-                 "warm_up" = warm_up)
+   out <- list("fixed_parameters" = fixed_parameters,
+               "fitted_parameter_names" = fitted_parameter_names,
+               "times" = times,
+               "cohort_step_size" = cohort_step_size,
+               "warm_up" = warm_up)
 
-   out[[i]] <- out_t
-
-  }
-
-  return(out)
+   return(out)
 }
 
 #' Calculate the likelihood of observing incidence data given the model outputs
@@ -84,117 +66,252 @@ RSVsim_calibration_parameters <- function(data,
 #' Function to run the model and calculate the likelihood. A poisson likelihood is used for incidence.
 #' The parameters must be constrained, such that b0 is greater than 0, b1 is between 0 and 1 and phi is between 0 and 365.25.
 #' The incidence data must be provided as a count.
-#' @param fitted_parameters Vector of parameters that we want to fit. Names must include "b0", "b1" and "phi".
-#' @param fixed_parameter_list List of parameters that are fixed.
-#' @inheritParams RSVsim_calibration_parameters
-#' @param minimise Boolean operator indicating whether the log-likelihood should be multiplied by -1.
-#' This is useful is trying to estimate the maximum likelihood with an optimisation algorithm that estimates the minimum.
-#' @param scale_parameters List of lower and upper boundaries on the fitted parameters.
-#' Default: \code{NULL}. If \code{NULL} the parameters are not transformed.
-#' If a list is provided the parameters log-likelihood is calculated assuming the \code{fitted_parameters}
-#' have already been scaled between 0 and 1 with the given lower and upper limits.
-#' @inheritDotParams RSVsim_run_model max_t cohort_step_size dt init_conds warm_up
-#' @return Log-likelihood.
+#' @param fitted_parameters index 1: b0 - Transmission rate coefficient parameter, index 2: b1 - amplitude of seasonal forcing parameter and
+#'  index 3: phi - phase shift of seasonality parameter.
+#' @inheritParams RSVsim_parameters
+#' @inheritParams RSVsim_run_model_dust
+#' @return Log-likelihood assuming the incidence data is Poisson distributed.
 #' @export
-RSVsim_log_likelihood <- function(fitted_parameters,
-                                  fixed_parameter_list,
-                                  data,
-                                  minimise = FALSE,
-                                  scale_parameters = NULL,
-                                  ...
+RSVsim_log_likelihood_dust <- function(fitted_parameters,
+                                       fitted_parameter_names,
+                                       fixed_parameters,
+                                       data,
+                                       times,
+                                       cohort_step_size = 10,
+                                       init_conds = NULL,
+                                       warm_up = NULL
                                   ){
 
-  if(!is.null(scale_parameters)){
-    fitted_parameters <- fitted_parameters * (scale_parameters$upper - scale_parameters$lower) + scale_parameters$lower
+  for(i in 1:length(fitted_parameters)){
+    fixed_parameters[[fitted_parameter_names[i]]] <- fitted_parameters[i]
   }
 
-  b0 <- fitted_parameters[1]
-  b1 <- fitted_parameters[2]
-  phi <- fitted_parameters[3]
+  parameters <- fixed_parameters
 
-  if(length(data) != length(fixed_parameter_list)){
-    stop("data list length does not equal fixed parameter list length")
-  }
+  out <- RSVsim_run_model_dust(parameters = parameters,
+                               times = times,
+                               warm_up = warm_up,
+                               cohort_step_size = cohort_step_size,
+                               init_conds = init_conds
+                               )
 
-  n_d <- length(data)
+  data <- dplyr::left_join(data, out[,c("time", "Incidence", "age_chr")], by = c("time", "age_chr")) |>
+    dplyr::mutate(log_likelihood = dpois(x = incidence, lambda = Incidence, log = TRUE))
 
-  param_names <- c("b0", "b1", "phi", "delta", "gamma_s", "gamma_p", "nu",
-                   "omega_vect", "prop_detected_vect", "sigma_vect", "alpha_vect", "nAges", "age.limits", "matrix_mean", "max_age", "total_population")
+  log_likelihood <- sum(data$log_likelihood, na.rm = FALSE)
 
-  log_likelihood <- c()
-
-  for(i in 1:n_d){
-    parameters <- purrr::list_modify(fixed_parameter_list[[i]]$fixed_parameters,
-                                     b0 = b0,
-                                     b1 = b1,
-                                     phi = phi)
-
-    if(!all(param_names %in% names(parameters))){
-      stop(paste("RSVsim_log_likelihood: not all required parameters are included for dataset at position", i,"in fixed_parameter_list", sep = " "))
-    }
-
-    out <- RSVsim_run_model(parameters = parameters,
-                            max_t = fixed_parameter_list[[i]]$max_t,
-                            warm_up = fixed_parameter_list[[i]]$warm_up,
-                            ...)
-
-    data[[i]] <- dplyr::left_join(data[[i]], out[,c("time", "Incidence", "age_chr")], by = c("time", "age_chr")) |>
-      dplyr::mutate(log_likelihood = dpois(x = incidence, lambda = Incidence, log = TRUE))
-
-    if(any(is.na(data[[i]]$log_likelihood))){
-      stop(paste("There were", sum(is.na(data[[i]]$log_likelihood)), "NAs in the log-likelihood for dataset", i, sep = " "))
-    }
-
-    log_likelihood <- c(log_likelihood, sum(data[[i]]$log_likelihood))
-
-  }
-
-  if(minimise){
-    return(-sum(log_likelihood))
-  } else{
-    return(sum(log_likelihood))
-  }
-
+  if (!is.finite(log_likelihood)){
+    warning("The log-likelihood is not finite")
+    return(-Inf)
+    } else{
+      return(log_likelihood)
+      }
 }
 
 #' Constrained maximum-likelihood estimation of the b0, b1 and phi parameters from incidence data.
 #'
-#' Helper function to assess the times and ages in the data, and return suitable parameters to run the model. Initial parameter values are set to 0.
-#' @inheritParams RSVsim_log_likelihood
-#' @inheritParams RSVsim_run_model
-#' @return List of fitted parameter values for b0, b1 and phi.
+#' Wrapper function for the \code{stats::nlminb function} (non-linear box-constrained quasi-Newton optimisation).
+#' Used to maximise the \code{RSVsim_log_likelihood_dust} function with data and parameters formatted by the \code{RSVsim_calibration_parameters} function.
+#' @inheritParams RSVsim_log_likelihood_dust
+#' @param scale_parameters Boolean operator indicating whether to scale the parameters between 0 and 1 to help fitting multiple parameters on difference scales. Default: \code{FALSE}.
+#' @param lower_ll Vector of lower and boundaries on the fitted parameters.
+#' @param upper_ll Vector of upper boundaries on the fitted parameters.
+#' @return List of fitted parameter values.
 #' @export
-RSVsim_max_likelihood <- function(fixed_parameter_list,
-                                  data,
-                                  scale_parameters,
-                                  cohort_step_size,
-                                  dt){
+RSVsim_max_likelihood_dust <- function(data,
+                                       fitted_parameter_names,
+                                       fixed_parameters,
+                                       times,
+                                       cohort_step_size = 10,
+                                       init_conds = NULL,
+                                       warm_up = NULL,
+                                       scale_parameters = FALSE,
+                                       lower_ll,
+                                       upper_ll){
 
-  if(!is.null(scale_parameters)){
-    lower_optim <- rep(0, 3)
-    upper_optim <- rep(1, 3)
-    start_optim <- c(0.25, 0.25, 0.25)
-  } else{
-    lower_optim <- c(0.01, 0, 0)
-    upper_optim <- c(10, 1, 365.25)
-    start_optim <- c(0.1, 0.5, 100)
+  np <- length(fitted_parameter_names)
+
+  if(length(lower_ll) != length(upper_ll) |
+     length(upper_ll) != np){
+    stop("The number of fitted parameters does not equal the lower or upper limit lengths")
   }
 
+  # function to provide the parameters as a single vector and return the negative log-likelihood
+  RSVsim_negative_log_likelihood <- function(fitted_parameters,
+                                             fitted_parameter_names,
+                                             fixed_parameters,
+                                             data,
+                                             times,
+                                             cohort_step_size,
+                                             init_conds,
+                                             warm_up,
+                                             scale_parameters,
+                                             lower_ll,
+                                             upper_ll){
+
+    if(scale_parameters){
+      fitted_parameters <- fitted_parameters * (upper_ll - lower_ll) + lower_ll
+      }
+
+    return(
+      -RSVsim_log_likelihood_dust(fitted_parameters = fitted_parameters, # must be negative because nlminb minimises the output
+                                  fitted_parameter_names = fitted_parameter_names,
+                                  fixed_parameters = fixed_parameters,
+                                  data = data,
+                                  times = times,
+                                  cohort_step_size = cohort_step_size,
+                                  init_conds = init_conds,
+                                  warm_up = warm_up
+                                  )
+      )
+    }
+
+  if(scale_parameters){
+    lower_optim <- rep(0, np)
+    upper_optim <- rep(1, np)
+  } else{
+    lower_optim <- lower_ll
+    upper_optim <- upper_ll
+  }
+
+  start_optim <- (upper_optim - lower_optim) / 2
+
   out <- stats::nlminb(start = start_optim,
-                       objective = RSVsim_log_likelihood,
+                       objective = RSVsim_negative_log_likelihood,
                        lower = lower_optim,
                        upper = upper_optim,
-                       control = list("trace" = 1, "rel.tol" = 1e-10),
-                       fixed_parameter_list = fixed_parameter_list,
+                       control = list("trace" = 0, "rel.tol" = 1e-10),
+                       fitted_parameter_names = fitted_parameter_names,
+                       fixed_parameters = fixed_parameters,
                        data = data,
-                       minimise = TRUE,
-                       scale_parameters = scale_parameters,
+                       times = times,
                        cohort_step_size = cohort_step_size,
-                       dt = dt)
+                       init_conds = init_conds,
+                       warm_up = warm_up,
+                       scale_parameters = scale_parameters,
+                       lower_ll = lower_ll,
+                       upper_ll = upper_ll)
 
-  if(!is.null(scale_parameters)){
-    out$par <- out$par * (scale_parameters$upper - scale_parameters$lower) + scale_parameters$lower
+  if(scale_parameters){
+    out$par <- out$par * (upper_ll - lower_ll) + lower_ll
   }
 
   return(out)
 }
+
+#' Metropolis-Hastings Markov-chain Monte Carlo estimation of the \code{b0}, \code{b1} and \code{phi} parameters from incidence data.
+#'
+#' Wrapper function for the fits the b0, b1 and and phi parameters.
+#' @inheritParams RSVsim_log_likelihood_dust
+#' @return MCMC samples for b0, b1 and phi.
+#' @export
+RSVsim_MCMC <- function(data,
+                        cores,
+                        nchains,
+                        mcmc_iter,
+                        mcmc_warm_up,
+                        prior_functions_list,
+                        initial_mat,
+                        fitted_parameter_names,
+                        fixed_parameters,
+                        times,
+                        cohort_step_size,
+                        init_conds,
+                        warm_up,
+                        lower_ll,
+                        upper_ll){
+
+  RSVsim_posterior <- function(fitted_parameters,
+                               fitted_parameter_names,
+                               fixed_parameters,
+                               data,
+                               times,
+                               cohort_step_size,
+                               init_conds,
+                               warm_up,
+                               prior_functions_list,
+                               lower_ll,
+                               upper_ll){
+
+      if(any(fitted_parameters < lower_ll) || any(fitted_parameters > upper_ll)){
+        return(-Inf)
+        } else{
+
+    # check for invalid parameters
+    log_likelihood <- RSVsim_log_likelihood_dust(fitted_parameters = fitted_parameters,
+                                                 fitted_parameter_names = fitted_parameter_names,
+                                                 fixed_parameters = fixed_parameters,
+                                                 data = data,
+                                                 times = times,
+                                                 cohort_step_size = cohort_step_size,
+                                                 init_conds = init_conds,
+                                                 warm_up = warm_up
+                                            )
+
+      out <- log_likelihood
+
+      for(i in 1:length(fitted_parameters)){
+        out <- out + prior_functions_list[[i]](fitted_parameters[i])
+      }
+
+      if(is.finite(out)){
+        return(out)
+      }else{
+          return(-Inf)
+      }
+      }
+      }
+
+  cores <- 4
+
+  if(cores > 1){
+    multicore <- TRUE
+    cl <- parallel::makeCluster(cores)
+    parallel::clusterExport(cl = cl, varlist = c("multicore",
+                                                 "RSVsim_log_likelihood_dust",
+                                                 "RSVsim_posterior",
+                                                 "RSVsim_run_model_dust",
+                                                 "initial_mat",
+                                                 "data",
+                                                 "prior_functions_list",
+                                                 "fitted_parameter_names",
+                                                 "fixed_parameters",
+                                                 "times",
+                                                 "cohort_step_size",
+                                                 "init_conds",
+                                                 "warm_up",
+                                                 "lower_ll",
+                                                 "upper_ll"))
+  } else{
+      multicore <- FALSE
+      cl <- NULL
+  }
+
+  fit_s <- fmcmc::MCMC(RSVsim_posterior,
+                       initial = initial_mat,
+                       nsteps  = mcmc_iter,
+                       burnin = mcmc_warm_up,
+                       nchains = nchains,
+                       thin = 4,
+                       multicore = multicore,
+                       cl = cl,
+                       kernel  = fmcmc::kernel_ram(ub = c(365.25),
+                                                   lb = c(0)),
+                       conv_checker = fmcmc::convergence_gelman(500),
+                       fitted_parameter_names = fitted_parameter_names,
+                       fixed_parameters = fixed_parameters,
+                       data = data,
+                       times = times,
+                       cohort_step_size = cohort_step_size,
+                       init_conds = init_conds,
+                       warm_up = warm_up,
+                       prior_functions_list = prior_functions_list,
+                       lower_ll = lower_ll,
+                       upper_ll = upper_ll
+                     )
+
+  parallel::stopCluster(cl)
+
+}
+
+

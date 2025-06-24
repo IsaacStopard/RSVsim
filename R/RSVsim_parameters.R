@@ -4,13 +4,12 @@
 #'
 #' @param overrides List of default parameters to change.
 #' @param contact_population_list List of outputs from the \code{create_contact_matrix} function.
-#' @param fitted Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.
+#' @param fitted_parameter_names Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.
 #' @return Parameter list.
 #' @export
-
 RSVsim_parameters <- function(overrides = list(),
-                           contact_population_list,
-                           fitted = NULL
+                              contact_population_list,
+                              fitted_parameter_names = NULL
                        ){
 
   # override parameters with any client specified ones
@@ -97,8 +96,8 @@ RSVsim_parameters <- function(overrides = list(),
     parameters[[name]] <- overrides[[name]]
   }
 
-  if(!is.null(fitted)){
-    for(name in fitted){
+  if(!is.null(fitted_parameter_names)){
+    for(name in fitted_parameter_names){
       names_all <- names(parameters)
       if (!name %in% names_all) {
         stop(paste('RSVsim_parameters: unknown fitted parameter:', name, sep=' '))

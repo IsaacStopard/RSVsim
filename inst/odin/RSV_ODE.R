@@ -28,7 +28,7 @@ dim(alpha_vect) <- nAges
 temp[] <- omega_vect[i] * (Is[i] + Ip[i]) / N[i]
 # contacts multiplied by prevalence
 s_ij[,] <- matrix_mean[i,j] * temp[j]
-lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 / 365.25 * (time + phi))) * sum(s_ij[i,])
+lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 / 365.25 * (time - phi))) * sum(s_ij[i,])
 
 infect_p[] <- lambda[i] * sigma_vect[i] * Sp[i]
 infect_s[] <- lambda[i] * sigma_vect[i] * alpha_vect[i] * Ss[i]

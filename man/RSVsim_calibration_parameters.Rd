@@ -5,20 +5,24 @@
 \title{Get parameters for the RSVsim_log_likelihood function from the data}
 \usage{
 RSVsim_calibration_parameters(
+  fitted_parameter_names = c("b0", "b1", "phi"),
   data,
-  data_populations,
+  overrides = list(),
   country = "United Kingdom",
+  cohort_step_size = 10,
   warm_up = NULL
 )
 }
 \arguments{
-\item{data}{List of data frames of incidence data. For all data frames "incidence", "time" and "age_chr" columns must be included.
-For incidence data frames a "value" column is needed to contain the incidence values.
-For the prevalence data frame a "sample" column is required with the number of people tested and a "positive" column with the number of people that test positive.}
+\item{fitted_parameter_names}{Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.}
 
-\item{data_populations}{Vector of total population sizes for each dataframe in \code{data}.}
+\item{data}{Data frame of incidence data: "incidence", "time" and "age_chr" columns must be included.}
+
+\item{overrides}{List of default parameters to change.}
 
 \item{country}{Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.}
+
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
 }
@@ -26,5 +30,6 @@ For the prevalence data frame a "sample" column is required with the number of p
 List of fixed parameters, max_t and warm_up.
 }
 \description{
-Helper function to assess the times and ages in the data, and return suitable parameters to run the model.
+Helper function to assess the times and ages in the data, and return a list of suitable fixed parameters and
+the model control option values given as arguments to the function.
 }

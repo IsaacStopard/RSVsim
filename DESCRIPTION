@@ -20,6 +20,8 @@ Imports:
     dplyr,
     dust2 (>= 0.3.22),
     ggplot2,
+    instantiate,
+    methods,
     purrr,
     readr,
     scales,
@@ -38,3 +40,5 @@ Remotes:
     mrc-ide/monty,
     mrc-ide/odin2
 VignetteBuilder: knitr
+SystemRequirements: CmdStan (https://mc-stan.org/users/interfaces/cmdstan)
+LazyData: true

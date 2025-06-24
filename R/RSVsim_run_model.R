@@ -1,24 +1,21 @@
-#' Runs the RSV model
+#' Runs the RSV model using Stan
 #'
 #' Function to run the transmission model with cohort aging.
 #'
 #' @param parameters List of parameters from \code{get_params} function.
-#' @param max_t Simulation maximum time. Default: 3650 days.
+#' @param times Simulation times. Default: 0 - 3650 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.
-#' @param dt Time steps to run the model over. Default: 0.25 days.
 #' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
-
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
 RSVsim_run_model <- function(parameters,
-                             max_t = 3650,
+                             times = seq(0, 365 * 4, 0.25),
                              cohort_step_size = 10,
-                             dt = 0.25,
                              init_conds = NULL,
                              warm_up = NULL
-                             ){
+){
 
   ##########################################################
   # labels for the ages
@@ -33,171 +30,163 @@ RSVsim_run_model <- function(parameters,
   # age differences in days
   size_cohorts <- with(parameters,
                        c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
-                       )
+  )
 
   # running for the time of the smallest cohort
+  if(max(diff(times)) >= cohort_step_size){
+    stop("The maximum time difference is greater than or equal to the cohort step size")
+  }
+
+  max_t <- max(times)
+
   transition_rate <- cohort_step_size/size_cohorts
 
   rel_sizes <- size_cohorts/sum(size_cohorts)
 
-  n_steps <- floor(max_t / cohort_step_size)
+  n_steps <- ceiling(max_t / cohort_step_size)
 
   # initial conditions: choose whether to reset here
-  if(is.null(init_conds)) {
-
+  if(is.null(init_conds)){
     rep_z <- rep(0, parameters$nAges)
-
-    parameters <- purrr::list_modify(
-      parameters,
-        Sp0 = rel_sizes * parameters$total_population * 0.99,
-        Ep0 = rep_z,
-        Ip0 = rel_sizes * parameters$total_population * 0.01,
-        Ss0 = rep_z,
-        Es0 = rep_z,
-        Is0 = rep_z,
-        R0 = rep_z
-      )
+    Sp0 <- rel_sizes * parameters$total_population * 0.99
+    Ep0 <- rep_z
+    Ip0 <- rel_sizes * parameters$total_population * 0.01
+    Ss0 <- rep_z
+    Es0 <- rep_z
+    Is0 <- rep_z
+    R0 <- rep_z
+    init_conds <- c(Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0)
   } else{
-    parameters <- with(init_conds,{
+    with(init_conds,{
       for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0")){
         if(length(get(name)) != parameters$nAges){
           stop(paste("RSVsim_run_model: initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
         }
       }
-      purrr::list_modify(
-        parameters,
-        Sp0 = Sp0,
-        Ep0 = Ep0,
-        Ip0 = Ip0,
-        Ss0 = Ss0,
-        Es0 = Es0,
-        Is0 = Is0,
-        R0 = R0
+    }
+  )
+    init_conds <- as.vector(c(init_conds[["Sp0"]], init_conds[["Ep0"]], init_conds[["Ip0"]], init_conds[["Ss0"]], init_conds[["Es0"]], init_conds[["Is0"]], init_conds[["R0"]]))
+
+  }
+
+  # running the model with cohort ageing (run for a single cohort, move cohort, change initial states, repeat)
+  times_vec <- times
+  n_times_vec <- length(times_vec)
+  t0 <- times[1]
+  times <- times[-1]
+
+  n_times <- length(times)
+
+  times_array <- lapply(1:n_steps, function(i, times, cohort_step_size){
+    return(
+      sort(unique(c(times[times > ((i - 1) * cohort_step_size) & times <= (i * cohort_step_size)])))
       )
-      }
+    }, times = times, cohort_step_size = cohort_step_size
     )
-  }
 
-  # runs the model with cohort ageing
-  RSV_dust <- dust2::dust_system_create(generator = RSV_ODE,
-                                        pars = parameters,
-                                        n_particles = 1,
-                                        n_groups = 1,
-                                        time = 0,
-                                        deterministic = TRUE
-                                        ) |> invisible()
+  n_times_array <- as.vector(unlist(lapply(times_array, length)))
+  cumn_times_array <- as.integer(cumsum(n_times_array))
+  cumn_times_array <- c(0, cumn_times_array[-length(cumn_times_array)])
 
+  Sp_index <- 0
+  Ep_index <- 1
+  Ip_index <- 2
+  Ss_index <- 3
+  Es_index <- 4
+  Is_index <- 5
+  R_index <- 6
 
-  dust2::dust_system_set_state_initial(RSV_dust)
+  out <- cohort_ageing_stan(n_times = length(times),
+                            n_steps = n_steps,
+                            t0 = t0,
+                            times_array = times_array,
+                            n_times_array = n_times_array,
+                            cumn_times_array = cumn_times_array,
+                            Sp_index = Sp_index,
+                            Ep_index = Ep_index,
+                            Ip_index = Ip_index,
+                            Ss_index = Ss_index,
+                            Es_index = Es_index,
+                            Is_index = Is_index,
+                            R_index = R_index,
+                            init_conds = init_conds,
+                            nAges = parameters$nAges,
+                            total_population = parameters$total_population,
+                            b0 = parameters$b0,
+                            b1 = parameters$b1,
+                            phi = parameters$phi,
+                            delta = parameters$delta,
+                            gammas = parameters$gamma_s,
+                            gammap = parameters$gamma_p,
+                            nu = parameters$nu,
+                            omega_vect = parameters$omega_vect,
+                            sigma_vect = parameters$sigma_vect,
+                            alpha_vect = parameters$alpha_vect,
+                            matrix_mean = parameters$matrix_mean,
+                            transition_rate = transition_rate,
+                            rel_sizes = rel_sizes)
 
-  # do not change this
-  # the order is determined by the order in the odin RSV_ODE.R file
-  states <- dust2::dust_unpack_index(RSV_dust)
+  inc <- calc_incidence_stan(out = out,
+                             times_vec = times_vec,
+                             n_times_vec = n_times_vec,
+                             nAges = parameters$nAges,
+                             Sp_index = Sp_index,
+                             Ep_index = Ep_index,
+                             Ip_index = Ip_index,
+                             Ss_index = Ss_index,
+                             Es_index = Es_index,
+                             Is_index = Is_index,
+                             R_index = R_index,
+                             b0 = parameters$b0,
+                             b1 = parameters$b1,
+                             phi = parameters$phi,
+                             omega_vect = parameters$omega_vect,
+                             sigma_vect = parameters$sigma_vect,
+                             alpha_vect = parameters$alpha_vect,
+                             matrix_mean = parameters$matrix_mean)
 
-  states <- lapply(1:length(states), function(i){rep(names(states[i]), length(states[[i]]))}) |> unlist()
+  n_states <- 7
+  states <- rep(NA, n_states)
+  states[Sp_index + 1] <- "Sp"
+  states[Ep_index + 1] <- "Ep"
+  states[Ip_index + 1] <- "Ip"
+  states[Ss_index + 1] <- "Ss"
+  states[Es_index + 1] <- "Es"
+  states[Is_index + 1] <- "Is"
+  states[R_index + 1] <- "R"
+  states <- rep(states, each = length(parameters$age.limits))
 
-  n_states <- length(unique(states))
+  age_vec <- rep(parameters$age.limits, n_states)
+  age_chr_vec <- rep(age_chr, n_states)
 
-  ages <- rep(parameters$age.limits, n_states)
-
-  incidence_i <- which(states %in% c("Incidence", "DetIncidence", "prev", "prev_p", "prev_s"))
-
-  # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
-  out_list <- vector(mode = "list", length = n_steps)
-
-  for(i in 1:n_steps){
-
-    times_in <- if(i == 1){
-      seq(0, i * cohort_step_size, dt)
-    } else{
-      seq((i - 1) * cohort_step_size + dt, i * cohort_step_size, dt)
-    }
-
-    out <- dust2::dust_system_simulate(RSV_dust,
-                                       times = times_in)
-
-    # checking the total population is correct
-    if(!all(abs(out[-incidence_i,] |> colSums() - parameters$total_population) < 1E-5)){
-      stop("RSVsim_run_model: population does not sum to the correct number")
-    }
-
-    out_list[[i]] <- out |> as.data.frame()
-
-    colnames(out_list[[i]]) <- times_in
-
-    out_list[[i]] <- out_list[[i]] |> dplyr::mutate(state = states, age = ages) |>
-      tidyr::pivot_longer(cols = 1:length(times_in),
-                          values_to = "value",
-                          names_to = "time") |>
-      dplyr::mutate(time = as.numeric(time)) |>
-      dplyr::arrange(factor(state,
-                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence", "prev", "prev_p", "prev_s")),
-                            age)
-
-    # calculating the initial states
-    next_state <- out_list[[i]] |>
-      dplyr::filter(time == max(time)) |>
-      dplyr::group_by(state) |>
-      dplyr::mutate(transition_ct = value * transition_rate,
-                    lag_transition = dplyr::lag(transition_ct, 1, order_by = state))
-
-    # check NAs are in the correct place
-    if(!all(
-      next_state[which(is.na(next_state$lag_transition)), "age"] == 0) |
-       sum(is.na(next_state$lag_transition)) != n_states){
-      stop("RSVsim_run_model: error when lagging the cohort aging")
-    }
-
-    # filling in births to keep the population size constant
-    next_state <- next_state |> dplyr::ungroup() |>
-      dplyr::mutate(lag_transition =
-                      ifelse(is.na(lag_transition) & age == 0 & state == "Sp",
-                             rel_sizes[1] * transition_rate[1] * parameters$total_population,
-                             ifelse(is.na(lag_transition) & age == 0, 0,
-                                    lag_transition)
-                             )
-                    )
-
-    if(
-      abs(
-        next_state |> dplyr::filter(age == max(age) &
-                                      state %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R")
-                                      ) |> dplyr::ungroup() |>
-          dplyr::select(transition_ct) |> as.vector() |> unlist() |> sum() -
-        rel_sizes[1] * transition_rate[1] * parameters$total_population
-        ) > 1E-5){
-      stop("RSVsim_run_model: births are not correct to keep the population size constant")
-    }
-
-    next_state <- next_state |>
-      dplyr::mutate(next_value = value - transition_ct + lag_transition) |>
-      dplyr::select(next_value) |>
-      unlist() |> unname() |> as.vector()
-
-    if(abs(sum(next_state[-incidence_i]) - parameters$total_population) > 1E-5){
-      stop("RSVsim_run_model: total population for the next cohort states is not correct")
-    }
-
-    dust2::dust_system_set_state(sys = RSV_dust,
-                                 state = next_state)
-
-    if(all(dust2::dust_system_state(RSV_dust) != next_state)){
-      stop("RSVsim_run_model: states have not been updated")
-    }
-
-    out_list[[i]] <- out_list[[i]] |> tidyr::pivot_wider(names_from = state, values_from = value)
-
-  }
-
-  out <- invisible(
-    dplyr::bind_rows(out_list) |>
-      dplyr::left_join(data.frame(age = parameters$age.limits,
-                                  age_chr = age_chr), by = dplyr::join_by(age)) |>
-      as.data.frame()
+  out <- lapply(1:length(out), function(i, out, times_vec, states, age_vec, age_chr_vec){
+    return(data.frame(time = times_vec[i],
+                      state = states,
+                      value = out[[i]],
+                      age = age_vec,
+                      age_chr = age_chr_vec))
+  }, out = out, times_vec = times_vec, states = states, age_vec = age_vec, age_chr_vec = age_chr_vec) |>
+    dplyr::bind_rows() |> tidyr::pivot_wider(names_from = state, values_from = value) |> as.data.frame() |>
+    dplyr::left_join(
+      lapply(1:length(inc), function(i, inc, times_vec = times_vec, age, age_chr){
+        return(data.frame(
+          time = times_vec[i],
+          incidence = inc[[i]],
+          age = age,
+          age_chr = age_chr)
+          )
+        }, inc = inc, age = parameters$age.limits, age_chr = age_chr, times_vec = times_vec) |> dplyr::bind_rows(),
+      by = c("time", "age", "age_chr")
       )
+
+  out[, "prev"] = (out[, "Ip"] + out[, "Is"])/(out[, "Sp"] + out[, "Ep"] + out[, "Ip"] + out[, "Ss"] + out[, "Es"] + out[, "Is"] + out[, "R"])
 
   if(!is.null(warm_up)){
-    out <- out |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
+    if(!is.numeric(warm_up)){
+      stop("warm_up is not numeric")
+    } else{
+      out <- out |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
+    }
   }
 
   return(out)
