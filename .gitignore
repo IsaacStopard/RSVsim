@@ -8,3 +8,7 @@ docs
 inst/doc
 /doc/
 /Meta/
+src/stan/**
+!src/stan/**/*.*
+src/stan/**/*.exe
+src/stan/**/*.EXE
