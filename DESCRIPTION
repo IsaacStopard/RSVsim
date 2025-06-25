@@ -39,7 +39,7 @@ LinkingTo:
 Remotes: 
     mrc-ide/dust2,
     mrc-ide/monty,
-    mrc-ide/odin2
+    mrc-ide/odin2,
     stan-dev/cmdstanr
 VignetteBuilder: knitr
 SystemRequirements: CmdStan (https://mc-stan.org/users/interfaces/cmdstan)
