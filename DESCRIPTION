@@ -17,6 +17,7 @@ Config/testthat/edition: 3
 URL: https://github.com/IsaacStopard/RSVsim, https://isaacstopard.github.io/RSVsim/
 BugReports: https://github.com/IsaacStopard/RSVsim/issues
 Imports: 
+    cmdstanr,
     dplyr,
     dust2 (>= 0.3.22),
     ggplot2,

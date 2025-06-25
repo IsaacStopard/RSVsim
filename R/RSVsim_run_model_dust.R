@@ -20,6 +20,9 @@ RSVsim_run_model_dust <- function(parameters,
 
   ##########################################################
   # labels for the ages
+
+  model <- stan_package_model(name = "RSV_ODE_stan", package = "RSVsim")
+
   age_chr <- c()
 
   for(i in 1:(parameters$nAges - 1)){
