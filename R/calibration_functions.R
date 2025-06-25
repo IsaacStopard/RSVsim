@@ -174,7 +174,7 @@ RSVsim_max_likelihood_dust <- function(data,
     upper_optim <- upper_ll
   }
 
-  start_optim <- (upper_optim - lower_optim) / 2
+  start_optim <- lower_optim
 
   out <- stats::nlminb(start = start_optim,
                        objective = RSVsim_negative_log_likelihood,
@@ -313,5 +313,7 @@ RSVsim_MCMC <- function(data,
   parallel::stopCluster(cl)
 
 }
+
+# UK covid - multiple types of burden data
 
 

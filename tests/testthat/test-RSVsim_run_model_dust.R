@@ -13,7 +13,8 @@ test_that("RSVsim_run_model_dust function works", {
   expect_true(max(sim$time) <= 3650)
 
   # checking the total population is correct
-  if(!all(abs(out[,c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R")] |> rowSums() - parameters$total_population) < 1E-5)){
+  if(!all(abs(sim |> dplyr::group_by(time) |> dplyr::summarise(Sp = sum(Sp), Ep = sum(Ep), Ip = sum(Ip), Ss = sum(Ss), Es = sum(Es), Is = sum(Is), R = sum(R)) |>
+              dplyr::select(Sp, Ep, Ip, Ss, Es, Is, R) |> rowSums() - parameters$total_population) < 1E-5)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 
