@@ -43,7 +43,11 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">RSVsim_parameters</span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">contact_population_list</span>, fitted <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">RSVsim_parameters</span><span class="op">(</span></span>
+<span>  overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">contact_population_list</span>,</span>
+<span>  fitted_parameter_names <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -58,7 +62,7 @@
 <dd><p>List of outputs from the <code>create_contact_matrix</code> function.</p></dd>
 
 
-<dt id="arg-fitted">fitted<a class="anchor" aria-label="anchor" href="#arg-fitted"></a></dt>
+<dt id="arg-fitted-parameter-names">fitted_parameter_names<a class="anchor" aria-label="anchor" href="#arg-fitted-parameter-names"></a></dt>
 <dd><p>Vector of parameter names to exclude from the list because they are fitted. Default: <code>NULL</code>.</p></dd>
 
 </dl></div>

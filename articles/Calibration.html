@@ -76,11 +76,21 @@ phi (phase shift of seasonality) parameters.</p>
 <h2 id="simulating-some-synthetic-data">Simulating some synthetic data<a class="anchor" aria-label="anchor" href="#simulating-some-synthetic-data"></a>
 </h2>
 <p>We begin by simulating some data using the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_run_model.R" class="external-link">R/RSVsim_run_model.R</a>
-function, to do so, we arbitrarily select a b0 value of 0.15, b1 value
-of 0.25 and phi value of 10 days. We then add noise to this count data
-by drawing random samples from a negative binomial distribution with
-greater variance than the poisson distribution and a mean equivalent to
-the simulated incidence values.</p>
+function. To do so, we arbitrarily select a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">b0</annotation></semantics></math>
+value of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.15</mn><annotation encoding="application/x-tex">0.15</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">b1</annotation></semantics></math>
+value of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.25</mn><annotation encoding="application/x-tex">0.25</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
+value of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>10</mn><annotation encoding="application/x-tex">10</annotation></semantics></math>
+days. We then add noise to this count data by drawing random samples
+from a negative binomial distribution with greater variance than the
+poisson distribution and a mean equivalent to the simulated incidence
+values.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">age.limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">70</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
@@ -90,19 +100,22 @@ the simulated incidence values.</p>
 <span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
 <span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, </span>
-<span>                                              <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, </span>
-<span>                                              <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                             contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
+<span>                                                 <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, </span>
+<span>                                                 <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>                                contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_simulation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>, </span>
-<span>                                     warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
-<span>                                     max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model_simulation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model_dust.html">RSVsim_run_model_dust</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>, </span>
+<span>                                          times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>                                          warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>,</span>
+<span>                                          init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                                          cohort_step_size <span class="op">=</span> <span class="fl">10</span></span>
+<span>                                     <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">time</span>,</span>
-<span>                 incidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/NegBinomial.html" class="external-link">rnbinom</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">model_simulation</span><span class="op">)</span>, mu <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">Incidence</span>, size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span>,</span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>                 incidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/NegBinomial.html" class="external-link">rnbinom</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">model_simulation</span><span class="op">)</span>, mu <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">Incidence</span>, size <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                 age_chr <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">age_chr</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">time</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">5</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">time</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">10</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="likelihood-calculation">Likelihood calculation<a class="anchor" aria-label="anchor" href="#likelihood-calculation"></a>
@@ -112,7 +125,10 @@ function can be used to obtain the age groupings, times and parameter
 values required for each dataset of age-specific incidence data within a
 list of data frames. Each data frame must contain a time (numeric),
 incidence (integer) and age_chr (character) columns. age_chr is the age
-grouping.</p>
+grouping. The overrides argument can be used to specify changes to the
+fixed parameter values. The parameters we want to fit must be named as a
+vector of characters in the fitted_parameter_names argument. In this
+case we fit b0 and b1 only.</p>
 <p>We assume that the incidence,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">I_{a,t}</annotation></semantics></math>,
 in age group,
@@ -124,211 +140,73 @@ function:
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>I</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>∼</mo><mi>P</mi><mi>o</mi><mi>i</mi><mi>s</mi><mi>s</mi><mi>o</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>λ</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">I_{a,t} \sim Poisson(\lambda_{a,t})</annotation></semantics></math>,
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">\lambda_{a,t}</annotation></semantics></math>
-is the corresponding model simulated incidence. The minimise argument
-specifies whether this value should be multiplied by -1, so that the
-maximum likelihood can be estimated using an optimisation algorithm that
-minimises this value.</p>
+is the corresponding model simulated incidence.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"sim"</span> <span class="op">=</span> <span class="va">df</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_calibration_parameters.html">RSVsim_calibration_parameters</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                                      data_populations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">parameters</span><span class="op">$</span><span class="va">total_population</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                                                      warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span><span class="op">)</span></span>
+<span>                                                      fitted_parameter_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span><span class="op">)</span>,</span>
+<span>                                                      overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>                                                      country <span class="op">=</span> <span class="st">"United Kingdom"</span>,</span>
+<span>                                                      warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>,</span>
+<span>                                                      cohort_step_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits):</span></span>
 <span><span class="co">#&gt; polymod age groupings only go up to 75. Age limits above this have therefore</span></span>
 <span><span class="co">#&gt; been omitted.</span></span>
 <span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
 <span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/RSVsim_log_likelihood.html">RSVsim_log_likelihood</a></span><span class="op">(</span>fitted_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                      fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
-<span>                      minimise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                      data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                      cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>                      dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -4601.531</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/RSVsim_log_likelihood_dust.html">RSVsim_log_likelihood_dust</a></span><span class="op">(</span>fitted_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>                           fitted_parameter_names <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fitted_parameter_names</span>,</span>
+<span>                           fixed_parameters <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fixed_parameters</span>,</span>
+<span>                           data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                           times <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">times</span>,</span>
+<span>                           warm_up <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">warm_up</span>,</span>
+<span>                           cohort_step_size <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">cohort_step_size</span></span>
+<span>                           <span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] -2858.713</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="maximum-likelihood-estimation">Maximum likelihood estimation<a class="anchor" aria-label="anchor" href="#maximum-likelihood-estimation"></a>
 </h2>
 <p>In the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_max_likelihood.R</a>
 we use the nmlinb function <a href="https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R" class="external-link uri">https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R</a>
-to estimate the parameters that give the maximum likelihood.</p>
+to estimate the parameters that give the maximum likelihood. The
+lower_ll and upper_ll arguments specify the lower and upper parameter
+limits. scale_parameters is a boolean indicating whether the parameters
+should be scaled between 0 and 1.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">fitted_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_max_likelihood.html">RSVsim_max_likelihood</a></span><span class="op">(</span>fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
-<span>                                       data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                       scale_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span>, <span class="fl">365.25</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                                       cohort_step_size <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>                                       dt <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   0:     357043.42: 0.250000 0.250000 0.250000</span></span>
-<span><span class="co">#&gt;   1:     354149.03: 0.214626 0.225355 0.245967</span></span>
-<span><span class="co">#&gt;   2:     343990.30: 0.139042 0.183648 0.239063</span></span>
-<span><span class="co">#&gt;   3:     338092.57: 0.113180 0.174826 0.237410</span></span>
-<span><span class="co">#&gt;   4:     314756.45: 0.0606985 0.159560 0.234226</span></span>
-<span><span class="co">#&gt;   5:     297992.39: 0.0419267 0.155345 0.232960</span></span>
-<span><span class="co">#&gt;   6:     293127.71: 0.0381650 0.154569 0.232616</span></span>
-<span><span class="co">#&gt;   7:     233565.53: 0.00795722 0.148978 0.229805</span></span>
-<span><span class="co">#&gt;   8:     131664.75: 0.0108954 0.148993 0.229784</span></span>
-<span><span class="co">#&gt;   9:     109395.86: 0.0104682 0.232351 0.215408</span></span>
-<span><span class="co">#&gt;  10:     106219.54: 0.0108181 0.232348 0.215393</span></span>
-<span><span class="co">#&gt;  11:     105891.56: 0.0107493 0.232684 0.215322</span></span>
-<span><span class="co">#&gt;  12:     105744.74: 0.0107044 0.232974 0.215131</span></span>
-<span><span class="co">#&gt;  13:     105572.57: 0.0107551 0.233314 0.215060</span></span>
-<span><span class="co">#&gt;  14:     105421.86: 0.0107138 0.233608 0.214875</span></span>
-<span><span class="co">#&gt;  15:     105262.48: 0.0107614 0.233948 0.214805</span></span>
-<span><span class="co">#&gt;  16:     105120.08: 0.0107226 0.234252 0.214635</span></span>
-<span><span class="co">#&gt;  17:     104970.91: 0.0107677 0.234592 0.214565</span></span>
-<span><span class="co">#&gt;  18:     104835.90: 0.0107311 0.234903 0.214407</span></span>
-<span><span class="co">#&gt;  19:     104695.58: 0.0107740 0.235244 0.214338</span></span>
-<span><span class="co">#&gt;  20:     104567.16: 0.0107394 0.235560 0.214191</span></span>
-<span><span class="co">#&gt;  21:     104434.57: 0.0107804 0.235901 0.214122</span></span>
-<span><span class="co">#&gt;  22:     104312.06: 0.0107475 0.236221 0.213985</span></span>
-<span><span class="co">#&gt;  23:     104186.25: 0.0107867 0.236563 0.213916</span></span>
-<span><span class="co">#&gt;  24:     104069.05: 0.0107554 0.236887 0.213787</span></span>
-<span><span class="co">#&gt;  25:     103949.26: 0.0107931 0.237228 0.213718</span></span>
-<span><span class="co">#&gt;  26:     103836.88: 0.0107632 0.237555 0.213596</span></span>
-<span><span class="co">#&gt;  27:     103722.45: 0.0107994 0.237897 0.213528</span></span>
-<span><span class="co">#&gt;  28:     103614.44: 0.0107708 0.238226 0.213413</span></span>
-<span><span class="co">#&gt;  29:     103504.85: 0.0108058 0.238568 0.213345</span></span>
-<span><span class="co">#&gt;  30:     103400.85: 0.0107783 0.238899 0.213235</span></span>
-<span><span class="co">#&gt;  31:     103295.64: 0.0108122 0.239242 0.213168</span></span>
-<span><span class="co">#&gt;  32:     103195.32: 0.0107856 0.239575 0.213062</span></span>
-<span><span class="co">#&gt;  33:     103094.11: 0.0108185 0.239917 0.212996</span></span>
-<span><span class="co">#&gt;  34:     102997.22: 0.0107929 0.240251 0.212895</span></span>
-<span><span class="co">#&gt;  35:     102899.68: 0.0108249 0.240594 0.212829</span></span>
-<span><span class="co">#&gt;  36:     102805.98: 0.0108001 0.240929 0.212731</span></span>
-<span><span class="co">#&gt;  37:     102711.84: 0.0108313 0.241272 0.212666</span></span>
-<span><span class="co">#&gt;  38:     102621.13: 0.0108072 0.241609 0.212572</span></span>
-<span><span class="co">#&gt;  39:     102530.17: 0.0108377 0.241952 0.212507</span></span>
-<span><span class="co">#&gt;  40:     102442.27: 0.0108142 0.242289 0.212416</span></span>
-<span><span class="co">#&gt;  41:     102354.29: 0.0108441 0.242632 0.212352</span></span>
-<span><span class="co">#&gt;  42:     102269.06: 0.0108212 0.242970 0.212264</span></span>
-<span><span class="co">#&gt;  43:     102183.88: 0.0108505 0.243313 0.212200</span></span>
-<span><span class="co">#&gt;  44:     102101.20: 0.0108281 0.243652 0.212114</span></span>
-<span><span class="co">#&gt;  45:     102018.68: 0.0108569 0.243996 0.212051</span></span>
-<span><span class="co">#&gt;  46:     101938.43: 0.0108350 0.244335 0.211968</span></span>
-<span><span class="co">#&gt;  47:     101858.45: 0.0108633 0.244679 0.211905</span></span>
-<span><span class="co">#&gt;  48:     101780.53: 0.0108418 0.245019 0.211824</span></span>
-<span><span class="co">#&gt;  49:     101702.98: 0.0108697 0.245362 0.211761</span></span>
-<span><span class="co">#&gt;  50:     101627.32: 0.0108486 0.245703 0.211683</span></span>
-<span><span class="co">#&gt;  51:     101552.10: 0.0108761 0.246047 0.211621</span></span>
-<span><span class="co">#&gt;  52:     101478.62: 0.0108554 0.246388 0.211544</span></span>
-<span><span class="co">#&gt;  53:     101405.66: 0.0108825 0.246732 0.211482</span></span>
-<span><span class="co">#&gt;  54:     101334.30: 0.0108621 0.247073 0.211407</span></span>
-<span><span class="co">#&gt;  55:     101263.52: 0.0108889 0.247417 0.211346</span></span>
-<span><span class="co">#&gt;  56:     101194.22: 0.0108689 0.247759 0.211273</span></span>
-<span><span class="co">#&gt;  57:     101125.56: 0.0108953 0.248103 0.211213</span></span>
-<span><span class="co">#&gt;  58:     101058.29: 0.0108755 0.248445 0.211141</span></span>
-<span><span class="co">#&gt;  59:     100991.70: 0.0109017 0.248790 0.211081</span></span>
-<span><span class="co">#&gt;  60:     100926.40: 0.0108822 0.249132 0.211010</span></span>
-<span><span class="co">#&gt;  61:     100861.83: 0.0109081 0.249476 0.210951</span></span>
-<span><span class="co">#&gt;  62:     100798.47: 0.0108889 0.249819 0.210882</span></span>
-<span><span class="co">#&gt;  63:     100735.89: 0.0109145 0.250164 0.210823</span></span>
-<span><span class="co">#&gt;  64:     100674.44: 0.0108955 0.250507 0.210756</span></span>
-<span><span class="co">#&gt;  65:     100613.79: 0.0109210 0.250851 0.210698</span></span>
-<span><span class="co">#&gt;  66:     100554.22: 0.0109021 0.251195 0.210631</span></span>
-<span><span class="co">#&gt;  67:     100495.49: 0.0109274 0.251539 0.210574</span></span>
-<span><span class="co">#&gt;  68:     100437.77: 0.0109088 0.251883 0.210508</span></span>
-<span><span class="co">#&gt;  69:     100380.93: 0.0109338 0.252228 0.210451</span></span>
-<span><span class="co">#&gt;  70:     100325.04: 0.0109154 0.252572 0.210387</span></span>
-<span><span class="co">#&gt;  71:     100270.05: 0.0109401 0.252916 0.210331</span></span>
-<span><span class="co">#&gt;  72:     100215.98: 0.0109219 0.253261 0.210268</span></span>
-<span><span class="co">#&gt;  73:     100162.82: 0.0109465 0.253606 0.210212</span></span>
-<span><span class="co">#&gt;  74:     100110.54: 0.0109285 0.253950 0.210151</span></span>
-<span><span class="co">#&gt;  75:     100059.19: 0.0109529 0.254295 0.210095</span></span>
-<span><span class="co">#&gt;  76:     100008.68: 0.0109351 0.254639 0.210035</span></span>
-<span><span class="co">#&gt;  77:     99959.127: 0.0109593 0.254985 0.209980</span></span>
-<span><span class="co">#&gt;  78:     99910.378: 0.0109416 0.255329 0.209920</span></span>
-<span><span class="co">#&gt;  79:     99862.597: 0.0109657 0.255675 0.209866</span></span>
-<span><span class="co">#&gt;  80:     99815.591: 0.0109482 0.256020 0.209808</span></span>
-<span><span class="co">#&gt;  81:     99769.568: 0.0109721 0.256365 0.209754</span></span>
-<span><span class="co">#&gt;  82:     99724.291: 0.0109547 0.256710 0.209697</span></span>
-<span><span class="co">#&gt;  83:     99680.008: 0.0109785 0.257055 0.209644</span></span>
-<span><span class="co">#&gt;  84:     99636.447: 0.0109613 0.257401 0.209587</span></span>
-<span><span class="co">#&gt;  85:     99593.889: 0.0109849 0.257746 0.209535</span></span>
-<span><span class="co">#&gt;  86:     99552.028: 0.0109678 0.258092 0.209479</span></span>
-<span><span class="co">#&gt;  87:     99511.180: 0.0109913 0.258437 0.209427</span></span>
-<span><span class="co">#&gt;  88:     99471.007: 0.0109743 0.258783 0.209373</span></span>
-<span><span class="co">#&gt;  89:     99431.853: 0.0109976 0.259129 0.209322</span></span>
-<span><span class="co">#&gt;  90:     99393.354: 0.0109809 0.259474 0.209268</span></span>
-<span><span class="co">#&gt;  91:     99355.877: 0.0110040 0.259820 0.209217</span></span>
-<span><span class="co">#&gt;  92:     99319.037: 0.0109874 0.260166 0.209164</span></span>
-<span><span class="co">#&gt;  93:     99283.221: 0.0110104 0.260512 0.209114</span></span>
-<span><span class="co">#&gt;  94:     99248.021: 0.0109939 0.260858 0.209062</span></span>
-<span><span class="co">#&gt;  95:     99213.846: 0.0110168 0.261204 0.209013</span></span>
-<span><span class="co">#&gt;  96:     99180.267: 0.0110004 0.261550 0.208961</span></span>
-<span><span class="co">#&gt;  97:     99147.708: 0.0110231 0.261896 0.208913</span></span>
-<span><span class="co">#&gt;  98:     99115.721: 0.0110069 0.262243 0.208862</span></span>
-<span><span class="co">#&gt;  99:     99084.745: 0.0110295 0.262589 0.208814</span></span>
-<span><span class="co">#&gt; 100:     99054.311: 0.0110133 0.262935 0.208764</span></span>
-<span><span class="co">#&gt; 101:     99024.864: 0.0110359 0.263281 0.208716</span></span>
-<span><span class="co">#&gt; 102:     98995.912: 0.0110198 0.263628 0.208667</span></span>
-<span><span class="co">#&gt; 103:     98967.893: 0.0110422 0.263974 0.208620</span></span>
-<span><span class="co">#&gt; 104:     98940.269: 0.0110263 0.264321 0.208571</span></span>
-<span><span class="co">#&gt; 105:     98913.414: 0.0110486 0.264667 0.208525</span></span>
-<span><span class="co">#&gt; 106:     98886.596: 0.0110328 0.265014 0.208476</span></span>
-<span><span class="co">#&gt; 107:     98859.554: 0.0110549 0.265360 0.208428</span></span>
-<span><span class="co">#&gt; 108:     98825.493: 0.0110393 0.265706 0.208374</span></span>
-<span><span class="co">#&gt; 109:     98795.012: 0.0110548 0.265356 0.208378</span></span>
-<span><span class="co">#&gt; 110:     98763.850: 0.0110328 0.265006 0.208379</span></span>
-<span><span class="co">#&gt; 111:     98732.602: 0.0110547 0.265352 0.208329</span></span>
-<span><span class="co">#&gt; 112:     98702.692: 0.0110390 0.265698 0.208276</span></span>
-<span><span class="co">#&gt; 113:     98660.530: 0.0110547 0.265348 0.208272</span></span>
-<span><span class="co">#&gt; 114:     98594.952: 0.0110327 0.265000 0.208244</span></span>
-<span><span class="co">#&gt; 115:     98566.653: 0.0110547 0.265346 0.208198</span></span>
-<span><span class="co">#&gt; 116:     98539.040: 0.0110389 0.265692 0.208146</span></span>
-<span><span class="co">#&gt; 117:     98510.338: 0.0110612 0.266039 0.208099</span></span>
-<span><span class="co">#&gt; 118:     98461.389: 0.0110455 0.266382 0.208030</span></span>
-<span><span class="co">#&gt; 119:     98431.656: 0.0110611 0.266032 0.208037</span></span>
-<span><span class="co">#&gt; 120:     98401.798: 0.0110390 0.265683 0.208037</span></span>
-<span><span class="co">#&gt; 121:     98350.239: 0.0110612 0.266026 0.207973</span></span>
-<span><span class="co">#&gt; 122:     98311.238: 0.0110453 0.266371 0.207911</span></span>
-<span><span class="co">#&gt; 123:     98278.372: 0.0110612 0.266021 0.207917</span></span>
-<span><span class="co">#&gt; 124:     98244.441: 0.0110389 0.265671 0.207912</span></span>
-<span><span class="co">#&gt; 125:     98209.978: 0.0110612 0.266017 0.207863</span></span>
-<span><span class="co">#&gt; 126:     98177.259: 0.0110451 0.266362 0.207804</span></span>
-<span><span class="co">#&gt; 127:     98127.664: 0.0110612 0.266012 0.207798</span></span>
-<span><span class="co">#&gt; 128:     93254.605: 0.0106839 0.225079 0.203267</span></span>
-<span><span class="co">#&gt; 129:     86705.306: 0.0123176 0.254568 0.174562</span></span>
-<span><span class="co">#&gt; 130:     34731.031: 0.0114812 0.284158 0.145928</span></span>
-<span><span class="co">#&gt; 131:     16967.785: 0.0121887 0.313765 0.117307</span></span>
-<span><span class="co">#&gt; 132:     15735.368: 0.0119042 0.313767 0.117289</span></span>
-<span><span class="co">#&gt; 133:     15617.544: 0.0119656 0.313963 0.117091</span></span>
-<span><span class="co">#&gt; 134:     9082.1692: 0.0123515 0.344375 0.0879054</span></span>
-<span><span class="co">#&gt; 135:     8945.0187: 0.0127730 0.344372 0.0879133</span></span>
-<span><span class="co">#&gt; 136:     8666.8233: 0.0126063 0.344253 0.0878630</span></span>
-<span><span class="co">#&gt; 137:     8650.7435: 0.0125780 0.344050 0.0878122</span></span>
-<span><span class="co">#&gt; 138:     7811.9143: 0.0129773 0.336346 0.0767472</span></span>
-<span><span class="co">#&gt; 139:     5956.7875: 0.0136494 0.292638 0.0451190</span></span>
-<span><span class="co">#&gt; 140:     5840.3550: 0.0137410 0.292635 0.0451240</span></span>
-<span><span class="co">#&gt; 141:     5837.0355: 0.0137530 0.292559 0.0450744</span></span>
-<span><span class="co">#&gt; 142:     5834.1290: 0.0137445 0.292476 0.0450353</span></span>
-<span><span class="co">#&gt; 143:     5253.6401: 0.0142358 0.263340 0.0238995</span></span>
-<span><span class="co">#&gt; 144:     5210.2102: 0.0141671 0.263338 0.0238999</span></span>
-<span><span class="co">#&gt; 145:     5204.8923: 0.0141803 0.263272 0.0238873</span></span>
-<span><span class="co">#&gt; 146:     5200.3375: 0.0141717 0.263224 0.0239357</span></span>
+<span><span class="va">fitted_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_max_likelihood_dust.html">RSVsim_max_likelihood_dust</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
+<span>                                            fitted_parameter_names <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fitted_parameter_names</span>,</span>
+<span>                                            fixed_parameters <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fixed_parameters</span>,</span>
+<span>                                            times <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">times</span>,</span>
+<span>                                            cohort_step_size <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">cohort_step_size</span>,</span>
+<span>                                            init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                                            warm_up <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">warm_up</span>,</span>
+<span>                                            scale_parameters <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                            lower_ll <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                            upper_ll <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>                                            <span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.1515754 0.2632237 8.7425274</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.1486841 0.2483170</span></span></code></pre></div>
 <p>We can then use these fitted parameter values to simulate
 transmission.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">parameters_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
 <span>                                                     <span class="st">"b1"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
-<span>                                                     <span class="st">"phi"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                                                     <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
 <span>                                    contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_simulation_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span><span class="va">parameters_fit</span>, </span>
-<span>                                         warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">9</span>, </span>
-<span>                                         max_t <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">model_simulation_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model_dust.html">RSVsim_run_model_dust</a></span><span class="op">(</span><span class="va">parameters_fit</span>,</span>
+<span>                                         times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>                                         warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>, </span>
+<span>                                         init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                                         cohort_step_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">df</span> <span class="op">|&gt;</span> </span>
-<span>         <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age_chr <span class="op">=</span> </span>
-<span>                         <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">age_chr</span>, </span>
-<span>                                levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"[0,1)"</span>, <span class="st">"[1,2)"</span>, <span class="st">"[2,3)"</span>, <span class="st">"[3,4)"</span>, <span class="st">"[4,5)"</span>, <span class="st">"[5,10)"</span>, <span class="st">"[10,30)"</span>, <span class="st">"[30,50)"</span>, <span class="st">"[50,70)"</span>, <span class="st">"[70,90)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age_chr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">age_chr</span>, </span>
+<span>                                                            levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"[0,1)"</span>, <span class="st">"[1,2)"</span>, <span class="st">"[2,3)"</span>, <span class="st">"[3,4)"</span>, <span class="st">"[4,5)"</span>, <span class="st">"[5,10)"</span>, <span class="st">"[10,30)"</span>, <span class="st">"[30,50)"</span>, <span class="st">"[50,70)"</span>, <span class="st">"[70,90)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">incidence</span>, col <span class="op">=</span> <span class="va">age_chr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -336,8 +214,62 @@ transmission.</p>
 <span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">Incidence</span>, group <span class="op">=</span> <span class="va">age_chr</span>, col <span class="op">=</span> <span class="va">age_chr</span><span class="op">)</span></span>
 <span>            <span class="op">)</span></span></code></pre></div>
 <p><img src="Calibration_files/figure-html/unnamed-chunk-5-1.png" width="700">
-## Bayesian parameter estimation Fit the b0, b1 and phi parameters using
-MCMC.</p>
+## Bayesian parameter estimation To fit the posterior estimates of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">b0</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">b1</annotation></semantics></math>
+parameters we use the monty package to run Hamiltonian MCMC.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># prior_functions_list &lt;- vector(mode = "list", length = 1)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># prior_functions_list[[1]] &lt;- function(x){</span></span>
+<span><span class="co">#   return(dgamma(x, shape = 10, rate = 20, log = TRUE))</span></span>
+<span><span class="co"># }</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># prior_functions_list[[2]] &lt;- function(x){</span></span>
+<span><span class="co">#   return(dgamma(x, shape = 5, rate = 20, log = TRUE))</span></span>
+<span><span class="co"># }</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># prior_functions_list[[1]] &lt;- function(x){</span></span>
+<span><span class="co">#   return(dgamma(x, shape = 1, rate = 1/180, log = TRUE))</span></span>
+<span><span class="co"># }</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># nchains &lt;- 4</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># initial_mat &lt;- matrix(NA, nrow = nchains, ncol = 1)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># for(i in 1:nchains){</span></span>
+<span><span class="co">#   #initial_mat[i, 1] &lt;- runif(1, min = 0, max = 10)</span></span>
+<span><span class="co">#   #initial_mat[i, 2] &lt;- runif(1, min = 0, max = 1)</span></span>
+<span><span class="co">#   initial_mat[i, 1] &lt;- runif(1, min = 0, max = 365.25)</span></span>
+<span><span class="co"># }</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># fitted_parameter_names &lt;- fixed_parameter_list$fitted_parameter_names</span></span>
+<span><span class="co"># fixed_parameters &lt;- fixed_parameter_list$fixed_parameters</span></span>
+<span><span class="co"># times &lt;- fixed_parameter_list$times</span></span>
+<span><span class="co"># cohort_step_size &lt;- fixed_parameter_list$cohort_step_size</span></span>
+<span><span class="co"># init_conds &lt;- NULL</span></span>
+<span><span class="co"># warm_up &lt;- fixed_parameter_list$warm_up</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># phi &lt;- seq(-25, 375, 10)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># p_check &lt;- rep(NA, length(phi))</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># for(i in 1:length(phi)){</span></span>
+<span><span class="co">#   print(i)</span></span>
+<span><span class="co">#   p_check[i] &lt;- RSVsim_posterior(fitted_parameters = phi[i],</span></span>
+<span><span class="co">#                              fitted_parameter_names = fitted_parameter_names,</span></span>
+<span><span class="co">#                              fixed_parameters = fixed_parameters,</span></span>
+<span><span class="co">#                              data = data,</span></span>
+<span><span class="co">#                              times = times,</span></span>
+<span><span class="co">#                              cohort_step_size = cohort_step_size,</span></span>
+<span><span class="co">#                              init_conds = init_conds,</span></span>
+<span><span class="co">#                              warm_up = warm_up,</span></span>
+<span><span class="co">#                              prior_functions_list = prior_functions_list,</span></span>
+<span><span class="co">#                              lower_ll = lower_ll,</span></span>
+<span><span class="co">#                              upper_ll = upper_ll)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
