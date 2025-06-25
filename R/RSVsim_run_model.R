@@ -18,6 +18,9 @@ RSVsim_run_model <- function(parameters,
 ){
 
   ##########################################################
+
+  model <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim", compile_standalone = TRUE)
+
   # labels for the ages
   age_chr <- c()
 

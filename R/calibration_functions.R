@@ -198,3 +198,118 @@ RSVsim_max_likelihood_dust <- function(data,
 
   return(out)
 }
+
+#' Metropolis-Hastings Markov-chain Monte Carlo estimation of the \code{b0}, \code{b1} and \code{phi} parameters from incidence data.
+#'
+#' Wrapper function for the fits the b0, b1 and and phi parameters.
+#' @inheritParams RSVsim_log_likelihood_dust
+#' @return MCMC samples for b0, b1 and phi.
+#' @export
+RSVsim_MCMC <- function(data,
+                        cores,
+                        nchains,
+                        mcmc_iter,
+                        mcmc_warm_up,
+                        prior_functions_list,
+                        initial_mat,
+                        fitted_parameter_names,
+                        fixed_parameters,
+                        times,
+                        cohort_step_size,
+                        init_conds,
+                        warm_up,
+                        lower_ll,
+                        upper_ll){
+
+  RSVsim_posterior <- function(fitted_parameters,
+                               fitted_parameter_names,
+                               fixed_parameters,
+                               data,
+                               times,
+                               cohort_step_size,
+                               init_conds,
+                               warm_up,
+                               prior_functions_list,
+                               lower_ll,
+                               upper_ll){
+
+      if(any(fitted_parameters < lower_ll) || any(fitted_parameters > upper_ll)){
+        return(-Inf)
+        } else{
+
+    # check for invalid parameters
+    log_likelihood <- RSVsim_log_likelihood_dust(fitted_parameters = fitted_parameters,
+                                                 fitted_parameter_names = fitted_parameter_names,
+                                                 fixed_parameters = fixed_parameters,
+                                                 data = data,
+                                                 times = times,
+                                                 cohort_step_size = cohort_step_size,
+                                                 init_conds = init_conds,
+                                                 warm_up = warm_up
+                                            )
+
+      out <- log_likelihood
+
+      for(i in 1:length(fitted_parameters)){
+        out <- out + prior_functions_list[[i]](fitted_parameters[i])
+      }
+
+      if(is.finite(out)){
+        return(out)
+      }else{
+          return(-Inf)
+      }
+      }
+      }
+
+  cores <- 4
+
+  if(cores > 1){
+    multicore <- TRUE
+    cl <- parallel::makeCluster(cores)
+    parallel::clusterExport(cl = cl, varlist = c("multicore",
+                                                 "RSVsim_log_likelihood_dust",
+                                                 "RSVsim_posterior",
+                                                 "RSVsim_run_model_dust",
+                                                 "initial_mat",
+                                                 "data",
+                                                 "prior_functions_list",
+                                                 "fitted_parameter_names",
+                                                 "fixed_parameters",
+                                                 "times",
+                                                 "cohort_step_size",
+                                                 "init_conds",
+                                                 "warm_up",
+                                                 "lower_ll",
+                                                 "upper_ll"))
+  } else{
+      multicore <- FALSE
+      cl <- NULL
+  }
+
+  fit_s <- fmcmc::MCMC(RSVsim_posterior,
+                       initial = initial_mat,
+                       nsteps  = mcmc_iter,
+                       burnin = mcmc_warm_up,
+                       nchains = nchains,
+                       thin = 4,
+                       multicore = multicore,
+                       cl = cl,
+                       kernel  = fmcmc::kernel_ram(ub = c(365.25),
+                                                   lb = c(0)),
+                       conv_checker = fmcmc::convergence_gelman(500),
+                       fitted_parameter_names = fitted_parameter_names,
+                       fixed_parameters = fixed_parameters,
+                       data = data,
+                       times = times,
+                       cohort_step_size = cohort_step_size,
+                       init_conds = init_conds,
+                       warm_up = warm_up,
+                       prior_functions_list = prior_functions_list,
+                       lower_ll = lower_ll,
+                       upper_ll = upper_ll
+                     )
+
+  parallel::stopCluster(cl)
+
+}
