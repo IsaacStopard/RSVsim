@@ -2,7 +2,7 @@
 .Rhistory
 .Rdata
 .httr-oauth
-.DS_Store
+*.DS_Store
 .quarto
 docs
 inst/doc
@@ -12,3 +12,6 @@ src/stan/**
 !src/stan/**/*.*
 src/stan/**/*.exe
 src/stan/**/*.EXE
+*.o
+*.so
+src/stan/.DS_Store

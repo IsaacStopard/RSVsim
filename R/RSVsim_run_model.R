@@ -19,7 +19,15 @@ RSVsim_run_model <- function(parameters,
 
   ##########################################################
 
-  model <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim", compile_standalone = TRUE)
+  # https://discourse.mc-stan.org/t/exposing-stan-user-defined-functions-using-cmdstanr-and-rcpp/27104/9
+  #
+  # m <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim", compile_standalone = TRUE)
+  #
+  cmdstanr::cmdstan_model(stan_file = "src/stan/RSV_ODE_stan.stan", compile_standalone = TRUE)
+
+  a <- cmdstanr::cmdstan_model(stan_file = "src/stan/RSV_ODE_stan.stan", compile_standalone = TRUE, compile = TRUE)
+
+  a$functions$existing_exe <- FALSE
 
   # labels for the ages
   age_chr <- c()
