@@ -21,13 +21,13 @@ RSVsim_run_model <- function(parameters,
 
   # https://discourse.mc-stan.org/t/exposing-stan-user-defined-functions-using-cmdstanr-and-rcpp/27104/9
   #
-  # m <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim", compile_standalone = TRUE)
+  # m <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim")
   #
-  cmdstanr::cmdstan_model(stan_file = "src/stan/RSV_ODE_stan.stan", compile_standalone = TRUE)
-
-  a <- cmdstanr::cmdstan_model(stan_file = "src/stan/RSV_ODE_stan.stan", compile_standalone = TRUE, compile = TRUE)
-
-  a$functions$existing_exe <- FALSE
+  # instantiate::stan_package_clean()
+  #
+   model <- instantiate::stan_package_model(name = "RSV_ODE_stan", package = "RSVsim")
+  #
+  #m <- cmdstanr::cmdstan_model(stan_file = "src/stan/RSV_ODE_stan.stan", compile_standalone = TRUE, force_recompile = TRUE)
 
   # labels for the ages
   age_chr <- c()
@@ -54,7 +54,9 @@ RSVsim_run_model <- function(parameters,
 
   rel_sizes <- size_cohorts/sum(size_cohorts)
 
-  n_steps <- ceiling(max_t / cohort_step_size)
+  n_steps <- max_t / cohort_step_size
+
+  if(n_steps)
 
   # initial conditions: choose whether to reset here
   if(is.null(init_conds)){
@@ -98,6 +100,7 @@ RSVsim_run_model <- function(parameters,
   n_times_array <- as.vector(unlist(lapply(times_array, length)))
   cumn_times_array <- as.integer(cumsum(n_times_array))
   cumn_times_array <- c(0, cumn_times_array[-length(cumn_times_array)])
+  n_times_wsteps <- n_times_array[1]
 
   Sp_index <- 0
   Ep_index <- 1
@@ -109,6 +112,7 @@ RSVsim_run_model <- function(parameters,
 
   out <- cohort_ageing_stan(n_times = length(times),
                             n_steps = n_steps,
+
                             t0 = t0,
                             times_array = times_array,
                             n_times_array = n_times_array,

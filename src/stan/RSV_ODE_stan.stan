@@ -1,4 +1,3 @@
-
 functions {
   vector RSV_ODE_stan(real time,
                       vector states,
@@ -224,13 +223,75 @@ functions {
 }
 
 data {
-
+  int n_times;
+  int n_steps;
+  int n_times_wsteps;
+  real t0;
+  array[n_steps] int n_times_array;
+  array[n_steps] int cumn_times_array;
+  array[n_steps, n_times_wsteps] real times_array;
+  int Ss_index;
+  int Es_index;
+  int Is_index;
+  int Sp_index;
+  int Ep_index;
+  int Ip_index;
+  int R_index;
+  int nAges;
+  vector[(nAges * 7)] init_conds;
+  real total_population;
+  real b0;
+  real b1;
+  real phi;
+  real delta;
+  real gammas;
+  real gammap;
+  real nu;
+  vector[nAges] omega_vect;
+  vector[nAges] sigma_vect;
+  vector[nAges] alpha_vect;
+  matrix[nAges, nAges] matrix_mean;
+  vector[nAges] transition_rate;
+  vector[nAges] rel_sizes;
 }
 
 parameters {
-   real x;
+
  }
 
  model {
-   x ~ std_normal();
+
  }
+
+generated quantities{
+
+  array[(n_times + 1)] vector[(nAges * 7)] gq_sim = cohort_ageing_stan(n_times,
+                                                                       n_steps,
+                                                                       t0,
+                                                                       times_array,
+                                                                       n_times_array,
+                                                                       cumn_times_array,
+                                                                       Sp_index,
+                                                                       Ep_index,
+                                                                       Ip_index,
+                                                                       Ss_index,
+                                                                       Es_index,
+                                                                       Is_index,
+                                                                       R_index,
+                                                                       init_conds,
+                                                                       nAges,
+                                                                       total_population,
+                                                                       b0,
+                                                                       b1,
+                                                                       phi,
+                                                                       delta,
+                                                                       gammas,
+                                                                       gammap,
+                                                                       nu,
+                                                                       omega_vect,
+                                                                       sigma_vect,
+                                                                       alpha_vect,
+                                                                       matrix_mean,
+                                                                       transition_rate,
+                                                                       rel_sizes);
+}
