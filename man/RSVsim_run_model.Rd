@@ -2,11 +2,11 @@
 % Please edit documentation in R/RSVsim_run_model.R
 \name{RSVsim_run_model}
 \alias{RSVsim_run_model}
-\title{Runs the RSV model using Stan}
+\title{Runs the RSV model using odin and dust}
 \usage{
 RSVsim_run_model(
   parameters,
-  times = seq(0, 365 * 4, 0.25),
+  times = seq(0, 3650, 0.25),
   cohort_step_size = 10,
   init_conds = NULL,
   warm_up = NULL
@@ -19,7 +19,8 @@ RSVsim_run_model(
 
 \item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.}
 
-\item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}. If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection.
+\item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}.
+If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
@@ -28,5 +29,5 @@ All other people are assumed to be susceptible to their primary infection.}
 Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 }
 \description{
-Function to run the transmission model with cohort aging.
+Function to run the transmission model with cohort aging. Prevalence, incidence between the given time-steps and the incidence rate per day are also calculated.
 }

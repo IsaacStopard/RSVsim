@@ -28,26 +28,28 @@ dim(alpha_vect) <- nAges
 temp[] <- omega_vect[i] * (Is[i] + Ip[i]) / N[i]
 # contacts multiplied by prevalence
 s_ij[,] <- matrix_mean[i,j] * temp[j]
-lambda[] <- b0 * (1 + b1 * cos(2 * 3.14159265358979323846 / 365.25 * (time - phi))) * sum(s_ij[i,])
+lambda[] <- b0 * (1 - b1 * cos(2 * 3.14159265358979323846 / 365.25 * (time - phi))) * sum(s_ij[i,])
 
-infect_p[] <- lambda[i] * sigma_vect[i] * Sp[i]
-infect_s[] <- lambda[i] * sigma_vect[i] * alpha_vect[i] * Ss[i]
+incidence_rate_p[] <- lambda[i] * sigma_vect[i] * Sp[i]
+incidence_rate_s[] <- lambda[i] * sigma_vect[i] * alpha_vect[i] * Ss[i]
 
 # primary infection
-deriv(Sp[1:nAges]) <- -infect_p[i]
-deriv(Ep[1:nAges]) <- infect_p[i] - delta * Ep[i]
+deriv(Sp[1:nAges]) <- -incidence_rate_p[i]
+deriv(Ep[1:nAges]) <- incidence_rate_p[i] - delta * Ep[i]
 deriv(Ip[1:nAges]) <- delta * Ep[i] - gamma_p * Ip[i]
 # secondary infection
-deriv(Ss[1:nAges]) <- -infect_s[i] + nu * R[i]
-deriv(Es[1:nAges]) <- infect_s[i] - delta * Es[i]
+deriv(Ss[1:nAges]) <- -incidence_rate_s[i] + nu * R[i]
+deriv(Es[1:nAges]) <- incidence_rate_s[i] - delta * Es[i]
 deriv(Is[1:nAges]) <- delta * Es[i] - gamma_s * Is[i]
 
 deriv(R[1:nAges]) <- gamma_p * Ip[i] + gamma_s * Is[i] - nu * R[i]
+deriv(Incidence[1:nAges]) <- incidence_rate_s[i] + incidence_rate_p[i]
 
 N[1:nAges] <- Ss[i] + Es[i] + Is[i] + Sp[i] + Ep[i] + Ip[i] + R[i]
 
-output(Incidence[1:nAges]) <- infect_s[i] + infect_p[i]
-output(DetIncidence[1:nAges]) <- prop_detected_vect[i] * infect_s[i] + prop_detected_vect[i] * infect_p[i]
+output(DetIncidence[1:nAges]) <- prop_detected_vect[i] * Incidence[i]
+output(Incidence_rate[1:nAges]) <- incidence_rate_s[i] + incidence_rate_p[i]
+output(DetIncidence_rate[1:nAges]) <- prop_detected_vect[i] * Incidence_rate[i]
 output(prev[1:nAges]) <- (Ip[i] + Is[i])/N[i]
 output(prev_p[1:nAges]) <- Ip[i]/N[i]
 output(prev_s[1:nAges]) <- Is[i]/N[i]
@@ -60,6 +62,7 @@ initial(Ss[1:nAges]) <- Ss0[i]
 initial(Es[1:nAges]) <- Es0[i]
 initial(Is[1:nAges]) <- Is0[i]
 initial(R[1:nAges]) <- R0[i]
+initial(Incidence[1:nAges]) <- Incidence0[i]
 
 ##Initial vectors
 Sp0 <- parameter()
@@ -69,6 +72,7 @@ Ss0 <- parameter()
 Es0 <- parameter()
 Is0 <- parameter()
 R0 <- parameter()
+Incidence0 <- parameter()
 
 ##Dimensions of the different "vectors" used
 # For the State Variables
@@ -79,13 +83,17 @@ dim(R) <- nAges
 dim(Ss) <- nAges
 dim(Es) <- nAges
 dim(Is) <- nAges
+dim(Incidence) <- nAges
 
 dim(N) <- nAges
-dim(Incidence) <- nAges
 dim(DetIncidence) <- nAges
+dim(Incidence_rate) <- nAges
+dim(DetIncidence_rate) <- nAges
 dim(prev) <- nAges
 dim(prev_s) <- nAges
 dim(prev_p) <- nAges
+dim(incidence_rate_s) <- nAges
+dim(incidence_rate_p) <- nAges
 dim(Sp0) <- nAges
 dim(Ep0) <- nAges
 dim(Ip0) <- nAges
@@ -93,9 +101,9 @@ dim(Ss0) <- nAges
 dim(Es0) <- nAges
 dim(Is0) <- nAges
 dim(R0) <- nAges
+dim(Incidence0) <- nAges
 
 dim(lambda) <- nAges
 dim(s_ij) <- c(nAges,nAges)
 dim(temp) <- nAges
-dim(infect_p) <- nAges
-dim(infect_s) <- nAges
+
