@@ -7,7 +7,7 @@
 RSVsim_run_model(
   parameters,
   times = seq(0, 3650, 0.25),
-  cohort_step_size = 10,
+  cohort_step_size = 60,
   init_conds = NULL,
   warm_up = NULL
 )
@@ -19,7 +19,7 @@ RSVsim_run_model(
 
 \item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.}
 
-\item{init_conds}{Initial conditions to run the model. List. Default: \code{NULL}.
+\item{init_conds}{Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.}
 

@@ -5,16 +5,15 @@
 #' @param parameters List of parameters from \code{get_params} function.
 #' @param times Simulation times. Default: 0 - 3650 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.
-#' @param init_conds Initial conditions to run the model. List. Default: \code{NULL}.
+#' @param init_conds Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
-
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
 RSVsim_run_model <- function(parameters,
                              times = seq(0, 3650, 0.25),
-                             cohort_step_size = 10,
+                             cohort_step_size = 60,
                              init_conds = NULL,
                              warm_up = NULL
                              ){
@@ -73,13 +72,13 @@ RSVsim_run_model <- function(parameters,
       }
       purrr::list_modify(
         parameters,
-        Sp0 = Sp0,
-        Ep0 = Ep0,
-        Ip0 = Ip0,
-        Ss0 = Ss0,
-        Es0 = Es0,
-        Is0 = Is0,
-        R0 = R0,
+        Sp0 = Sp0 * rel_sizes * parameters$total_population,
+        Ep0 = Ep0 * rel_sizes * parameters$total_population,
+        Ip0 = Ip0 * rel_sizes * parameters$total_population,
+        Ss0 = Ss0 * rel_sizes * parameters$total_population,
+        Es0 = Es0 * rel_sizes * parameters$total_population,
+        Is0 = Is0 * rel_sizes * parameters$total_population,
+        R0 = R0 * rel_sizes * parameters$total_population,
         Incidence0 = Incidence0
       )
       }
@@ -199,18 +198,21 @@ RSVsim_run_model <- function(parameters,
                                   age_chr = age_chr), by = dplyr::join_by(age))
       )
 
+  out <- out |> dplyr::filter(time <= max_t)
+
+  # incidence calculation
+  out_checkout <- out |> dplyr::group_by(age) |> dplyr::mutate(Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
+                                                               DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0)
+                                                               ) |>
+    dplyr::ungroup() |> as.data.frame()
+
   if(!is.null(warm_up)){
     if(!is.numeric(warm_up)){
       stop("warm_up is not numeric")
     } else{
-      out <- out |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
+      out_checkout <- out_checkout |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
     }
   }
-
-  # incidence calculation
-  out_checkout <- out |> dplyr::group_by(age) |> dplyr::mutate(Incidence = Incidence - lag(Incidence, 1), Incidence = tidyr::replace_na(Incidence, 0),
-                                                               DetIncidence = DetIncidence - lag(DetIncidence, 1), DetIncidence = tidyr::replace_na(DetIncidence, 0)) |>
-    dplyr::ungroup() |> as.data.frame()
 
   return(out_checkout)
 }

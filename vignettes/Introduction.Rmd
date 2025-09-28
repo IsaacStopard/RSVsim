@@ -86,7 +86,7 @@ ggplot(data = out) +
   plot_layout(guides = "collect", axes = "collect") & theme_classic()
 ```
 
-The incidence and detected incidence. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume no one over the age of 2 years old is tested.
+The incidence and detected incidence are calculated. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume very few people (1%) over the age of 2 years old is tested.
 
 ```{r inc_plot, dependson="model_run"}
 ggplot(data = out, 

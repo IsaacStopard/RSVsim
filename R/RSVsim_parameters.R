@@ -57,14 +57,14 @@ RSVsim_parameters <- function(overrides = list(),
          prop_detected_vect[age.limits > 3 * 1/12 & age.limits <= 6 * 1/12] <- 0.088
          prop_detected_vect[age.limits > 6 * 1/12 & age.limits <= 1] <- 0.047
          prop_detected_vect[age.limits > 1 & age.limits < 2] <- 0.02
-         prop_detected_vect[age.limits >= 2] <- 0
+         prop_detected_vect[age.limits >= 2] <- 0.01 # very little detection in > 2 year olds
 
          alpha_vect[nAges >= 10] <- 0.3
          alpha_vect[nAges < 10] <- 0.4
 
          parameters <- list(
            "b0" = 0.15, # transmission rate coefficient 0.087
-           "b1" = -0.193, # amplitude of seasonal forcing
+           "b1" = 0.3,#-0.193, # amplitude of seasonal forcing
            "phi" = 1.536 * 30.436875, # phase shift of seasonal forcing
            "delta" = 1/4, # inverse of the latent period
            "gamma_s" = 1/8, # inverse of the infectious period of subsequent (secondary +) infections
