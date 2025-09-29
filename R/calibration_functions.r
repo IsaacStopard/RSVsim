@@ -117,6 +117,7 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
 #' @param summary_fun Function to calculate the summary statistics equivalent to the target values.
 #' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs.
 #' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
+#' @param n_prior_attempts Number of random samples from the prior to attempt for each accepted particle.
 #' @param nparticles Number of samples from the approximate posterior.
 #' @param ncores Number of cores. If greater than one then it is run in parallel.
 #' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
@@ -129,6 +130,7 @@ RSVsim_ABC_rejection <- function(target,
                                  summary_fun,
                                  dist_fun,
                                  prior_fun,
+                                 n_prior_attempts,
                                  nparticles,
                                  ncores=1,
                                  fitted_parameter_names,
@@ -151,6 +153,10 @@ RSVsim_ABC_rejection <- function(target,
     stop("if a specific tolerance is used for each summary output length(epsilon) must be equal to length(target) else length(epsilon) must equal 1")
   }
 
+  if(any(epsilon == 0) | any(epsilon < 0)){
+    stop("increase epsilon above zero")
+  }
+
   nparams <- length(fitted_parameter_names)
 
   # res <- matrix(ncol = nparams + 1, nrow = nparticles) # Empty matrix to store results
@@ -165,11 +171,17 @@ RSVsim_ABC_rejection <- function(target,
     i <- 1 # initialise the number of accepted particles
     j <- 1 # initialise the number of proposed particles
 
+    used_seed <- MQMF::getseed()
+
+    fitted_parameters_all <- prior_fun(n_prior_attempts)
+
     while(i <= 1){
 
-      used_seed <- MQMF::getseed()
+      if(j > n_prior_attempts){
+        stop("No particle accepted: increase n_prior_attempts or the tolerance (epsilon)")
+      }
 
-      fitted_parameters <- prior_fun()
+      fitted_parameters <- fitted_parameters_all[j,]
 
       parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
                       fixed_parameter_list)
@@ -186,8 +198,8 @@ RSVsim_ABC_rejection <- function(target,
 
       if(all(distance <= epsilon)){
 
-        acc_params <- c(fitted_parameters, i/j, particle, used_seed)
-        names(acc_params) <- c(fitted_parameter_names, "acc_rate", "particle_number", "seed")
+        acc_params <- c(fitted_parameters, j, particle, used_seed)
+        names(acc_params) <- c(fitted_parameter_names, "attempts", "particle_number", "prior_function_seed")
 
         i <- i + 1
       }
@@ -200,18 +212,6 @@ RSVsim_ABC_rejection <- function(target,
 
 
   if(ncores > 1){
-
-    # chunk_size <- ceiling(nparticles / ncores)
-    #
-    # start_rows <- seq(1, nparticles, by = chunk_size)
-    # end_rows <- c(start_rows[-1] - 1, nparticles)
-    #
-    # res_chunks <-
-    #   lapply(1:ncores, function(i){
-    #     as.matrix(res[start_rows[i]:end_rows[i], ])
-    #   }
-    #   )
-
     cl <- parallel::makeCluster(ncores) #not to overload your computer
     parallel::clusterExport(cl, varlist = c("while_fun",
                                             "RSVsim_run_model",
@@ -223,11 +223,14 @@ RSVsim_ABC_rejection <- function(target,
                                             "fixed_parameter_list",
                                             "fitted_parameter_names",
                                             "nAges",
-                                            "times", "cohort_step_size",
-                                            "init_conds", "warm_up",
+                                            "times",
+                                            "cohort_step_size",
+                                            "init_conds",
+                                            "warm_up",
                                             "target",
                                             "epsilon",
                                             "prior_fun",
+                                            "n_prior_attempts",
                                             "summary_fun",
                                             "dist_fun",
                                             "nparams"),
@@ -239,7 +242,6 @@ RSVsim_ABC_rejection <- function(target,
   }
 
   pbapply::pboptions(type = "timer", char = "-")
-  #pboptions(type = "tk")
   res <- pbapply::pblapply(cl = cl, X = 1:nparticles, FUN = while_fun)
   res <- do.call(rbind, res)
 
@@ -271,7 +273,7 @@ RSVsim_ABC_rejection <- function(target,
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
 RSVsim_ABC_SMC <- function(target,
-                           epsilon,
+                           epsilon_matrix,
                            summary_fun,
                            dist_fun,
                            prior_fun,
@@ -297,9 +299,12 @@ RSVsim_ABC_SMC <- function(target,
     stop("target must be numeric")
   }
 
-  if(!all(is.numeric(epsilon))){
+  if(!all(is.numeric(epsilon_matrix))){
     stop("epsilon must be numeric")
   }
+
+
+  G <- nrow(epsilon)
 
 
   while_fun <- function(res_in, cl){

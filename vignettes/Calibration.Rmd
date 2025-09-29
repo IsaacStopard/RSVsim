@@ -32,7 +32,7 @@ age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
 contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
 
 # get the default model parameters with a b0 value of 0.08 and b1 value of 0
-parameters <- RSVsim_parameters(overrides = list("b0" = 0.08, "b1" = 0),
+parameters <- RSVsim_parameters(overrides = list("b0" = 0.08, "b1" = 0.1, "phi" = 0),
                                 contact_population_list = contact_population_list,
                                 fitted = NULL)
 
@@ -45,11 +45,11 @@ out <- RSVsim_run_model(parameters = parameters,
                         warm_up = 365*4)
 
 
-fitted_parameter_names <- c("b0")
+fitted_parameter_names <- c("b0", "b1")
 
 fixed_parameter_list <- RSVsim_fixed_parameters(fitted_parameter_names = fitted_parameter_names,
                                                 data = unique(out[,c("age_chr", "age")]),
-                                                overrides = list("b1" = 0))
+                                                overrides = list("phi" = 0))
 
 summary_fun <- function(out){
   return(c(RSVsim_total_incidence(out), RSVsim_amplitude(out), RSVsim_peak(out)))
@@ -63,9 +63,14 @@ To implement the ABC-rejection algorithm we must specify the tolerance; we speci
 
 ```{r run_ABC, dependson="simulated_data"}
 
-prior_fun <- function(){
-
-  x <- runif(1, 0.05, 0.15)
+# we use latin hypercube sampling to efficiently sample from the prior distributions
+prior_fun <- function(n_prior_attempts){
+  
+  x <- lhs::randomLHS(n_prior_attempts, 2)
+  
+  # adjusting the prior distributions
+  x[,1] <- qunif(x[,1], min = 0.05, 0.25)
+  x[,2] <- qunif(x[,2], min = 0, max = 1) # not necessary but added for completeness
 
   return(x)
 }
@@ -82,6 +87,7 @@ dist_fun <- function(target, target_star, n = nAges){
 }
 target_e <- round(target, 2)
 
+# we ensure that none of the tolerances are zero
 epsilon <- c(pmax(100, target[1:nAges] * 0.15), pmax(0.02, target[(nAges+1):(nAges*2)] * 0.15), pmax(50, target[(2*nAges+1):(3*nAges)] * 0.15))
 
 fit <- RSVsim_ABC_rejection(target = target,
@@ -89,7 +95,8 @@ fit <- RSVsim_ABC_rejection(target = target,
                             summary_fun = summary_fun,
                             dist_fun = dist_fun,
                             prior_fun = prior_fun,
-                            nparticles = 1000,
+                            n_prior_attempts = 10000,
+                            nparticles = 80,
                             ncores = 8,
                             fitted_parameter_names = fitted_parameter_names,
                             fixed_parameter_list = fixed_parameter_list,
