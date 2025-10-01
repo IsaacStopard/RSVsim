@@ -10,6 +10,7 @@ RSVsim_ABC_rejection(
   summary_fun,
   dist_fun,
   prior_fun,
+  n_prior_attempts,
   nparticles,
   ncores = 1,
   fitted_parameter_names,
@@ -30,6 +31,8 @@ RSVsim_ABC_rejection(
 \item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs.}
 
 \item{prior_fun}{Function to sample from the priors for all parameters. Must return a vector.}
+
+\item{n_prior_attempts}{Number of random samples from the prior to attempt for each accepted particle.}
 
 \item{nparticles}{Number of samples from the approximate posterior.}
 

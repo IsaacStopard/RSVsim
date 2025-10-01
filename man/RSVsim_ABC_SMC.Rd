@@ -6,12 +6,14 @@
 \usage{
 RSVsim_ABC_SMC(
   target,
-  epsilon,
+  epsilon_matrix,
   summary_fun,
   dist_fun,
   prior_fun,
+  prior_dens_fun,
+  particle_low,
+  particle_up,
   nparticles,
-  ngenerations,
   ncores = 1,
   fitted_parameter_names,
   fixed_parameter_list,
@@ -24,15 +26,17 @@ RSVsim_ABC_SMC(
 \arguments{
 \item{target}{Values to fit to.}
 
-\item{epsilon}{Acceptable error for each target - must be list of equal length to the generations.}
+\item{epsilon_matrix}{Matrix of acceptable error for each target (columns) for each generation (rows). The row number of is used to determine the number of generations.}
 
-\item{summary_fun}{Function to calculate the summary statistics equivalent to the target values.}
+\item{summary_fun}{Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.}
 
-\item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs.}
+\item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.}
 
 \item{prior_fun}{Function to sample from the priors for all parameters. Must return a vector.}
 
-\item{nparticles}{Number of generations.}
+\item{prior_dens_fun}{Function that calculates the joint probability density of all parameters given the prior distributions.}
+
+\item{nparticles}{Number of samples from the approximate posterior for each generation.}
 
 \item{ncores}{Number of cores. If greater than one then it is run in parallel.}
 

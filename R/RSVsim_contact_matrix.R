@@ -158,5 +158,21 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
     stop("age_distribution does not sum to 1")
   }
 
+  # labels for the ages
+  age_chr <- c()
+
+  for(i in 1:(nAges - 1)){
+    age_chr <- c(age_chr, c(paste0("[",round(age.limits[i], digits = 2),",", round(age.limits[i+1], digits = 2),")")))
+  }
+
+  age_chr <- c(age_chr, paste0("[",round(age.limits[nAges], digits = 2),",", round(max_age, digits = 2),")"))
+
+  # age differences in days
+  size_cohorts <- c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
+
+
+  out <- append(out, list("age_chr" = age_chr,
+                          "size_cohorts" = size_cohorts))
+
   return(out)
 }

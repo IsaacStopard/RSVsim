@@ -105,7 +105,7 @@ RSVsim_abs_dist_fun <- function(target, target_star){
 #' @return Absolute difference.
 #' @export
 RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
-  return(pmin(target - target_star, period - (target - target_star)))
+  return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
 #' Function to run a Approximate Bayesian Computation (ABC) rejection algorithm
@@ -153,18 +153,13 @@ RSVsim_ABC_rejection <- function(target,
     stop("if a specific tolerance is used for each summary output length(epsilon) must be equal to length(target) else length(epsilon) must equal 1")
   }
 
-  if(any(epsilon == 0) | any(epsilon < 0)){
+  if(any(epsilon <= 0)){
     stop("increase epsilon above zero")
   }
 
   nparams <- length(fitted_parameter_names)
 
-  # res <- matrix(ncol = nparams + 1, nrow = nparticles) # Empty matrix to store results
-  # colnames(res) <- c(fitted_parameter_names)
-
   nAges <- fixed_parameter_list$nAges
-
-  #pb <- utils::txtProgressBar(min = i, max = n_particles_to_fit, style = 3)
 
   while_fun <- function(particle){
 
@@ -260,12 +255,12 @@ RSVsim_ABC_rejection <- function(target,
 #' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm.
 #'
 #' @param target Values to fit to.
-#' @param epsilon Acceptable error for each target - must be list of equal length to the generations.
-#' @param summary_fun Function to calculate the summary statistics equivalent to the target values.
-#' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs.
+#' @param epsilon_matrix Matrix of acceptable error for each target (columns) for each generation (rows). The row number of is used to determine the number of generations.
+#' @param summary_fun Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.
+#' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.
 #' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
+#' @param prior_dens_fun Function that calculates the joint probability density of all parameters given the prior distributions.
 #' @param nparticles Number of samples from the approximate posterior for each generation.
-#' @param nparticles Number of generations.
 #' @param ncores Number of cores. If greater than one then it is run in parallel.
 #' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
 #' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
@@ -277,8 +272,10 @@ RSVsim_ABC_SMC <- function(target,
                            summary_fun,
                            dist_fun,
                            prior_fun,
+                           prior_dens_fun,
+                           particle_low,
+                           particle_up,
                            nparticles,
-                           ngenerations,
                            ncores=1,
                            fitted_parameter_names,
                            fixed_parameter_list,
@@ -289,8 +286,7 @@ RSVsim_ABC_SMC <- function(target,
 
   nparams <- length(fitted_parameter_names)
 
-  res <- matrix(ncol = nparams, nrow = nparticles) # Empty matrix to store results
-  colnames(res) <- c(fitted_parameter_names)
+  ntargets <- length(target)
 
   nAges <- fixed_parameter_list$nAges
 
@@ -300,59 +296,86 @@ RSVsim_ABC_SMC <- function(target,
   }
 
   if(!all(is.numeric(epsilon_matrix))){
-    stop("epsilon must be numeric")
+    stop("epsilon_matrix must be numeric")
   }
 
+  if(any(epsilon_matrix <= 0)){
+    stop("increase all epsilon_matrix values above zero")
+  }
 
-  G <- nrow(epsilon)
+  if(ncol(epsilon_matrix)!=nparams){
+    stop("incorrect number of columns in epsilon_matrix")
+  }
 
+  if(length(particle_up) != length(particle_low) | length(particle_low) != nparams){
+    stop("incorrect number of lower or upper particle boundaries")
+  }
 
-  while_fun <- function(res_in, cl){
+  # number of generations
+  G <- nrow(epsilon_matrix)
 
-    n_particles_to_fit <- nrow(res_in)
+  # Number of simulations for each parameter set
+  n <- 1
 
-    i <- 1 # initialise the number of accepted particles
-    j <- 1 # initialise the number of proposed particles
+  # Empty matrices to store results (5 model parameters)
+  res_old <- matrix(ncol = nparams, nrow = nparticles)
+  res_new <- matrix(ncol = nparams, nrow = nparticles)
 
-    pb <- utils::txtProgressBar(min = i, max = n_particles_to_fit, style = 3)
+  # Empty vectors to store weights
+  w_old <- matrix(ncol = 1, nrow = nparticles)
+  w_new <- matrix(ncol = 1, nrow = nparticles)
 
-    while(i <= n_particles_to_fit){
+  for(g in 1:G){
 
-      # look into the latin hypercube
+    while(i <= nparticles){
 
-      fitted_parameters <- prior_fun()
+      ### selecting parameters (particles)
+      if(g == 1){
+
+        fitted_parameters <- prior_fun(1)
+
+      } else{
+
+        # sample particle set from previously fitted parameters
+        p <- sample(seq(1, nparticles), 1, prob = w_old)
+
+        # perturb the particle to obtain theta**
+        fitted_parameters <- tmvtnorm::rtmvnorm(1, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up)
+
+      }
 
       parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
                       fixed_parameter_list)
 
-      out <- RSVsim_run_model(parameters = parameters,
+      p_non_zero <- as.numeric(prior_dens_fun(fitted_parameters) > 0)
+
+      if(p_non_zero){
+        m <- 0
+        distance <- matrix(nrow = n, ncol = ntargets)
+
+        for(j in 1:n){
+
+          out <- RSVsim_run_model(parameters = parameters,
                               times = times,
                               cohort_step_size = cohort_step_size,
                               init_conds = init_conds,
                               warm_up = warm_up)
 
-      summary_stats <- summary_fun(out)
+          target_star <- summary_fun(out)
 
-      distance <- dist_fun(target, summary_stats)
-
-      if(all(distance <= epsilon)){
-
-        res_in[i, 1:nparams] <- c(fitted_parameters)
+          distance[j,] <- dist_fun(target, target_star)
 
 
-        i <- i + 1
+        }
+
+
+
       }
 
-      j <- j + 1
 
-      utils::setTxtProgressBar(pb, i)
     }
 
-    close(pb)
 
-    print(paste("acc_rate:", i/j*100, "%"))
-
-    return(res_in)
   }
 
 
@@ -402,7 +425,7 @@ RSVsim_ABC_SMC <- function(target,
     res_out <- while_fun(res_in = res)
   }
 
-  return(res_out)
+  return()
 }
 
 

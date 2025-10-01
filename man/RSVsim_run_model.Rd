@@ -13,7 +13,7 @@ RSVsim_run_model(
 )
 }
 \arguments{
-\item{parameters}{List of parameters from \code{get_params} function.}
+\item{parameters}{List of parameters from \code{RSVsim_parameters} function.}
 
 \item{times}{Simulation times. Default: 0 - 3650 days with intervals of 0.25 days.}
 

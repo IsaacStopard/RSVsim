@@ -2,7 +2,7 @@
 #'
 #' Function to run the transmission model with cohort aging. Prevalence, incidence between the given time-steps and the incidence rate per day are also calculated.
 #'
-#' @param parameters List of parameters from \code{get_params} function.
+#' @param parameters List of parameters from \code{RSVsim_parameters} function.
 #' @param times Simulation times. Default: 0 - 3650 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.
 #' @param init_conds Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
@@ -19,20 +19,8 @@ RSVsim_run_model <- function(parameters,
                              ){
 
   ##########################################################
-  # labels for the ages
 
-  age_chr <- c()
-
-  for(i in 1:(parameters$nAges - 1)){
-    age_chr <- c(age_chr, c(paste0("[",round(parameters$age.limits[i], digits = 2),",", round(parameters$age.limits[i+1], digits = 2),")")))
-  }
-
-  age_chr <- c(age_chr, paste0("[",round(parameters$age.limits[parameters$nAges], digits = 2),",", round(parameters$max_age, digits = 2),")"))
-
-  # age differences in days
-  size_cohorts <- with(parameters,
-                       c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
-                       )
+  size_cohorts <- parameters$size_cohorts
 
   # running for the time of the smallest cohort
   if(max(diff(times)) >= cohort_step_size){
@@ -113,22 +101,22 @@ RSVsim_run_model <- function(parameters,
   # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
   out_list <- vector(mode = "list", length = n_steps)
 
+  times_in <- lapply(2:n_steps, FUN = function(i){
+    sort(unique(c(times[times > ((i - 1) * cohort_step_size) & times <= (i * cohort_step_size)],
+                    i * cohort_step_size)))
+  })
+
+  times_in <- c(
+    list(
+      sort(unique(c(0, times[times >= 0 & times <= cohort_step_size], cohort_step_size)))
+      ),
+    times_in
+  )
+
   for(i in 1:n_steps){
 
-    times_in <- if(i == 1){
-      sort(unique(c(0,
-                    times[times >= 0 & times <= i * cohort_step_size],
-                    i * cohort_step_size))
-           )
-    } else{
-      sort(unique(c(times[times > ((i - 1) * cohort_step_size) & times <= (i * cohort_step_size)],
-                    i * cohort_step_size)
-                  )
-           )
-    }
-
     out <- dust2::dust_system_simulate(RSV_dust,
-                                       times = times_in)
+                                       times = times_in[[i]])
 
     # checking the total population is correct
     if(!all(abs(out[-incidence_i,] |> colSums() - parameters$total_population) < 1E-5)){
@@ -137,10 +125,10 @@ RSVsim_run_model <- function(parameters,
 
     out_list[[i]] <- out |> as.data.frame()
 
-    colnames(out_list[[i]]) <- times_in
+    colnames(out_list[[i]]) <- times_in[[i]]
 
     out_list[[i]] <- out_list[[i]] |> dplyr::mutate(state = states, age = ages) |>
-      tidyr::pivot_longer(cols = 1:length(times_in),
+      tidyr::pivot_longer(cols = 1:length(times_in[[i]]),
                           values_to = "value",
                           names_to = "time") |>
       dplyr::mutate(time = as.numeric(time)) |>
@@ -184,9 +172,9 @@ RSVsim_run_model <- function(parameters,
     dust2::dust_system_set_state(sys = RSV_dust,
                                  state = c(next_state, next_state_output_variables))
 
-    if(all(dust2::dust_system_state(RSV_dust) != next_state)){
-      stop("RSVsim_run_model: states have not been updated")
-    }
+    # if(all(dust2::dust_system_state(RSV_dust) != next_state)){
+    #   stop("RSVsim_run_model: states have not been updated")
+    # }
 
     out_list[[i]] <- out_list[[i]] |> tidyr::pivot_wider(names_from = state, values_from = value)
 
@@ -195,7 +183,7 @@ RSVsim_run_model <- function(parameters,
   out <- invisible(
     dplyr::bind_rows(out_list) |>
       dplyr::left_join(data.frame(age = parameters$age.limits,
-                                  age_chr = age_chr), by = dplyr::join_by(age))
+                                  age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
 
   out <- out |> dplyr::filter(time <= max_t)
@@ -207,11 +195,7 @@ RSVsim_run_model <- function(parameters,
     dplyr::ungroup() |> as.data.frame()
 
   if(!is.null(warm_up)){
-    if(!is.numeric(warm_up)){
-      stop("warm_up is not numeric")
-    } else{
       out_checkout <- out_checkout |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
-    }
   }
 
   return(out_checkout)

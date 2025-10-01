@@ -33,7 +33,8 @@ Imports:
     socialmixr,
     stats,
     tibble,
-    tidyr
+    tidyr,
+    tmvtnorm
 Depends: 
     R (>= 4.3.0)
 LinkingTo:

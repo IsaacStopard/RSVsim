@@ -10,20 +10,21 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  cache = TRUE
+  comment = "#>"
 )
 ```
 
-```{r setup}
+```{r setup, cache=TRUE}
 library(RSVsim)
 library(ggplot2)
 library(patchwork)
 ```
 
-In this vignette, we give an overview of how to use an Approximate Bayesian Computation (ABC) rejection algorithm to calibrate the mathematical model of RSV transmission to simulated data. First, we run the model and calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm.
+In this vignette, we give an overview of how to use an Approximate Bayesian Computation (ABC) rejection algorithm to calibrate the mathematical model of RSV transmission to simulated data. The code to run these samplers was adapted from code provided in Minter, Amanda, and Renata Retkute. "Approximate Bayesian Computation for infectious disease modelling." Epidemics 29 (2019): 100368 <https://doi.org/10.1016/j.epidem.2019.100368>. 
 
-```{r simulated_data, dependson="setup"}
+First, we run the model and calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm.
+
+```{r simulated_data, dependson="setup", cache = TRUE}
 
 # specify age categories to run the model with
 age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
@@ -44,12 +45,11 @@ out <- RSVsim_run_model(parameters = parameters,
                         init_conds = NULL,
                         warm_up = 365*4)
 
-
-fitted_parameter_names <- c("b0", "b1")
+fitted_parameter_names <- c("b0", "b1", "phi")
 
 fixed_parameter_list <- RSVsim_fixed_parameters(fitted_parameter_names = fitted_parameter_names,
-                                                data = unique(out[,c("age_chr", "age")]),
-                                                overrides = list("phi" = 0))
+                                                data = unique(out[,c("age_chr", "age")])
+                                                )
 
 summary_fun <- function(out){
   return(c(RSVsim_total_incidence(out), RSVsim_amplitude(out), RSVsim_peak(out)))
@@ -59,19 +59,20 @@ target <- summary_fun(out)
 
 ```
 
-To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. In this example we fit a single parameter b0. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
+To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
 
-```{r run_ABC, dependson="simulated_data"}
+```{r ABC_functions, dependson = "simulated_data", cache = TRUE}
 
 # we use latin hypercube sampling to efficiently sample from the prior distributions
 prior_fun <- function(n_prior_attempts){
   
-  x <- lhs::randomLHS(n_prior_attempts, 2)
+  x <- lhs::randomLHS(n_prior_attempts, 3)
   
   # adjusting the prior distributions
   x[,1] <- qunif(x[,1], min = 0.05, 0.25)
   x[,2] <- qunif(x[,2], min = 0, max = 1) # not necessary but added for completeness
-
+  x[,3] <- qunif(x[,3], min = -365.25/2, max = 365.25/2)
+  
   return(x)
 }
 
@@ -85,10 +86,39 @@ dist_fun <- function(target, target_star, n = nAges){
   )
 
 }
-target_e <- round(target, 2)
 
-# we ensure that none of the tolerances are zero
-epsilon <- c(pmax(100, target[1:nAges] * 0.15), pmax(0.02, target[(nAges+1):(nAges*2)] * 0.15), pmax(50, target[(2*nAges+1):(3*nAges)] * 0.15))
+# calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation
+# getting 1000 samples from the priors
+prior_params <- prior_fun(100)
+
+# simulating the summary statistics for each particle
+prior_distances <- sapply(1:100, function(i){
+  parameters_in <- c(as.list(setNames(prior_params[i,], fitted_parameter_names)),
+                     fixed_parameter_list)
+  
+  out <- RSVsim_run_model(parameters = parameters_in,
+                   times = seq(0, 365*5, 0.25), # maximum time to run the model for
+                   cohort_step_size = 0.2*365, # time at which to age people\
+                   init_conds = NULL,
+                   warm_up = 365*4)
+  
+  return(dist_fun(target, summary_fun(out)))
+})
+
+# calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics 
+nsuccess <- rep(NA, 100)
+q <- seq(0.01, 1, 0.01)
+for(i in 1:100){
+  epsilon_check <- round(apply(prior_distances, 1, quantile, probs = c(q[i])), digits = 2)
+  nsuccess[i] <- sum(sapply(1:100, function(j){all(prior_distances[,j] <= epsilon_check)}))
+}
+
+# selecting a tolerance where at least 1 particle is accepted for the 1000 simulations
+epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsuccess >= 1))])), digits = 2)
+
+```
+
+```{r run_ABC, dependson = "ABC_functions", cache = TRUE}
 
 fit <- RSVsim_ABC_rejection(target = target,
                             epsilon = epsilon,
@@ -96,7 +126,7 @@ fit <- RSVsim_ABC_rejection(target = target,
                             dist_fun = dist_fun,
                             prior_fun = prior_fun,
                             n_prior_attempts = 10000,
-                            nparticles = 80,
+                            nparticles = 160,
                             ncores = 8,
                             fitted_parameter_names = fitted_parameter_names,
                             fixed_parameter_list = fixed_parameter_list,
@@ -104,11 +134,35 @@ fit <- RSVsim_ABC_rejection(target = target,
                             cohort_step_size = 0.2*365, # time at which to age people\
                             init_conds = NULL,
                             warm_up = 365 * 4)
+
 ```
 
 We can then plot the posterior distribution.
 
-```{r abc_plots, dependson="run_ABC"}
-hist(fit)
+```{r abc_plots, dependson="run_ABC", cache = TRUE}
+hist(fit[,'b0'])
+hist(fit[,'b1'])
+hist(fit[,'phi'])
+mean(fit[,'b0'])
+mean(fit[,'b1'])
+mean(fit[,'phi'])
+quantile(fit[,'b0'], probs = c(0.025, 0.5, 0.975))
+quantile(fit[,'b1'], probs = c(0.025, 0.5, 0.975))
+quantile(fit[,'phi'], probs = c(0.025, 0.5, 0.975))
+
+```
+
+The posterior parameters can also be estimated using Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC). This algorithm gradually decreases the tolerance 
+
+```{r abc_, dependson="ABC_functions", cache = TRUE}
+
+# function to calculate p(particle**) - the joint probability density for all fitted parameters given the prior distributions
+prior_dens_fun <- function(fitted_parameters){
+  x <- dunif(fitted_parameters[1], min = 0.05, max = 0.25, log = FALSE)
+  y <- dunif(fitted_parameters[2], min = 0, max = 1, log = FALSE)
+  
+  return(prod(c(x, y)))
+}
+
 
 ```
