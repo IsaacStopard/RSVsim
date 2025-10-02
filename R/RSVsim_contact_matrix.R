@@ -11,7 +11,7 @@
 #' the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 #' @export
 RSVsim_contact_matrix <- function(country = "United Kingdom",
-                                  age.limits = c(seq(0,5,1/12), seq(10,70,5))){
+                                  age.limits = c(seq(0,5,2/12), seq(10,70,5))){
 
   if(!is.numeric(age.limits)){
     stop("age.limits must be numeric")
@@ -32,6 +32,8 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
      age.limits <-  sort(age.limits)
      warning("age.limits has been sorted")
   }
+
+  nAges <- length(age.limits)
 
   if(all(age.limits %% 1 == 0)){
     age.limits.default <- age.limits
@@ -70,8 +72,6 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
               "max_age" = max_age)
 
   if(any(age.limits %% 1 != 0)){
-
-    nAges <- length(age.limits)
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
 

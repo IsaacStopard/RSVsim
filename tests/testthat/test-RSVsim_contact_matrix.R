@@ -1,5 +1,7 @@
 test_that("RSVsim_contact_matrix function", {
 
+  #skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
+
   testthat::expect_error(RSVsim_contact_matrix(country = "France",
                                                age.limits = seq(0, 70, 5)))
 

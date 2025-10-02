@@ -27,6 +27,10 @@ RSVsim_run_model <- function(parameters,
     stop("The maximum time difference is greater than or equal to the cohort step size")
   }
 
+  if(min(size_cohorts) < cohort_step_size){
+    stop("The smallest cohort age size is smaller than the cohort_step_size: increase the differences in age limits or decrease the cohort_step_size")
+  }
+
   max_t <- max(times)
 
   transition_rate <- cohort_step_size/size_cohorts

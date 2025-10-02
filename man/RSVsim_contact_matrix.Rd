@@ -6,7 +6,7 @@
 \usage{
 RSVsim_contact_matrix(
   country = "United Kingdom",
-  age.limits = c(seq(0, 5, 1/12), seq(10, 70, 5))
+  age.limits = c(seq(0, 5, 2/12), seq(10, 70, 5))
 )
 }
 \arguments{

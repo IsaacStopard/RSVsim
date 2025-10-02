@@ -12,6 +12,7 @@ RSVsim_ABC_rejection(
   prior_fun,
   n_prior_attempts,
   nparticles,
+  used_seeds_all,
   ncores = 1,
   fitted_parameter_names,
   fixed_parameter_list,
@@ -34,7 +35,9 @@ RSVsim_ABC_rejection(
 
 \item{n_prior_attempts}{Number of random samples from the prior to attempt for each accepted particle.}
 
-\item{nparticles}{Number of samples from the approximate posterior.}
+\item{nparticles}{Integer. Number of samples from the approximate posterior.}
+
+\item{used_seeds_all}{Vector. Seeds used when generating the prior samples for each accepted particle.}
 
 \item{ncores}{Number of cores. If greater than one then it is run in parallel.}
 

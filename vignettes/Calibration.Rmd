@@ -49,9 +49,8 @@ out <- RSVsim_run_model(parameters = parameters,
 
 fitted_parameter_names <- c("b0", "b1", "phi")
 
-fixed_parameter_list <- RSVsim_fixed_parameters(fitted_parameter_names = fitted_parameter_names,
-                                                data = unique(out[,c("age_chr", "age")])
-                                                )
+fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_population_list,
+                                          fitted_parameter_names = fitted_parameter_names)
 
 ```
 
@@ -133,7 +132,7 @@ epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsucc
 ##### running the ABC-rejection algorithm #####
 ###############################################
 
-nparticles = 8
+nparticles = 80
 
 used_seeds_all <- seq(1, nparticles)
 
@@ -161,7 +160,7 @@ We can then plot the posterior distribution.
 
 ggplot(data = data.frame('b0' = fit[,'b0'], 'b1' = fit[,'b1'], 'phi' = fit[,'phi']) |> tidyr::pivot_longer(cols = c("b0", "b1", "phi"))) +
   geom_density(aes(x = value)) +
-  facet_wrap(~name, scales = "free")
+  facet_wrap(~name, scales = "free", nrow = 3)
 
 quantile(fit[,'b0'], probs = c(0.025, 0.5, 0.975))
 quantile(fit[,'b1'], probs = c(0.025, 0.5, 0.975))
