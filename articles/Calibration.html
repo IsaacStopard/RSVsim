@@ -203,6 +203,8 @@ model.</p>
 <span></span>
 <span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
 <span></span>
+<span><span class="va">ncores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_ABC_rejection.html">RSVsim_ABC_rejection</a></span><span class="op">(</span>target <span class="op">=</span> <span class="va">target</span>,</span>
 <span>                            epsilon <span class="op">=</span> <span class="va">epsilon</span>,</span>
 <span>                            summary_fun <span class="op">=</span> <span class="va">summary_fun</span>,</span>
@@ -211,7 +213,7 @@ model.</p>
 <span>                            n_prior_attempts <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>                            nparticles <span class="op">=</span> <span class="va">nparticles</span>,</span>
 <span>                            used_seeds_all <span class="op">=</span> <span class="va">used_seeds_all</span>,</span>
-<span>                            ncores <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                            ncores <span class="op">=</span> <span class="va">ncores</span>,</span>
 <span>                            fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span>,</span>
 <span>                            fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
 <span>                            times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
