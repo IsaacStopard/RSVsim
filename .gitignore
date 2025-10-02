@@ -15,3 +15,7 @@ src/stan/**/*.EXE
 *.o
 *.so
 src/stan/.DS_Store
+vignettes/*_cache/
+vignettes/*.html
+vignettes/*.R
+

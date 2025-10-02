@@ -10,11 +10,13 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  cache = TRUE,
+  autodep = TRUE
 )
 ```
 
-```{r setup, cache=TRUE}
+```{r setup}
 library(RSVsim)
 library(ggplot2)
 library(patchwork)
@@ -22,9 +24,9 @@ library(patchwork)
 
 In this vignette, we give an overview of how to use an Approximate Bayesian Computation (ABC) rejection algorithm to calibrate the mathematical model of RSV transmission to simulated data. The code to run these samplers was adapted from code provided in Minter, Amanda, and Renata Retkute. "Approximate Bayesian Computation for infectious disease modelling." Epidemics 29 (2019): 100368 <https://doi.org/10.1016/j.epidem.2019.100368>. 
 
-First, we run the model and calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm.
+First, we run the model to generate some data to fit to.
 
-```{r simulated_data, dependson="setup", cache = TRUE}
+```{r simulated_data, dependson="setup"}
 
 # specify age categories to run the model with
 age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
@@ -51,18 +53,24 @@ fixed_parameter_list <- RSVsim_fixed_parameters(fitted_parameter_names = fitted_
                                                 data = unique(out[,c("age_chr", "age")])
                                                 )
 
+```
+
+Next, we calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm. To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
+
+```{r run_ABC, dependson = "simulated_data"}
+
+#########################
+##### ABC functions #####
+#########################
+
+# calculate the summary statistics
 summary_fun <- function(out){
   return(c(RSVsim_total_incidence(out), RSVsim_amplitude(out), RSVsim_peak(out)))
 }
 
 target <- summary_fun(out)
 
-```
-
-To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
-
-```{r ABC_functions, dependson = "simulated_data", cache = TRUE}
-
+# a function that samples from the priors is required
 # we use latin hypercube sampling to efficiently sample from the prior distributions
 prior_fun <- function(n_prior_attempts){
   
@@ -76,6 +84,7 @@ prior_fun <- function(n_prior_attempts){
   return(x)
 }
 
+# a function that calculates the distance between the summary statistics is required
 dist_fun <- function(target, target_star, n = nAges){
   return(
     c(
@@ -87,8 +96,12 @@ dist_fun <- function(target, target_star, n = nAges){
 
 }
 
+#################################
+##### setting the tolerance #####
+#################################
 # calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation
 # getting 1000 samples from the priors
+set.seed(123)
 prior_params <- prior_fun(100)
 
 # simulating the summary statistics for each particle
@@ -116,9 +129,13 @@ for(i in 1:100){
 # selecting a tolerance where at least 1 particle is accepted for the 1000 simulations
 epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsuccess >= 1))])), digits = 2)
 
-```
+###############################################
+##### running the ABC-rejection algorithm #####
+###############################################
 
-```{r run_ABC, dependson = "ABC_functions", cache = TRUE}
+nparticles = 8
+
+used_seeds_all <- seq(1, nparticles)
 
 fit <- RSVsim_ABC_rejection(target = target,
                             epsilon = epsilon,
@@ -126,7 +143,8 @@ fit <- RSVsim_ABC_rejection(target = target,
                             dist_fun = dist_fun,
                             prior_fun = prior_fun,
                             n_prior_attempts = 10000,
-                            nparticles = 160,
+                            nparticles = nparticles,
+                            used_seeds_all = used_seeds_all,
                             ncores = 8,
                             fitted_parameter_names = fitted_parameter_names,
                             fixed_parameter_list = fixed_parameter_list,
@@ -139,30 +157,14 @@ fit <- RSVsim_ABC_rejection(target = target,
 
 We can then plot the posterior distribution.
 
-```{r abc_plots, dependson="run_ABC", cache = TRUE}
-hist(fit[,'b0'])
-hist(fit[,'b1'])
-hist(fit[,'phi'])
-mean(fit[,'b0'])
-mean(fit[,'b1'])
-mean(fit[,'phi'])
+```{r abc_plots, dependson="run_ABC"}
+
+ggplot(data = data.frame('b0' = fit[,'b0'], 'b1' = fit[,'b1'], 'phi' = fit[,'phi']) |> tidyr::pivot_longer(cols = c("b0", "b1", "phi"))) +
+  geom_density(aes(x = value)) +
+  facet_wrap(~name, scales = "free")
+
 quantile(fit[,'b0'], probs = c(0.025, 0.5, 0.975))
 quantile(fit[,'b1'], probs = c(0.025, 0.5, 0.975))
 quantile(fit[,'phi'], probs = c(0.025, 0.5, 0.975))
-
-```
-
-The posterior parameters can also be estimated using Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC). This algorithm gradually decreases the tolerance 
-
-```{r abc_, dependson="ABC_functions", cache = TRUE}
-
-# function to calculate p(particle**) - the joint probability density for all fitted parameters given the prior distributions
-prior_dens_fun <- function(fitted_parameters){
-  x <- dunif(fitted_parameters[1], min = 0.05, max = 0.25, log = FALSE)
-  y <- dunif(fitted_parameters[2], min = 0, max = 1, log = FALSE)
-  
-  return(prod(c(x, y)))
-}
-
 
 ```

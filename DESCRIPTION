@@ -21,7 +21,6 @@ Imports:
     dust2 (>= 0.3.22),
     ggplot2,
     methods,
-    MQMF,
     pak,
     parallel,
     patchwork,

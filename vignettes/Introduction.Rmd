@@ -10,11 +10,13 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  cache = TRUE,
+  autodep = TRUE
 )
 ```
 
-```{r setup, cache=TRUE}
+```{r setup}
 library(RSVsim)
 library(ggplot2)
 library(patchwork)
@@ -37,7 +39,7 @@ In brief, the model is age-structured and primary (the first) and secondary infe
 ## Contact matrix
  The [R/RSVsim_contact_matrix.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_contact_matrix.R) function obtains contact matrices with age groupings that are less than one year. To do so, the socialmixr (<https://epiforecasts.io/socialmixr/>) package is used to obtain the contact matrix for the age groupings to the nearest whole year, using the POLYMOD data (<https://doi.org/10.1371/journal.pmed.0050074>). This contact matrix is calculated such that the total contacts in the population are symmetric (assuming population data from World Population Prospects of the United Nations). Within age groups less than one year, these contacts are divided evenly according to the size of the age group (in years). The function takes two arguments: (1) the country to obtain the POLYMOD contact data from and (2) the lower age limits of the age groups.
 
-```{r contact_matrix, dependson="setup", cache = TRUE}
+```{r contact_matrix, dependson="setup"}
 contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
 
 matrix_mean_plot <- contact_population_list$matrix_mean |> 
@@ -54,22 +56,27 @@ ggplot(data = matrix_mean_plot,
 ## Default parameters
 To obtain a list of the default parameters to run the model use the [R/RSVsim_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_parameters.R) function. The parameters can be changed by using the overrides argument; for example we override $b0$ (the transmission rate coefficient) with a value of $0.15$.
 
-```{r parameters, dependson="contact_matrix", cache = TRUE}
+```{r parameters, dependson="contact_matrix"}
 parameters <- RSVsim_parameters(overrides = list("b0" = 0.15), 
                                 contact_population_list = contact_population_list,
                                 fitted = NULL)
 ```
 
 ## Running the model
-To run the model the [R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function is used. Cohort aging is used to age the population. At each time, a proportion of each cohort is aged, with this proportion determined by the length of time before people are aged (cohort_step_size) as a proportion of the total length of time in each age group. If no initial conditions are given, it is assumed there is one percent prevalence in the primary infection compartment and everyone else is susceptible to primary infection. All new borns are assumed to be susceptible to their primary infection. Below, we plot the simulated number of people that are susceptible and infected, with the line type indicating whether the infection is primary or secondary.
+To run the model the [R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R) function is used. Cohort aging is used to age the population. At each time, a proportion of each cohort is aged, with this proportion determined by the length of time before people are aged (cohort_step_size) as a proportion of the total length of time in each age group. If no initial conditions are given, it is assumed there is one percent prevalence in the primary infection compartment and everyone else is susceptible to primary infection. All new borns are assumed to be susceptible to their primary infection.
 
-```{r model_run, dependson="parameters", cache = TRUE}
+```{r model_run, dependson="parameters"}
 out <- RSVsim_run_model(parameters = parameters,
                         times = seq(0, 3650, 0.25), # maximum time to run the model for
                         cohort_step_size = 10, # time at which to age people\
                         init_conds = NULL,
                         warm_up = 3650 - 365 * 3)
 
+```
+
+Below, we plot the simulated number of people that are susceptible and infected, with the line type indicating whether the infection is primary or secondary.
+
+```{r, model_plot, dependson="model_run"}
 ggplot(data = out) +
   geom_line(aes(x = time, y = Sp, col = age_chr)) +
   ylab("Number susceptible\nto primary infection") + xlab("Days") +
@@ -87,7 +94,7 @@ ggplot(data = out) +
 
 The incidence and detected incidence are calculated. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume very few people (1%) over the age of 2 years old is tested.
 
-```{r inc_plot, dependson="model_run", cache = TRUE}
+```{r inc_plot, dependson="model_run"}
 ggplot(data = out, 
        aes(x = time, y = DetIncidence, col = age_chr)) +
   geom_line() +

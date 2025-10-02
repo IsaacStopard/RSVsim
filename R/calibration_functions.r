@@ -118,7 +118,8 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
 #' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs.
 #' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
 #' @param n_prior_attempts Number of random samples from the prior to attempt for each accepted particle.
-#' @param nparticles Number of samples from the approximate posterior.
+#' @param nparticles Integer. Number of samples from the approximate posterior.
+#' @param used_seeds_all Vector. Seeds used when generating the prior samples for each accepted particle.
 #' @param ncores Number of cores. If greater than one then it is run in parallel.
 #' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
 #' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
@@ -132,6 +133,7 @@ RSVsim_ABC_rejection <- function(target,
                                  prior_fun,
                                  n_prior_attempts,
                                  nparticles,
+                                 used_seeds_all,
                                  ncores=1,
                                  fitted_parameter_names,
                                  fixed_parameter_list,
@@ -157,6 +159,10 @@ RSVsim_ABC_rejection <- function(target,
     stop("increase epsilon above zero")
   }
 
+  if(length(used_seeds_all)!=nparticles){
+    stop('the length used_seeds_all must be nparticles')
+  }
+
   nparams <- length(fitted_parameter_names)
 
   nAges <- fixed_parameter_list$nAges
@@ -166,8 +172,8 @@ RSVsim_ABC_rejection <- function(target,
     i <- 1 # initialise the number of accepted particles
     j <- 1 # initialise the number of proposed particles
 
-    used_seed <- MQMF::getseed()
-
+    used_seed <- used_seeds_all[particle]
+    set.seed(used_seed)
     fitted_parameters_all <- prior_fun(n_prior_attempts)
 
     while(i <= 1){
