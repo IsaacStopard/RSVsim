@@ -65,214 +65,188 @@
 
     
     
-<p>In this vignette we will show how to calibrate the model to
-age-specific incidence data. To calibrate the model we vary the b0
-(transmission rate coefficient), b1 (amplitude of seasonal forcing) and
-phi (phase shift of seasonality) parameters.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/IsaacStopard/RSVsim" class="external-link">RSVsim</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="simulating-some-synthetic-data">Simulating some synthetic data<a class="anchor" aria-label="anchor" href="#simulating-some-synthetic-data"></a>
-</h2>
-<p>We begin by simulating some data using the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_run_model.R" class="external-link">R/RSVsim_run_model.R</a>
-function. To do so, we arbitrarily select a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">b0</annotation></semantics></math>
-value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.15</mn><annotation encoding="application/x-tex">0.15</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">b1</annotation></semantics></math>
-value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.25</mn><annotation encoding="application/x-tex">0.25</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>
-value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>10</mn><annotation encoding="application/x-tex">10</annotation></semantics></math>
-days. We then add noise to this count data by drawing random samples
-from a negative binomial distribution with greater variance than the
-poisson distribution and a mean equivalent to the simulated incidence
-values.</p>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
+<p>In this vignette, we give an overview of how to use an Approximate
+Bayesian Computation (ABC) rejection algorithm to calibrate the
+mathematical model of RSV transmission to simulated data. The code to
+run these samplers was adapted from code provided in Minter, Amanda, and
+Renata Retkute. “Approximate Bayesian Computation for infectious disease
+modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epidem.2019.100368" class="external-link uri">https://doi.org/10.1016/j.epidem.2019.100368</a>.</p>
+<p>First, we run the model to generate some data to fit to.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">age.limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">70</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># specify age categories to run the model with</span></span>
+<span><span class="va">age.limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">0.2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">60</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># get contact matrix</span></span>
 <span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits): Not all age.limits are integers.</span></span>
+<span><span class="co">#&gt;             The contact matrix was calculated for the age groups given by the integers</span></span>
+<span><span class="co">#&gt;             and divided uniformly within the smaller age groups.</span></span>
+<span><span class="co">#&gt;             A warning from socialmixr about linearly estimating the integer age groups within the 5-year age bands will also appear.</span></span>
 <span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
 <span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
-<span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, </span>
-<span>                                                 <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span>, </span>
-<span>                                                 <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                                contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
+<span><span class="co"># get the default model parameters with a b0 value of 0.08 and b1 value of 0</span></span>
+<span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.08</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span>,</span>
+<span>                                fitted <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">model_simulation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model_dust.html">RSVsim_run_model_dust</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>, </span>
-<span>                                          times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>                                          warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>,</span>
-<span>                                          init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                                          cohort_step_size <span class="op">=</span> <span class="fl">10</span></span>
-<span>                                     <span class="op">)</span></span>
+<span><span class="va">nAges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">age.limits</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">time</span>,</span>
-<span>                 incidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/NegBinomial.html" class="external-link">rnbinom</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">model_simulation</span><span class="op">)</span>, mu <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">Incidence</span>, size <span class="op">=</span> <span class="fl">30</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                 age_chr <span class="op">=</span> <span class="va">model_simulation</span><span class="op">$</span><span class="va">age_chr</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">time</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">10</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="likelihood-calculation">Likelihood calculation<a class="anchor" aria-label="anchor" href="#likelihood-calculation"></a>
-</h2>
-<p>The <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_calibration_parameters.R</a>
-function can be used to obtain the age groupings, times and parameter
-values required for each dataset of age-specific incidence data within a
-list of data frames. Each data frame must contain a time (numeric),
-incidence (integer) and age_chr (character) columns. age_chr is the age
-grouping. The overrides argument can be used to specify changes to the
-fixed parameter values. The parameters we want to fit must be named as a
-vector of characters in the fitted_parameter_names argument. In this
-case we fit b0 and b1 only.</p>
-<p>We assume that the incidence,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">I_{a,t}</annotation></semantics></math>,
-in age group,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi><annotation encoding="application/x-tex">a</annotation></semantics></math>,
-at time,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
-is Poisson distributed and calculate the log-likelihood in the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_log_likelihood.R</a>
-function:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>I</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>∼</mo><mi>P</mi><mi>o</mi><mi>i</mi><mi>s</mi><mi>s</mi><mi>o</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>λ</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">I_{a,t} \sim Poisson(\lambda_{a,t})</annotation></semantics></math>,
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mrow><mi>a</mi><mo>,</mo><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">\lambda_{a,t}</annotation></semantics></math>
-is the corresponding model simulated incidence.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_calibration_parameters.html">RSVsim_calibration_parameters</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                                      fitted_parameter_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span><span class="op">)</span>,</span>
-<span>                                                      overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                                                      country <span class="op">=</span> <span class="st">"United Kingdom"</span>,</span>
-<span>                                                      warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>,</span>
-<span>                                                      cohort_step_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
+<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                        cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
+<span>                        init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                        warm_up <span class="op">=</span> <span class="fl">365</span><span class="op">*</span><span class="fl">4</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fitted_parameter_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_fixed_parameters.html">RSVsim_fixed_parameters</a></span><span class="op">(</span>fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span>,</span>
+<span>                                                data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">out</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age_chr"</span>, <span class="st">"age"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span>                                                <span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits):</span></span>
 <span><span class="co">#&gt; polymod age groupings only go up to 75. Age limits above this have therefore</span></span>
 <span><span class="co">#&gt; been omitted.</span></span>
+<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits): Not all age.limits are integers.</span></span>
+<span><span class="co">#&gt;             The contact matrix was calculated for the age groups given by the integers</span></span>
+<span><span class="co">#&gt;             and divided uniformly within the smaller age groups.</span></span>
+<span><span class="co">#&gt;             A warning from socialmixr about linearly estimating the integer age groups within the 5-year age bands will also appear.</span></span>
 <span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
-<span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
+<span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span></code></pre></div>
+<p>Next, we calculate some summary statistics from the model output.
+Specifically, we calculate the age-specific peak time of incidence
+infections, the amplitude of incidence (difference between maximum and
+minimum incidence) and the total yearly incidence. RSVsim has built in
+functions to calculate these metrics from the model output. We define a
+function summary_fun to combine these metrics. We will use these as the
+target for the ABC-rejection algorithm. To implement the ABC-rejection
+algorithm we must specify the tolerance; we specify a specific tolerance
+for each metric that is approximately 15% of the simulated value. We
+must also specify a function the randomly samples from the prior
+distributions of all fitted parameters and returns a vector of the
+parameters. We use latin hypercube sampling to efficiently sample the
+prior space. In this example we fit the b0 and b1 parameters. A vector
+of the parameter names that are being fitted in the same order as the
+prior samples must also be provided to set up the parameters to run the
+model.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co">#########################</span></span>
+<span><span class="co">##### ABC functions #####</span></span>
+<span><span class="co">#########################</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/RSVsim_log_likelihood_dust.html">RSVsim_log_likelihood_dust</a></span><span class="op">(</span>fitted_parameters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.15</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>                           fitted_parameter_names <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fitted_parameter_names</span>,</span>
-<span>                           fixed_parameters <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fixed_parameters</span>,</span>
-<span>                           data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                           times <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">times</span>,</span>
-<span>                           warm_up <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">warm_up</span>,</span>
-<span>                           cohort_step_size <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">cohort_step_size</span></span>
-<span>                           <span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -2858.713</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="maximum-likelihood-estimation">Maximum likelihood estimation<a class="anchor" aria-label="anchor" href="#maximum-likelihood-estimation"></a>
-</h2>
-<p>In the <a href="https://github.com/IsaacStopard/RSVsim/blob/master/R/calibration_functions.R" class="external-link">R/RSVsim_max_likelihood.R</a>
-we use the nmlinb function <a href="https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R" class="external-link uri">https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/nlminb.R</a>
-to estimate the parameters that give the maximum likelihood. The
-lower_ll and upper_ll arguments specify the lower and upper parameter
-limits. scale_parameters is a boolean indicating whether the parameters
-should be scaled between 0 and 1.</p>
+<span><span class="co"># calculate the summary statistics</span></span>
+<span><span class="va">summary_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/RSVsim_total_incidence.html">RSVsim_total_incidence</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span>, <span class="fu"><a href="../reference/RSVsim_amplitude.html">RSVsim_amplitude</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span>, <span class="fu"><a href="../reference/RSVsim_peak.html">RSVsim_peak</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">target</span> <span class="op">&lt;-</span> <span class="fu">summary_fun</span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># a function that samples from the priors is required</span></span>
+<span><span class="co"># we use latin hypercube sampling to efficiently sample from the prior distributions</span></span>
+<span><span class="va">prior_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_prior_attempts</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">lhs</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lhs/man/randomLHS.html" class="external-link">randomLHS</a></span><span class="op">(</span><span class="va">n_prior_attempts</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co"># adjusting the prior distributions</span></span>
+<span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0.05</span>, <span class="fl">0.25</span><span class="op">)</span></span>
+<span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0</span>, max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># not necessary but added for completeness</span></span>
+<span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span>, min <span class="op">=</span> <span class="op">-</span><span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># a function that calculates the distance between the summary statistics is required</span></span>
+<span><span class="va">dist_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">target_star</span>, <span class="va">n</span> <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="../reference/RSVsim_abs_dist_fun.html">RSVsim_abs_dist_fun</a></span><span class="op">(</span><span class="va">target</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">]</span>, <span class="va">target_star</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="../reference/RSVsim_abs_dist_fun.html">RSVsim_abs_dist_fun</a></span><span class="op">(</span><span class="va">target</span><span class="op">[</span><span class="op">(</span><span class="va">n</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span><span class="op">]</span>, <span class="va">target_star</span><span class="op">[</span><span class="op">(</span><span class="va">n</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="../reference/RSVsim_shortest_periodic_dist_fun.html">RSVsim_shortest_periodic_dist_fun</a></span><span class="op">(</span><span class="va">target</span><span class="op">[</span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">n</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="fl">3</span><span class="op">)</span><span class="op">]</span>, <span class="va">target_star</span><span class="op">[</span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">n</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="fl">3</span><span class="op">)</span><span class="op">]</span>, period <span class="op">=</span> <span class="fl">365.25</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co">#################################</span></span>
+<span><span class="co">##### setting the tolerance #####</span></span>
+<span><span class="co">#################################</span></span>
+<span><span class="co"># calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation</span></span>
+<span><span class="co"># getting 1000 samples from the priors</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span><span class="va">prior_params</span> <span class="op">&lt;-</span> <span class="fu">prior_fun</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># simulating the summary statistics for each particle</span></span>
+<span><span class="va">prior_distances</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">parameters_in</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">prior_params</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span>, <span class="va">fitted_parameter_names</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="va">fixed_parameter_list</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters_in</span>,</span>
+<span>                   times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                   cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
+<span>                   init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                   warm_up <span class="op">=</span> <span class="fl">365</span><span class="op">*</span><span class="fl">4</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu">dist_fun</span><span class="op">(</span><span class="va">target</span>, <span class="fu">summary_fun</span><span class="op">(</span><span class="va">out</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics </span></span>
+<span><span class="va">nsuccess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">100</span><span class="op">)</span></span>
+<span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">1</span>, <span class="fl">0.01</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">epsilon_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">prior_distances</span>, <span class="fl">1</span>, <span class="va">quantile</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="va">nsuccess</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">prior_distances</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">epsilon_check</span><span class="op">)</span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># selecting a tolerance where at least 1 particle is accepted for the 1000 simulations</span></span>
+<span><span class="va">epsilon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">prior_distances</span>, <span class="fl">1</span>, <span class="va">quantile</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">nsuccess</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">###############################################</span></span>
+<span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
+<span><span class="co">###############################################</span></span>
+<span></span>
+<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">8</span></span>
+<span></span>
+<span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_ABC_rejection.html">RSVsim_ABC_rejection</a></span><span class="op">(</span>target <span class="op">=</span> <span class="va">target</span>,</span>
+<span>                            epsilon <span class="op">=</span> <span class="va">epsilon</span>,</span>
+<span>                            summary_fun <span class="op">=</span> <span class="va">summary_fun</span>,</span>
+<span>                            dist_fun <span class="op">=</span> <span class="va">dist_fun</span>,</span>
+<span>                            prior_fun <span class="op">=</span> <span class="va">prior_fun</span>,</span>
+<span>                            n_prior_attempts <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>                            nparticles <span class="op">=</span> <span class="va">nparticles</span>,</span>
+<span>                            used_seeds_all <span class="op">=</span> <span class="va">used_seeds_all</span>,</span>
+<span>                            ncores <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                            fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span>,</span>
+<span>                            fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
+<span>                            times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                            cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
+<span>                            init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                            warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<p>We can then plot the posterior distribution.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">fitted_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_max_likelihood_dust.html">RSVsim_max_likelihood_dust</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>                                            fitted_parameter_names <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fitted_parameter_names</span>,</span>
-<span>                                            fixed_parameters <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">fixed_parameters</span>,</span>
-<span>                                            times <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">times</span>,</span>
-<span>                                            cohort_step_size <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">cohort_step_size</span>,</span>
-<span>                                            init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                                            warm_up <span class="op">=</span> <span class="va">fixed_parameter_list</span><span class="op">$</span><span class="va">warm_up</span>,</span>
-<span>                                            scale_parameters <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                                            lower_ll <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0</span><span class="op">)</span>,</span>
-<span>                                            upper_ll <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span>                                            <span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.1486841 0.2483170</span></span></code></pre></div>
-<p>We can then use these fitted parameter values to simulate
-transmission.</p>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'b0'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'b0'</span><span class="op">]</span>, <span class="st">'b1'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'b1'</span><span class="op">]</span>, <span class="st">'phi'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'phi'</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_density.html" class="external-link">geom_density</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">name</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Calibration_files/figure-html/abc_plots-1.png" width="700"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">parameters_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
-<span>                                                     <span class="st">"b1"</span> <span class="op">=</span> <span class="va">fitted_values</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
-<span>                                                     <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
-<span>                                    contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">model_simulation_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model_dust.html">RSVsim_run_model_dust</a></span><span class="op">(</span><span class="va">parameters_fit</span>,</span>
-<span>                                         times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>                                         warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span>, </span>
-<span>                                         init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                                         cohort_step_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age_chr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">age_chr</span>, </span>
-<span>                                                            levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"[0,1)"</span>, <span class="st">"[1,2)"</span>, <span class="st">"[2,3)"</span>, <span class="st">"[3,4)"</span>, <span class="st">"[4,5)"</span>, <span class="st">"[5,10)"</span>, <span class="st">"[10,30)"</span>, <span class="st">"[30,50)"</span>, <span class="st">"[50,70)"</span>, <span class="st">"[70,90)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">incidence</span>, col <span class="op">=</span> <span class="va">age_chr</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">model_simulation_fit</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span>, </span>
-<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">Incidence</span>, group <span class="op">=</span> <span class="va">age_chr</span>, col <span class="op">=</span> <span class="va">age_chr</span><span class="op">)</span></span>
-<span>            <span class="op">)</span></span></code></pre></div>
-<p><img src="Calibration_files/figure-html/unnamed-chunk-5-1.png" width="700">
-## Bayesian parameter estimation To fit the posterior estimates of the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">b0</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mn>1</mn></mrow><annotation encoding="application/x-tex">b1</annotation></semantics></math>
-parameters we use the monty package to run Hamiltonian MCMC.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># prior_functions_list &lt;- vector(mode = "list", length = 1)</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># prior_functions_list[[1]] &lt;- function(x){</span></span>
-<span><span class="co">#   return(dgamma(x, shape = 10, rate = 20, log = TRUE))</span></span>
-<span><span class="co"># }</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># prior_functions_list[[2]] &lt;- function(x){</span></span>
-<span><span class="co">#   return(dgamma(x, shape = 5, rate = 20, log = TRUE))</span></span>
-<span><span class="co"># }</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># prior_functions_list[[1]] &lt;- function(x){</span></span>
-<span><span class="co">#   return(dgamma(x, shape = 1, rate = 1/180, log = TRUE))</span></span>
-<span><span class="co"># }</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># nchains &lt;- 4</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># initial_mat &lt;- matrix(NA, nrow = nchains, ncol = 1)</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># for(i in 1:nchains){</span></span>
-<span><span class="co">#   #initial_mat[i, 1] &lt;- runif(1, min = 0, max = 10)</span></span>
-<span><span class="co">#   #initial_mat[i, 2] &lt;- runif(1, min = 0, max = 1)</span></span>
-<span><span class="co">#   initial_mat[i, 1] &lt;- runif(1, min = 0, max = 365.25)</span></span>
-<span><span class="co"># }</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># fitted_parameter_names &lt;- fixed_parameter_list$fitted_parameter_names</span></span>
-<span><span class="co"># fixed_parameters &lt;- fixed_parameter_list$fixed_parameters</span></span>
-<span><span class="co"># times &lt;- fixed_parameter_list$times</span></span>
-<span><span class="co"># cohort_step_size &lt;- fixed_parameter_list$cohort_step_size</span></span>
-<span><span class="co"># init_conds &lt;- NULL</span></span>
-<span><span class="co"># warm_up &lt;- fixed_parameter_list$warm_up</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># phi &lt;- seq(-25, 375, 10)</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># p_check &lt;- rep(NA, length(phi))</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># for(i in 1:length(phi)){</span></span>
-<span><span class="co">#   print(i)</span></span>
-<span><span class="co">#   p_check[i] &lt;- RSVsim_posterior(fitted_parameters = phi[i],</span></span>
-<span><span class="co">#                              fitted_parameter_names = fitted_parameter_names,</span></span>
-<span><span class="co">#                              fixed_parameters = fixed_parameters,</span></span>
-<span><span class="co">#                              data = data,</span></span>
-<span><span class="co">#                              times = times,</span></span>
-<span><span class="co">#                              cohort_step_size = cohort_step_size,</span></span>
-<span><span class="co">#                              init_conds = init_conds,</span></span>
-<span><span class="co">#                              warm_up = warm_up,</span></span>
-<span><span class="co">#                              prior_functions_list = prior_functions_list,</span></span>
-<span><span class="co">#                              lower_ll = lower_ll,</span></span>
-<span><span class="co">#                              upper_ll = upper_ll)</span></span>
-<span><span class="co"># }</span></span></code></pre></div>
-</div>
-  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b0'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
+<span><span class="co">#&gt; 0.06218421 0.08128269 0.09100372</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b1'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
+<span><span class="co">#&gt; 0.09747937 0.15627032 0.21508463</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'phi'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      2.5%       50%     97.5% </span></span>
+<span><span class="co">#&gt; -25.75873  14.97379  50.19652</span></span></code></pre></div>
+  </main>
 </div>
 
 

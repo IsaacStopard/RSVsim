@@ -18,7 +18,8 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Introduction.html">Introduction</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Calibration.html">Calibration</a></li>
+    <li><a class="dropdown-item" href="../articles/Introduction.html">Introduction</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -67,7 +68,7 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Parameter list.</p>
+    <p>Parameter list. Default values: <br><code>b0</code>: 0.08. Transmission rate coefficient. <br><code>b1</code>: 0. Amplitude of seasonal forcing in the transmission rate. <br><code>phi</code>: 0. Phase shift of the seasonal forcing. <br><code>delta</code>: 1/4. Inverse of the latent period. <br><code>gamma_s</code>: 1/8. Inverse of the infectious period of subsequent (secondary) infections. <br><code>gamma_p</code>: 1/9. Inverse of the infectious period of first (primary) infections. <br><code>nu</code>: 1/200. Inverse of the duration of natural immunity. <br><code>omega_vect</code>: 0.35 if less than 5 years old else 1. Reduced infectiousness due to immunity in early life. <br><code>prop_detected_vect</code>: age-specific proportion detected. <br><code>sigma_vect</code>: 0.7 if 1 months old, 0.8 if 2 months old, 0.9 if 3 months old, else 1. Reduced susceptibility due to immunity in early life. <br><code>alpha_vect</code> = 0.4 if less than 10 years old else 0.3. Reduced susceptibility to secondary infections in each age group. <br><code>nAges</code>: must be obtained from <code>contact_population_list</code>. Number of age groups - same length as age.limits. <br><code>age.limits</code>: must be obtained from <code>contact_population_list</code>. Lower age limits in years. <br><code>matrix_mean</code>: must be obtained from <code>contact_population_list</code>. Contact matrix of mean contacts per person. <br><code>max_age</code>: must be obtained from <code>contact_population_list</code>. Maximum age in years. <br><code>age_chr</code>: Age limits as a character vector. <br><code>size_cohorts</code>: the differences in ages in days - used to calculate the size of the cohorts. <br><code>total_population</code>: 1861923. Total population size. <br></p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
