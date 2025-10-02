@@ -105,18 +105,8 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span></span>
 <span><span class="va">fitted_parameter_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_fixed_parameters.html">RSVsim_fixed_parameters</a></span><span class="op">(</span>fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span>,</span>
-<span>                                                data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">out</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age_chr"</span>, <span class="st">"age"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span>                                                <span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits):</span></span>
-<span><span class="co">#&gt; polymod age groupings only go up to 75. Age limits above this have therefore</span></span>
-<span><span class="co">#&gt; been omitted.</span></span>
-<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = country, age.limits = age.limits): Not all age.limits are integers.</span></span>
-<span><span class="co">#&gt;             The contact matrix was calculated for the age groups given by the integers</span></span>
-<span><span class="co">#&gt;             and divided uniformly within the smaller age groups.</span></span>
-<span><span class="co">#&gt;             A warning from socialmixr about linearly estimating the integer age groups within the 5-year age bands will also appear.</span></span>
-<span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
-<span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span></code></pre></div>
+<span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span>,</span>
+<span>                                          fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we calculate some summary statistics from the model output.
 Specifically, we calculate the age-specific peak time of incidence
 infections, the amplitude of incidence (difference between maximum and
@@ -209,7 +199,7 @@ model.</p>
 <span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
 <span><span class="co">###############################################</span></span>
 <span></span>
-<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">8</span></span>
+<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">80</span></span>
 <span></span>
 <span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
 <span></span>
@@ -233,19 +223,19 @@ model.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'b0'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'b0'</span><span class="op">]</span>, <span class="st">'b1'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'b1'</span><span class="op">]</span>, <span class="st">'phi'</span> <span class="op">=</span> <span class="va">fit</span><span class="op">[</span>,<span class="st">'phi'</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_density.html" class="external-link">geom_density</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">name</span>, scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">name</span>, scales <span class="op">=</span> <span class="st">"free"</span>, nrow <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Calibration_files/figure-html/abc_plots-1.png" width="700"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b0'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
-<span><span class="co">#&gt; 0.06218421 0.08128269 0.09100372</span></span>
+<span><span class="co">#&gt; 0.05368404 0.08147523 0.10458740</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b1'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
-<span><span class="co">#&gt; 0.09747937 0.15627032 0.21508463</span></span>
+<span><span class="co">#&gt;        2.5%         50%       97.5% </span></span>
+<span><span class="co">#&gt; 0.008292952 0.154739980 0.414731968</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'phi'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      2.5%       50%     97.5% </span></span>
-<span><span class="co">#&gt; -25.75873  14.97379  50.19652</span></span></code></pre></div>
+<span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
+<span><span class="co">#&gt; -47.266727   7.129349  62.568962</span></span></code></pre></div>
   </main>
 </div>
 

@@ -51,6 +51,7 @@
 <span>  <span class="va">prior_fun</span>,</span>
 <span>  <span class="va">n_prior_attempts</span>,</span>
 <span>  <span class="va">nparticles</span>,</span>
+<span>  <span class="va">used_seeds_all</span>,</span>
 <span>  ncores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">fitted_parameter_names</span>,</span>
 <span>  <span class="va">fixed_parameter_list</span>,</span>
@@ -90,7 +91,11 @@
 
 
 <dt id="arg-nparticles">nparticles<a class="anchor" aria-label="anchor" href="#arg-nparticles"></a></dt>
-<dd><p>Number of samples from the approximate posterior.</p></dd>
+<dd><p>Integer. Number of samples from the approximate posterior.</p></dd>
+
+
+<dt id="arg-used-seeds-all">used_seeds_all<a class="anchor" aria-label="anchor" href="#arg-used-seeds-all"></a></dt>
+<dd><p>Vector. Seeds used when generating the prior samples for each accepted particle.</p></dd>
 
 
 <dt id="arg-ncores">ncores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
