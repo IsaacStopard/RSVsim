@@ -173,9 +173,8 @@ RSVsim_ABC_rejection <- function(target,
     return(acc_params)
   }
 
-
   if(ncores > 1){
-    cl <- parallel::makeCluster(ncores) #not to overload your computer
+    cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
     parallel::clusterExport(cl, varlist = c("while_fun",
                                             "RSVsim_run_model",
                                             "RSVsim_total_incidence",

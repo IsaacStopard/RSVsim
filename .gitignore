@@ -4,9 +4,6 @@
 .httr-oauth
 *.DS_Store
 .quarto
-docs
-inst/doc
-/doc/
 /Meta/
 src/stan/**
 !src/stan/**/*.*
@@ -15,7 +12,8 @@ src/stan/**/*.EXE
 *.o
 *.so
 src/stan/.DS_Store
-vignettes/*_cache/
-vignettes/*.html
-vignettes/*.R
-
+vignettes/Calibration_cache
+vignettes/Introduction_cache
+inst/doc
+docs/
+doc/

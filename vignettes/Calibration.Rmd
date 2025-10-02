@@ -136,6 +136,8 @@ nparticles = 80
 
 used_seeds_all <- seq(1, nparticles)
 
+ncores <- max(1, parallel::detectCores() - 1)
+
 fit <- RSVsim_ABC_rejection(target = target,
                             epsilon = epsilon,
                             summary_fun = summary_fun,
@@ -144,7 +146,7 @@ fit <- RSVsim_ABC_rejection(target = target,
                             n_prior_attempts = 10000,
                             nparticles = nparticles,
                             used_seeds_all = used_seeds_all,
-                            ncores = 8,
+                            ncores = ncores,
                             fitted_parameter_names = fitted_parameter_names,
                             fixed_parameter_list = fixed_parameter_list,
                             times = seq(0, 365*5, 0.25), # maximum time to run the model for
