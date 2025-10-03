@@ -199,11 +199,11 @@ model.</p>
 <span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
 <span><span class="co">###############################################</span></span>
 <span></span>
-<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">80</span></span>
+<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">2</span></span>
 <span></span>
 <span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ncores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ncores</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_ABC_rejection.html">RSVsim_ABC_rejection</a></span><span class="op">(</span>target <span class="op">=</span> <span class="va">target</span>,</span>
 <span>                            epsilon <span class="op">=</span> <span class="va">epsilon</span>,</span>
@@ -231,13 +231,13 @@ model.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b0'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
-<span><span class="co">#&gt; 0.05368404 0.08147523 0.10458740</span></span>
+<span><span class="co">#&gt; 0.06807245 0.07289953 0.07772661</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'b1'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        2.5%         50%       97.5% </span></span>
-<span><span class="co">#&gt; 0.008292952 0.154739980 0.414731968</span></span>
+<span><span class="co">#&gt;      2.5%       50%     97.5% </span></span>
+<span><span class="co">#&gt; 0.1523859 0.1570911 0.1617964</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">'phi'</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       2.5%        50%      97.5% </span></span>
-<span><span class="co">#&gt; -47.266727   7.129349  62.568962</span></span></code></pre></div>
+<span><span class="co">#&gt;      2.5%       50%     97.5% </span></span>
+<span><span class="co">#&gt;  1.716781 19.936487 38.156193</span></span></code></pre></div>
   </main>
 </div>
 
