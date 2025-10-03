@@ -70,6 +70,76 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
+#' Function to return a single particle for the ABC-rejection algorithm.
+#'
+#' @param particle Particle number.
+#' @param target Values to fit to.
+#' @param epsilon Acceptable error for each target.
+#' @param summary_fun Function to calculate the summary statistics equivalent to the target values.
+#' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs.
+#' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
+#' @param n_prior_attempts Number of random samples from the prior to attempt for each accepted particle.
+#' @param used_seeds_all Vector. Seeds used when generating the prior samples for each accepted particle.
+#' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
+#' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
+#' @inheritParams RSVsim_run_model
+while_fun <- function(particle,
+                      target,
+                      epsilon,
+                      summary_fun,
+                      dist_fun,
+                      prior_fun,
+                      n_prior_attempts,
+                      used_seeds_all,
+                      fitted_parameter_names,
+                      fixed_parameter_list,
+                      times,
+                      cohort_step_size,
+                      init_conds,
+                      warm_up){
+
+  i <- 1 # initialise the number of accepted particles
+  j <- 1 # initialise the number of proposed particles
+
+  used_seed <- used_seeds_all[particle]
+  set.seed(used_seed)
+  fitted_parameters_all <- prior_fun(n_prior_attempts)
+
+  while(i <= 1){
+
+    if(j > n_prior_attempts){
+      stop("No particle accepted: increase n_prior_attempts or the tolerance (epsilon)")
+    }
+
+    fitted_parameters <- fitted_parameters_all[j,]
+
+    parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
+                    fixed_parameter_list)
+
+    out <- RSVsim_run_model(parameters = parameters,
+                            times = times,
+                            cohort_step_size = cohort_step_size,
+                            init_conds = init_conds,
+                            warm_up = warm_up)
+
+    summary_stats <- summary_fun(out)
+
+    distance <- dist_fun(target, summary_stats)
+
+    if(all(distance <= epsilon)){
+
+      acc_params <- c(fitted_parameters, j, particle, used_seed)
+      names(acc_params) <- c(fitted_parameter_names, "attempts", "particle_number", "prior_function_seed")
+
+      i <- i + 1
+    }
+
+    j <- j + 1
+  }
+
+  return(acc_params)
+}
+
 #' Function to run a Approximate Bayesian Computation (ABC) rejection algorithm
 #'
 #' Runs the ABC-rejection algorithm.
@@ -129,50 +199,6 @@ RSVsim_ABC_rejection <- function(target,
 
   nAges <- fixed_parameter_list$nAges
 
-  while_fun <- function(particle){
-
-    i <- 1 # initialise the number of accepted particles
-    j <- 1 # initialise the number of proposed particles
-
-    used_seed <- used_seeds_all[particle]
-    set.seed(used_seed)
-    fitted_parameters_all <- prior_fun(n_prior_attempts)
-
-    while(i <= 1){
-
-      if(j > n_prior_attempts){
-        stop("No particle accepted: increase n_prior_attempts or the tolerance (epsilon)")
-      }
-
-      fitted_parameters <- fitted_parameters_all[j,]
-
-      parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
-                      fixed_parameter_list)
-
-      out <- RSVsim_run_model(parameters = parameters,
-                              times = times,
-                              cohort_step_size = cohort_step_size,
-                              init_conds = init_conds,
-                              warm_up = warm_up)
-
-      summary_stats <- summary_fun(out)
-
-      distance <- dist_fun(target, summary_stats)
-
-      if(all(distance <= epsilon)){
-
-        acc_params <- c(fitted_parameters, j, particle, used_seed)
-        names(acc_params) <- c(fitted_parameter_names, "attempts", "particle_number", "prior_function_seed")
-
-        i <- i + 1
-      }
-
-      j <- j + 1
-    }
-
-    return(acc_params)
-  }
-
   if(ncores > 1){
     cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
     parallel::clusterExport(cl, varlist = c("RSV_ODE",
@@ -205,7 +231,21 @@ RSVsim_ABC_rejection <- function(target,
   }
 
   pbapply::pboptions(type = "timer", char = "-")
-  res <- pbapply::pblapply(cl = cl, X = 1:nparticles, FUN = while_fun)
+  res <- pbapply::pblapply(cl = cl, X = 1:nparticles, FUN = while_fun,
+                           target = target,
+                           epsilon = epsilon,
+                           summary_fun = summary_fun,
+                           dist_fun = dist_fun,
+                           prior_fun = prior_fun,
+                           n_prior_attempts = n_prior_attempts,
+                           used_seeds_all = used_seeds_all,
+                           fitted_parameter_names = fitted_parameter_names,
+                           fixed_parameter_list = fixed_parameter_list,
+                           times = times,
+                           cohort_step_size = cohort_step_size,
+                           init_conds = init_conds,
+                           warm_up = warm_up)
+
   res <- do.call(rbind, res)
 
   if(ncores > 1){
