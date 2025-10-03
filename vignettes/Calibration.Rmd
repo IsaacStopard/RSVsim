@@ -56,7 +56,7 @@ fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_popu
 
 Next, we calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm. To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
 
-```{r run_ABC, dependson = "simulated_data"}
+```{r run_ABC, dependson = "simulated_data", eval = FALSE}
 
 #########################
 ##### ABC functions #####
@@ -153,19 +153,5 @@ fit <- RSVsim_ABC_rejection(target = target,
                             cohort_step_size = 0.2*365, # time at which to age people\
                             init_conds = NULL,
                             warm_up = 365 * 4)
-
-```
-
-We can then plot the posterior distribution.
-
-```{r abc_plots, dependson="run_ABC"}
-
-ggplot(data = data.frame('b0' = fit[,'b0'], 'b1' = fit[,'b1'], 'phi' = fit[,'phi']) |> tidyr::pivot_longer(cols = c("b0", "b1", "phi"))) +
-  geom_density(aes(x = value)) +
-  facet_wrap(~name, scales = "free", nrow = 3)
-
-quantile(fit[,'b0'], probs = c(0.025, 0.5, 0.975))
-quantile(fit[,'b1'], probs = c(0.025, 0.5, 0.975))
-quantile(fit[,'phi'], probs = c(0.025, 0.5, 0.975))
 
 ```
