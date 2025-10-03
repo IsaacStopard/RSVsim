@@ -1,6 +1,6 @@
 test_that("RSVsim_run_model function works", {
 
-  skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
+  #skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
 
   contact_population_list <- RSVsim_contact_matrix()
   parameters <- RSVsim_parameters(contact_population_list = contact_population_list)
