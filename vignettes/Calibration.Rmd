@@ -132,11 +132,11 @@ epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsucc
 ##### running the ABC-rejection algorithm #####
 ###############################################
 
-nparticles = 80
+nparticles = 2
 
 used_seeds_all <- seq(1, nparticles)
 
-ncores <- max(1, parallel::detectCores() - 1)
+ncores <- 2
 
 fit <- RSVsim_ABC_rejection(target = target,
                             epsilon = epsilon,
