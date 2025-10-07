@@ -107,22 +107,19 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span></span>
 <span><span class="va">fixed_parameter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span>,</span>
 <span>                                          fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span><span class="op">)</span></span></code></pre></div>
-<p>Next, we calculate some summary statistics from the model output.
-Specifically, we calculate the age-specific peak time of incidence
-infections, the amplitude of incidence (difference between maximum and
-minimum incidence) and the total yearly incidence. RSVsim has built in
-functions to calculate these metrics from the model output. We define a
-function summary_fun to combine these metrics. We will use these as the
-target for the ABC-rejection algorithm. To implement the ABC-rejection
-algorithm we must specify the tolerance; we specify a specific tolerance
-for each metric that is approximately 15% of the simulated value. We
-must also specify a function the randomly samples from the prior
-distributions of all fitted parameters and returns a vector of the
-parameters. We use latin hypercube sampling to efficiently sample the
-prior space. In this example we fit the b0 and b1 parameters. A vector
-of the parameter names that are being fitted in the same order as the
-prior samples must also be provided to set up the parameters to run the
-model.</p>
+<p>Next, we define a function to calculate some summary statistics from
+the model output. Specifically, we calculate the age-specific peak time
+of incidence infections, the amplitude of incidence (difference between
+maximum and minimum incidence) and the total yearly incidence. RSVsim
+has built in functions to calculate these metrics from the model output.
+We define a function summary_fun to combine these metrics. We will use
+these as the target for the ABC-rejection algorithm. We must also
+specify a function the randomly samples from the prior distributions of
+all fitted parameters and returns a vector of the parameters. We use
+latin hypercube sampling to efficiently sample the prior space. In this
+example we fit the b0 and b1 parameters. A vector of the parameter names
+that are being fitted in the same order as the prior samples must also
+be provided to set up the parameters to run the model.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co">#########################</span></span>
@@ -160,9 +157,12 @@ model.</p>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co">#################################</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>To implement the ABC-rejection algorithm we must specify the
+tolerance. We specify a specific tolerance for each metric that means
+approximately 1% of all simulations are accepted.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#################################</span></span>
 <span><span class="co">##### setting the tolerance #####</span></span>
 <span><span class="co">#################################</span></span>
 <span><span class="co"># calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation</span></span>
@@ -192,10 +192,14 @@ model.</p>
 <span>  <span class="va">nsuccess</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">prior_distances</span><span class="op">[</span>,<span class="va">j</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">epsilon_check</span><span class="op">)</span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># selecting a tolerance where at least 1 particle is accepted for the 1000 simulations</span></span>
-<span><span class="va">epsilon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">prior_distances</span>, <span class="fl">1</span>, <span class="va">quantile</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">nsuccess</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">###############################################</span></span>
+<span><span class="co"># selecting a tolerance where at least 1 particle is accepted for the 100 simulations</span></span>
+<span><span class="va">epsilon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">prior_distances</span>, <span class="fl">1</span>, <span class="va">quantile</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">nsuccess</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<p>To run the model we specify the number of particles to fit, and the
+seeds for each particle. The number of cores can also be specified - if
+greater than one then parallel processing is implemented using a
+parallel socket cluster with the parallel R package.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">###############################################</span></span>
 <span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
 <span><span class="co">###############################################</span></span>
 <span></span>
