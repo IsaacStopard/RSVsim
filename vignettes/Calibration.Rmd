@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, eval=FALSE}
 library(RSVsim)
 library(ggplot2)
 library(patchwork)
@@ -26,7 +26,7 @@ In this vignette, we give an overview of how to use an Approximate Bayesian Comp
 
 First, we run the model to generate some data to fit to.
 
-```{r simulated_data, dependson="setup"}
+```{r simulated_data, dependson="setup", eval=FALSE}
 
 # specify age categories to run the model with
 age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))

@@ -66,4 +66,4 @@ out <- RSVsim_run_model(parameters = parameters,
 
 ```
 
-The simulated number of people that are susceptible and infected, with the line type indicating whether the infection is primary or secondary is tracked in the model outputs. The incidence and detected incidence are calculated. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume very few people (1%) over the age of 2 years old is tested. The age_specific prevalence is also calculated.
+The simulated number of people that are susceptible and infected, with the line type indicating whether the infection is primary or secondary is tracked in the model outputs. The incidence and detected incidence are calculated. To calculate the detected incidence age-specific detection probabilities are used, and in the default parameters we assume very few people (1%) over the age of 2 years old is tested. The age-specific prevalence is also calculated.
