@@ -54,9 +54,9 @@ fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_popu
 
 ```
 
-Next, we calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm. To implement the ABC-rejection algorithm we must specify the tolerance; we specify a specific tolerance for each metric that is approximately 15% of the simulated value. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
+Next, we define a function to calculate some summary statistics from the model output. Specifically, we calculate the age-specific peak time of incidence infections, the amplitude of incidence (difference between maximum and minimum incidence) and the total yearly incidence. RSVsim has built in functions to calculate these metrics from the model output. We define a function summary_fun to combine these metrics. We will use these as the target for the ABC-rejection algorithm. We must also specify a function the randomly samples from the prior distributions of all fitted parameters and returns a vector of the parameters. We use latin hypercube sampling to efficiently sample the prior space. In this example we fit the b0 and b1 parameters. A vector of the parameter names that are being fitted in the same order as the prior samples must also be provided to set up the parameters to run the model.
 
-```{r run_ABC, dependson = "simulated_data", eval = FALSE}
+```{r summary_functions, dependson = "simulated_data", eval = FALSE}
 
 #########################
 ##### ABC functions #####
@@ -94,7 +94,11 @@ dist_fun <- function(target, target_star, n = nAges){
   )
 
 }
+```
 
+To implement the ABC-rejection algorithm we must specify the tolerance. We specify a specific tolerance for each metric that means approximately 1% of all simulations are accepted.
+
+```{r calc_tol, dependson = "summary_functions", eval = FALSE}
 #################################
 ##### setting the tolerance #####
 #################################
@@ -125,9 +129,13 @@ for(i in 1:100){
   nsuccess[i] <- sum(sapply(1:100, function(j){all(prior_distances[,j] <= epsilon_check)}))
 }
 
-# selecting a tolerance where at least 1 particle is accepted for the 1000 simulations
+# selecting a tolerance where at least 1 particle is accepted for the 100 simulations
 epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsuccess >= 1))])), digits = 2)
+```
 
+To run the model we specify the number of particles to fit, and the seeds for each particle. The number of cores can also be specified - if greater than one then parallel processing is implemented using a parallel socket cluster with the parallel R package.
+
+```{r run_ABC, dependson="calc_tol", eval=FALSE}
 ###############################################
 ##### running the ABC-rejection algorithm #####
 ###############################################
