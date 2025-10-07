@@ -1,6 +1,6 @@
-#skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
+test_that("RSVsim_contact_matrix function", {
 
-test_that("RSVsim_contact_matrix function: country input works correctly", {
+  #skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
 
   testthat::expect_error(RSVsim_contact_matrix(country = "France",
                                                age.limits = seq(0, 70, 5)))
@@ -13,10 +13,6 @@ test_that("RSVsim_contact_matrix function: country input works correctly", {
                           c(seq(0, 75, 5)))
 
   countries <- c("United Kingdom", "Belgium", "Finland")
-  }
-)
-
-test_that("RSVsim_contact_matrix: outputs do not have missing values and are symmetric when expected", {
 
   for(i in 1:length(list_age_limits)){
 
@@ -36,12 +32,13 @@ test_that("RSVsim_contact_matrix: outputs do not have missing values and are sym
       sum(c(sum(is.na(t_mat$matrix_mean)),
             sum(is.na(t_mat$matrix_contacts)),
             sum(is.na(t_mat$population)))) == 0
-    )
+      )
 
     # checking matrix is symmetric
     testthat::expect_true(
       isSymmetric(t_mat$matrix_contacts, check.attributes = FALSE)
     )
-    }
   }
-)
+
+  }
+  )
