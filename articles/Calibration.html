@@ -83,12 +83,6 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span></span>
 <span><span class="co"># get contact matrix</span></span>
 <span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits): Not all age.limits are integers.</span></span>
-<span><span class="co">#&gt;             The contact matrix was calculated for the age groups given by the integers</span></span>
-<span><span class="co">#&gt;             and divided uniformly within the smaller age groups.</span></span>
-<span><span class="co">#&gt;             A warning from socialmixr about linearly estimating the integer age groups within the 5-year age bands will also appear.</span></span>
-<span><span class="co">#&gt; Warning in pop_age(survey.pop, part.age.group.present, ...): Not all age groups represented in population data (5-year age band).</span></span>
-<span><span class="co">#&gt;   Linearly estimating age group sizes from the 5-year bands.</span></span>
 <span></span>
 <span><span class="co"># get the default model parameters with a b0 value of 0.08 and b1 value of 0</span></span>
 <span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.08</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
