@@ -59,10 +59,10 @@ To run the model the [R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVs
 
 ```{r model_run, dependson="parameters", eval=FALSE}
 out <- RSVsim_run_model(parameters = parameters,
-                        times = seq(0, 3650, 0.25), # maximum time to run the model for
-                        cohort_step_size = 10, # time at which to age people\
+                        times = seq(0, 365 * 2, 0.25), # maximum time to run the model for
+                        cohort_step_size = 60, # time at which to age people\
                         init_conds = NULL,
-                        warm_up = 3650 - 365 * 3)
+                        warm_up = 365)
 
 ```
 
