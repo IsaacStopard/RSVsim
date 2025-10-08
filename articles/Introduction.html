@@ -146,10 +146,10 @@ else is susceptible to primary infection. All new-borns are assumed to
 be susceptible to primary infection compartment.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
-<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3650</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
-<span>                        cohort_step_size <span class="op">=</span> <span class="fl">10</span>, <span class="co"># time at which to age people\</span></span>
+<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">2</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                        cohort_step_size <span class="op">=</span> <span class="fl">60</span>, <span class="co"># time at which to age people\</span></span>
 <span>                        init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                        warm_up <span class="op">=</span> <span class="fl">3650</span> <span class="op">-</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<span>                        warm_up <span class="op">=</span> <span class="fl">365</span><span class="op">)</span></span></code></pre></div>
 <p>The simulated number of people that are susceptible and infected,
 with the line type indicating whether the infection is primary or
 secondary is tracked in the model outputs. The incidence and detected
