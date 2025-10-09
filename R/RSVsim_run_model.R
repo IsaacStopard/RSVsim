@@ -4,7 +4,7 @@
 #'
 #' @param parameters List of parameters from \code{RSVsim_parameters} function.
 #' @param times Simulation times. Default: 0 to 365 days with intervals of 0.25 days.
-#' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied.
+#' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
 #' @param init_conds Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
@@ -108,9 +108,10 @@ RSVsim_run_model <- function(parameters,
     # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
     out_list <- vector(mode = "list", length = n_steps)
 
+    times_all <- sort(unique(round(c(times, 1:n_steps * cohort_step_size), digits = 3)))
+
     times_in <- lapply(2:n_steps, FUN = function(i){
-      sort(unique(c(times[times > ((i - 1) * cohort_step_size) & times <= (i * cohort_step_size)],
-                    i * cohort_step_size)))
+      c(times_all[times_all > ((i - 1) * cohort_step_size) & times_all <= (i * cohort_step_size)])
       })
 
     times_in <- c(
@@ -182,6 +183,7 @@ RSVsim_run_model <- function(parameters,
       dplyr::bind_rows(out_list) |>
         dplyr::left_join(data.frame(age = parameters$age.limits, age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
+
   } else{
 
     out <- dust2::dust_system_simulate(RSV_dust, times = times) |> as.data.frame()
@@ -194,11 +196,9 @@ RSVsim_run_model <- function(parameters,
       dplyr::arrange(factor(state,
                             levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence", "Incidence_rate", "DetIncidence_rate", "prev", "prev_p", "prev_s")), age) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
-
-
   }
 
-  out <- out |> dplyr::filter(time <= max_t)
+  out <- out |> dplyr::filter(time %in% times)
 
   # incidence calculation
   out_checkout <- out |> dplyr::group_by(age) |> dplyr::mutate(Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
@@ -213,7 +213,7 @@ RSVsim_run_model <- function(parameters,
   # checking the total population is correct
 
 
-  if(!all(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = sum(Sp) + sum(Ep) + sum(Ip) + sum(Ss) + sum(Es) + sum(Is) + sum(R)) |> dplyr::select(total) - parameters$total_population) < 1E-5)){
+  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = sum(Sp) + sum(Ep) + sum(Ip) + sum(Ss) + sum(Es) + sum(Is) + sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-5)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 

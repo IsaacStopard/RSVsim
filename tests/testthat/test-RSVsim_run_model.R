@@ -6,10 +6,10 @@ test_that("RSVsim_run_model function works", {
   parameters <- RSVsim_parameters(contact_population_list = contact_population_list)
 
   sim <- RSVsim_run_model(parameters = parameters,
-                          times = seq(0, 3650, 0.25),
+                          times = seq(0, 365*10, 0.25),
                           cohort_step_size = 10,
                           init_conds = NULL,
-                          warm_up = 365 * 3)
+                          warm_up = 365 * 1)
 
   expect_true(sum(is.na(sim)) == 0)
   expect_true(max(sim$time) <= 3650)
@@ -20,10 +20,11 @@ test_that("RSVsim_run_model function works", {
                                 init_conds = NULL,
                                 warm_up = 365 * 3))
 
+  expect_true(max(sim$prev) <= 1 & min(sim$prev) >= 0)
+
   # checking the total population is correct
-  if(!all(abs(sim |> dplyr::group_by(time) |> dplyr::summarise(Sp = sum(Sp), Ep = sum(Ep), Ip = sum(Ip), Ss = sum(Ss), Es = sum(Es), Is = sum(Is), R = sum(R)) |>
-              dplyr::select(Sp, Ep, Ip, Ss, Es, Is, R) |> rowSums() - parameters$total_population) < 1E-5)){
-    stop("RSVsim_run_model: population does not sum to the correct number")
-  }
+  expect_true(all(abs(sim |> dplyr::group_by(time) |> dplyr::summarise(Sp = sum(Sp), Ep = sum(Ep), Ip = sum(Ip), Ss = sum(Ss), Es = sum(Es), Is = sum(Is), R = sum(R)) |>
+              dplyr::select(Sp, Ep, Ip, Ss, Es, Is, R) |> rowSums() - parameters$total_population) < 1E-5)
+              )
 
 })

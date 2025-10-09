@@ -17,7 +17,7 @@ RSVsim_run_model(
 
 \item{times}{Simulation times. Default: 0 to 365 days with intervals of 0.25 days.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied.}
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.}
 
 \item{init_conds}{Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
