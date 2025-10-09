@@ -201,7 +201,7 @@ RSVsim_ABC_rejection <- function(target,
                             envir = environment()
                             )
 
-    clusterEvalQ(cl, library(RSVsim))
+    parallel::clusterEvalQ(cl, library(RSVsim))
 
   } else{
     cl <- NULL
