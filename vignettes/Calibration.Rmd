@@ -18,8 +18,6 @@ knitr::opts_chunk$set(
 
 ```{r setup, eval=FALSE}
 library(RSVsim)
-library(ggplot2)
-library(patchwork)
 ```
 
 In this vignette, we give an overview of how to use an Approximate Bayesian Computation (ABC) rejection algorithm to calibrate the mathematical model of RSV transmission to simulated data. The code to run these samplers was adapted from code provided in Minter, Amanda, and Renata Retkute. "Approximate Bayesian Computation for infectious disease modelling." Epidemics 29 (2019): 100368 <https://doi.org/10.1016/j.epidem.2019.100368>. 
@@ -94,6 +92,7 @@ dist_fun <- function(target, target_star, n = nAges){
   )
 
 }
+
 ```
 
 To implement the ABC-rejection algorithm we must specify the tolerance. We specify a specific tolerance for each metric that means approximately 1% of all simulations are accepted.
@@ -113,10 +112,10 @@ prior_distances <- sapply(1:100, function(i){
                      fixed_parameter_list)
   
   out <- RSVsim_run_model(parameters = parameters_in,
-                   times = seq(0, 365*5, 0.25), # maximum time to run the model for
+                   times = seq(0, 365*1, 0.25), # maximum time to run the model for
                    cohort_step_size = 0.2*365, # time at which to age people\
                    init_conds = NULL,
-                   warm_up = 365*4)
+                   warm_up = NULL)
   
   return(dist_fun(target, summary_fun(out)))
 })

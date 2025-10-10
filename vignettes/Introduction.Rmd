@@ -29,8 +29,6 @@ In brief, the model is age-structured and primary (the first) and secondary infe
 
 ```{r setup, eval=FALSE}
 library(RSVsim)
-library(ggplot2)
-library(patchwork)
 
 ```
 

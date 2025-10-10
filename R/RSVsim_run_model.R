@@ -6,7 +6,7 @@
 #' @param times Simulation times. Default: 0 to 365 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
 #' @param init_conds Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
-#' If \code{NULL}: 1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
+#' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
@@ -42,9 +42,9 @@ RSVsim_run_model <- function(parameters,
 
     parameters <- purrr::list_modify(
       parameters,
-        Sp0 = rel_sizes * parameters$total_population * 0.99,
+        Sp0 = rel_sizes * parameters$total_population * 0.999,
         Ep0 = rep_z,
-        Ip0 = rel_sizes * parameters$total_population * 0.01,
+        Ip0 = rel_sizes * parameters$total_population * 0.001,
         Ss0 = rep_z,
         Es0 = rep_z,
         Is0 = rep_z,
