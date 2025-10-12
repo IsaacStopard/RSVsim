@@ -101,9 +101,9 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span><span class="va">nAges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">age.limits</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
-<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
 <span>                        cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
-<span>                        warm_up <span class="op">=</span> <span class="fl">365</span><span class="op">*</span><span class="fl">4</span><span class="op">)</span></span>
+<span>                        warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fitted_parameter_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span>, <span class="st">"R0"</span>, <span class="st">"Sp0"</span><span class="op">)</span></span>
 <span></span>
@@ -231,11 +231,11 @@ parallel socket cluster with the parallel R package.</p>
 <span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
 <span><span class="co">###############################################</span></span>
 <span></span>
-<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">200</span></span>
 <span></span>
 <span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ncores</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">ncores</span> <span class="op">&lt;-</span> <span class="fl">8</span></span>
 <span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_ABC_rejection.html">RSVsim_ABC_rejection</a></span><span class="op">(</span>target <span class="op">=</span> <span class="va">target</span>,</span>
 <span>                            epsilon <span class="op">=</span> <span class="va">epsilon</span>,</span>
@@ -248,9 +248,19 @@ parallel socket cluster with the parallel R package.</p>
 <span>                            ncores <span class="op">=</span> <span class="va">ncores</span>,</span>
 <span>                            fitted_parameter_names <span class="op">=</span> <span class="va">fitted_parameter_names</span>,</span>
 <span>                            fixed_parameter_list <span class="op">=</span> <span class="va">fixed_parameter_list</span>,</span>
-<span>                            times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span><span class="op">*</span><span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                            times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
 <span>                            cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
-<span>                            warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<span>                            warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_b0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">"b0"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">fit_b1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">"b1"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">fit_phi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">"phi"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">fit_R0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="st">"R0"</span><span class="op">]</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span> <span class="op">/</span> <span class="op">(</span><span class="va">parameters</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="va">parameters</span><span class="op">$</span><span class="va">total_population</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_phi</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_R0</span><span class="op">)</span></span></code></pre></div>
   </main>
 </div>
 
