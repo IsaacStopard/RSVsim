@@ -9,7 +9,6 @@ test_that("calibration functions", {
   sim <- RSVsim_run_model(parameters = parameters,
                           times = seq(0, 365*4, 0.25),
                           cohort_step_size = min(parameters$size_cohorts),
-                          init_conds = NULL,
                           warm_up = 365 * 3)
 
   total_incidence <- RSVsim_total_incidence(sim)
@@ -49,7 +48,6 @@ test_that("calibration functions", {
                                 fixed_parameter_list = fixed_parameter_list,
                                 times = seq(0, 365*4, 0.25), # maximum time to run the model for
                                 cohort_step_size = min(parameters$size_cohorts), # time at which to age people\
-                                init_conds = NULL,
                                 warm_up = 365 * 3)
 
   expect_true(sum(is.na(check)) == 0)

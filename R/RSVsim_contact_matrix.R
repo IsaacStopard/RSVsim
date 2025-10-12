@@ -170,9 +170,11 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
   # age differences in days
   size_cohorts <- c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
 
+  rel_sizes <- size_cohorts/sum(size_cohorts)
 
   out <- append(out, list("age_chr" = age_chr,
-                          "size_cohorts" = size_cohorts))
+                          "size_cohorts" = size_cohorts,
+                          "rel_sizes" = rel_sizes))
 
   return(out)
 }

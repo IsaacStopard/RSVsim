@@ -23,7 +23,9 @@
 #' \code{max_age}: must be obtained from \code{contact_population_list}. Maximum age in years. \cr
 #' \code{age_chr}: Age limits as a character vector. \cr
 #' \code{size_cohorts}: the differences in ages in days - used to calculate the size of the cohorts. \cr
+#' \code{rel_sizes}: the relative size of each cohort (age category duration in days divided by the total number of days). \cr
 #' \code{total_population}: 1861923. Total population size. \cr
+#' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' @export
 RSVsim_parameters <- function(overrides = list(),
                               contact_population_list,
@@ -48,8 +50,6 @@ RSVsim_parameters <- function(overrides = list(),
   }
 
   nAges <- length(contact_population_list$age.limits)
-
-
 
   parameters <- with(contact_population_list,
        {
@@ -99,23 +99,48 @@ RSVsim_parameters <- function(overrides = list(),
            "max_age" = max_age,
            "age_chr" = age_chr,
            "size_cohorts" = size_cohorts,
+           "rel_sizes" = rel_sizes,
            "total_population" = 1861923
          )
          }
   )
+
+  # default initial conditions
+  rep_z <- rep(0, parameters$nAges)
+
+  parameters <- purrr::list_modify(
+    parameters,
+    Sp0 = contact_population_list$rel_sizes * parameters$total_population * 0.999,
+    Ep0 = rep_z,
+    Ip0 = contact_population_list$rel_sizes * parameters$total_population * 0.001,
+    Ss0 = rep_z,
+    Es0 = rep_z,
+    Is0 = rep_z,
+    R0 = rep_z,
+    Incidence0 = rep_z
+    )
 
   for (name in names(overrides)) {
     if (!(name %in% names(parameters))) {
       stop(paste('RSVsim_parameters: unknown parameter:', name, sep=' '))
     }
 
-    if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect") &
+    if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0") &
        length(overrides[[name]]) != nAges){
       stop(paste("RSVsim_parameters:", name, 'is not correct length', sep = ' '))
     }
 
     parameters[[name]] <- overrides[[name]]
   }
+
+  with(parameters,
+       {
+         if((sum(Sp0) + sum(Ss0) + sum(Es0) + sum(Ep0) + sum(Ip0) + sum(Is0) + sum(R0)) != total_population){
+           stop("The total number of people in the initial conditions does not sum to the total population")
+         }
+       }
+       )
+
 
   if(!is.null(fitted_parameter_names)){
     for(name in fitted_parameter_names){
@@ -126,7 +151,6 @@ RSVsim_parameters <- function(overrides = list(),
         parameters <- parameters[-which(names_all == name)]
       }
     }
-
   }
 
   return(parameters)

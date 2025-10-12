@@ -36,7 +36,9 @@ Parameter list. Default values: \cr
 \code{max_age}: must be obtained from \code{contact_population_list}. Maximum age in years. \cr
 \code{age_chr}: Age limits as a character vector. \cr
 \code{size_cohorts}: the differences in ages in days - used to calculate the size of the cohorts. \cr
+\code{rel_sizes}: the relative size of each cohort (age category duration in days divided by the total number of days). \cr
 \code{total_population}: 1861923. Total population size. \cr
+\code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 }
 \description{
 Provides the default parameters to run the RSV model.

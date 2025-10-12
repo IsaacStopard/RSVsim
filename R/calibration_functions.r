@@ -100,8 +100,7 @@ RSVsim_ABC_rejection <- function(target,
                                  fitted_parameter_names,
                                  fixed_parameter_list,
                                  times = seq(0, 365*5, 0.25), # maximum time to run the model for
-                                 cohort_step_size = 0.2*365, # time at which to age people\
-                                 init_conds = NULL,
+                                 cohort_step_size = 0.2*365, # time at which to age people
                                  warm_up = 365 * 4){
 
   # checking the inputs
@@ -146,13 +145,12 @@ RSVsim_ABC_rejection <- function(target,
 
       fitted_parameters <- fitted_parameters_all[j,]
 
-      parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
-                      fixed_parameter_list)
+      parameters_in <- c(setNames(unlist(fitted_parameters, recursive = FALSE), fitted_parameter_names),
+                         fixed_parameter_list)
 
-      out <- RSVsim_run_model(parameters = parameters,
+      out <- RSVsim_run_model(parameters = parameters_in,
                               times = times,
                               cohort_step_size = cohort_step_size,
-                              init_conds = init_conds,
                               warm_up = warm_up)
 
       summary_stats <- summary_fun(out)
@@ -161,7 +159,7 @@ RSVsim_ABC_rejection <- function(target,
 
       if(all(distance <= epsilon)){
 
-        acc_params <- c(fitted_parameters, j, particle, used_seed)
+        acc_params <- c(unlist(fitted_parameters, recursive = FALSE), j, particle, used_seed)
         names(acc_params) <- c(fitted_parameter_names, "attempts", "particle_number", "prior_function_seed")
 
         i <- i + 1
@@ -189,7 +187,6 @@ RSVsim_ABC_rejection <- function(target,
                                             "nAges",
                                             "times",
                                             "cohort_step_size",
-                                            "init_conds",
                                             "warm_up",
                                             "target",
                                             "epsilon",
@@ -252,8 +249,7 @@ RSVsim_ABC_rejection <- function(target,
 #'                            fitted_parameter_names,
 #'                            fixed_parameter_list,
 #'                            times = seq(0, 365*5, 0.25), # maximum time to run the model for
-#'                            cohort_step_size = 0.2*365, # time at which to age people\
-#'                            init_conds = NULL,
+#'                            cohort_step_size = 0.2*365, # time at which to age people
 #'                            warm_up = 365 * 4){
 #'
 #'   nparams <- length(fitted_parameter_names)
@@ -330,7 +326,6 @@ RSVsim_ABC_rejection <- function(target,
 #'           out <- RSVsim_run_model(parameters = parameters,
 #'                               times = times,
 #'                               cohort_step_size = cohort_step_size,
-#'                               init_conds = init_conds,
 #'                               warm_up = warm_up)
 #'
 #'           target_star <- summary_fun(out)
@@ -376,7 +371,7 @@ RSVsim_ABC_rejection <- function(target,
 #'                                             "fitted_parameter_names",
 #'                                             "nAges",
 #'                                             "times", "cohort_step_size",
-#'                                             "init_conds", "warm_up",
+#'                                             "warm_up",
 #'                                             "target",
 #'                                             "epsilon",
 #'                                             "prior_fun",

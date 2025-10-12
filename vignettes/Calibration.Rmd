@@ -32,8 +32,19 @@ age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
 # get contact matrix
 contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
 
-# get the default model parameters with a b0 value of 0.08 and b1 value of 0
-parameters <- RSVsim_parameters(overrides = list("b0" = 0.08, "b1" = 0.1, "phi" = 0),
+# get the default model parameters with a b0 value of 0.08, b1 value of 0, phi value of 0 and change the initial conditions 
+
+overrides <- list("b0" = 0.08, "b1" = 0, "phi" = 0,
+                  "R0" = contact_population_list$rel_sizes * 27536874 * 0.1,
+                  "Sp0" = contact_population_list$rel_sizes * 27536874 * (1 - 0.1 - 0.01),
+                  "Ep0" = contact_population_list$rel_sizes * 27536874 * 0,
+                  "Ip0" = contact_population_list$rel_sizes * 27536874 * 0.01,
+                  "Ss0" = contact_population_list$rel_sizes * 0,
+                  "Es0" = contact_population_list$rel_sizes * 0,
+                  "Is0" = contact_population_list$rel_sizes * 0,
+                  "total_population" = 27536874)
+
+parameters <- RSVsim_parameters(overrides = overrides,
                                 contact_population_list = contact_population_list,
                                 fitted = NULL)
 
@@ -42,12 +53,12 @@ nAges <- length(age.limits)
 out <- RSVsim_run_model(parameters = parameters,
                         times = seq(0, 365*5, 0.25), # maximum time to run the model for
                         cohort_step_size = 0.2*365, # time at which to age people\
-                        init_conds = NULL,
                         warm_up = 365*4)
 
-fitted_parameter_names <- c("b0", "b1", "phi")
+fitted_parameter_names <- c("b0", "b1", "phi", "R0", "Sp0")
 
-fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_population_list,
+fixed_parameter_list <- RSVsim_parameters(overrides = overrides,
+                                          contact_population_list = contact_population_list,
                                           fitted_parameter_names = fitted_parameter_names)
 
 ```
@@ -71,14 +82,40 @@ target <- summary_fun(out)
 # we use latin hypercube sampling to efficiently sample from the prior distributions
 prior_fun <- function(n_prior_attempts){
   
-  x <- lhs::randomLHS(n_prior_attempts, 3)
+  total_population <- 27536874
+  
+  rel_sizes <- c(0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222,
+                 0.002222222, 0.088888889, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556,
+                 0.055555556, 0.055555556, 0.055555556, 0.333333333)
+  
+  x <- lhs::randomLHS(n_prior_attempts, 4)
   
   # adjusting the prior distributions
   x[,1] <- qunif(x[,1], min = 0.05, 0.25)
   x[,2] <- qunif(x[,2], min = 0, max = 1) # not necessary but added for completeness
   x[,3] <- qunif(x[,3], min = -365.25/2, max = 365.25/2)
+  x[,4] <- qbeta(x[,4], shape1 = 1, shape2 = 5)
   
-  return(x)
+  x4 <- lapply(1:n_prior_attempts,
+               function(i){
+                 x[i,4] * rel_sizes * total_population
+               }
+               )
+
+  x5 <- lapply(1:n_prior_attempts,
+               function(i){
+                 (1 - 0.01 - x[i,4]) * rel_sizes * total_population
+               }
+               )
+  
+  x_out <- data.frame("b0" = x[,1],
+                      "b1" = x[,2],
+                      "phi" = x[,3])
+  
+  x_out$R0 <- x4
+  x_out$Sp0 <- x5
+  
+  return(x_out)
 }
 
 # a function that calculates the distance between the summary statistics is required
@@ -108,13 +145,12 @@ prior_params <- prior_fun(100)
 
 # simulating the summary statistics for each particle
 prior_distances <- sapply(1:100, function(i){
-  parameters_in <- c(as.list(setNames(prior_params[i,], fitted_parameter_names)),
+  parameters_in <- c(setNames(unlist(prior_params[i,], recursive = FALSE), fitted_parameter_names),
                      fixed_parameter_list)
   
   out <- RSVsim_run_model(parameters = parameters_in,
                    times = seq(0, 365*1, 0.25), # maximum time to run the model for
-                   cohort_step_size = 0.2*365, # time at which to age people\
-                   init_conds = NULL,
+                   cohort_step_size = 0.2*365, # time at which to age people
                    warm_up = NULL)
   
   return(dist_fun(target, summary_fun(out)))
@@ -158,7 +194,6 @@ fit <- RSVsim_ABC_rejection(target = target,
                             fixed_parameter_list = fixed_parameter_list,
                             times = seq(0, 365*5, 0.25), # maximum time to run the model for
                             cohort_step_size = 0.2*365, # time at which to age people\
-                            init_conds = NULL,
                             warm_up = 365 * 4)
 
 ```

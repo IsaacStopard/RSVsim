@@ -8,7 +8,6 @@ test_that("RSVsim_run_model function works", {
   sim <- RSVsim_run_model(parameters = parameters,
                           times = seq(0, 365*10, 0.25),
                           cohort_step_size = 10,
-                          init_conds = NULL,
                           warm_up = 365 * 1)
 
   expect_true(sum(is.na(sim)) == 0)
@@ -17,7 +16,6 @@ test_that("RSVsim_run_model function works", {
   expect_error(RSVsim_run_model(parameters = parameters,
                                 times = seq(0, 3650, 0.25),
                                 cohort_step_size = min(parameters$size_cohorts) + 10,
-                                init_conds = NULL,
                                 warm_up = 365 * 3))
 
   expect_true(max(sim$prev) <= 1 & min(sim$prev) >= 0)

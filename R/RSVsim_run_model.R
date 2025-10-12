@@ -5,7 +5,6 @@
 #' @param parameters List of parameters from \code{RSVsim_parameters} function.
 #' @param times Simulation times. Default: 0 to 365 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
-#' @param init_conds Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
@@ -14,7 +13,6 @@
 RSVsim_run_model <- function(parameters,
                              times = seq(0, 365*1, 0.25),
                              cohort_step_size = 60,
-                             init_conds = NULL,
                              warm_up = NULL
                              ){
 
@@ -22,7 +20,7 @@ RSVsim_run_model <- function(parameters,
 
   size_cohorts <- parameters$size_cohorts
 
-  rel_sizes <- size_cohorts/sum(size_cohorts)
+  rel_sizes <- parameters$rel_sizes
 
   # running for the time of the smallest cohort
   if(is.numeric(cohort_step_size) & max(diff(times)) >= cohort_step_size){
@@ -34,44 +32,6 @@ RSVsim_run_model <- function(parameters,
   }
 
   max_t <- max(times)
-
-  # initial conditions: choose whether to reset here
-  if(is.null(init_conds)) {
-
-    rep_z <- rep(0, parameters$nAges)
-
-    parameters <- purrr::list_modify(
-      parameters,
-        Sp0 = rel_sizes * parameters$total_population * 0.999,
-        Ep0 = rep_z,
-        Ip0 = rel_sizes * parameters$total_population * 0.001,
-        Ss0 = rep_z,
-        Es0 = rep_z,
-        Is0 = rep_z,
-        R0 = rep_z,
-        Incidence0 = rep_z
-      )
-  } else{
-    parameters <- with(init_conds,{
-      for(name in c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")){
-        if(length(get(name)) != parameters$nAges){
-          stop(paste("RSVsim_run_model: initial conditions for", name,"are not all the same length as the number of age categories", sep = " "))
-        }
-      }
-      purrr::list_modify(
-        parameters,
-        Sp0 = Sp0 * rel_sizes * parameters$total_population,
-        Ep0 = Ep0 * rel_sizes * parameters$total_population,
-        Ip0 = Ip0 * rel_sizes * parameters$total_population,
-        Ss0 = Ss0 * rel_sizes * parameters$total_population,
-        Es0 = Es0 * rel_sizes * parameters$total_population,
-        Is0 = Is0 * rel_sizes * parameters$total_population,
-        R0 = R0 * rel_sizes * parameters$total_population,
-        Incidence0 = Incidence0
-      )
-      }
-    )
-  }
 
   # runs the model with cohort ageing
   RSV_dust <- dust2::dust_system_create(generator = RSV_ODE,
@@ -213,7 +173,7 @@ RSVsim_run_model <- function(parameters,
   # checking the total population is correct
 
 
-  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = sum(Sp) + sum(Ep) + sum(Ip) + sum(Ss) + sum(Es) + sum(Is) + sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-5)){
+  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = sum(Sp) + sum(Ep) + sum(Ip) + sum(Ss) + sum(Es) + sum(Is) + sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-1)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 

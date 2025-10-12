@@ -18,7 +18,6 @@ RSVsim_ABC_rejection(
   fixed_parameter_list,
   times = seq(0, 365 * 5, 0.25),
   cohort_step_size = 0.2 * 365,
-  init_conds = NULL,
   warm_up = 365 * 4
 )
 }
@@ -47,10 +46,8 @@ RSVsim_ABC_rejection(
 
 \item{times}{Simulation times. Default: 0 to 365 days with intervals of 0.25 days.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.}
-
-\item{init_conds}{Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
-If \code{NULL}: 1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
+If \code{NULL}: 0.1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
