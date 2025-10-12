@@ -57,7 +57,6 @@
 <span>  <span class="va">fixed_parameter_list</span>,</span>
 <span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
 <span>  cohort_step_size <span class="op">=</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="fl">365</span>,</span>
-<span>  init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -115,12 +114,8 @@
 
 
 <dt id="arg-cohort-step-size">cohort_step_size<a class="anchor" aria-label="anchor" href="#arg-cohort-step-size"></a></dt>
-<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If <code>is.numeric(cohort_step_size) == FALSE</code> then cohort ageing is not applied. Can have a maximum of 3 decimal places.</p></dd>
-
-
-<dt id="arg-init-conds">init_conds<a class="anchor" aria-label="anchor" href="#arg-init-conds"></a></dt>
-<dd><p>Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: <code>NULL</code>.
-If <code>NULL</code>: 1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
+<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If <code>is.numeric(cohort_step_size) == FALSE</code> then cohort ageing is not applied. Can have a maximum of 3 decimal places.
+If <code>NULL</code>: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.</p></dd>
 
 
