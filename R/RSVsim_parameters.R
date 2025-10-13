@@ -135,7 +135,7 @@ RSVsim_parameters <- function(overrides = list(),
 
   with(parameters,
        {
-         if((sum(Sp0) + sum(Ss0) + sum(Es0) + sum(Ep0) + sum(Ip0) + sum(Is0) + sum(R0)) != total_population){
+         if((round(sum(Sp0) + sum(Ss0) + sum(Es0) + sum(Ep0) + sum(Ip0) + sum(Is0) + sum(R0), digits = 2)) != round(total_population, digits = 2)){
            stop("The total number of people in the initial conditions does not sum to the total population")
          }
        }

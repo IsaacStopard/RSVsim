@@ -207,4 +207,6 @@ hist(fit_b1)
 hist(fit_phi)
 hist(fit_R0)
 
+plot(fit_b1, fit_phi)
+
 ```
