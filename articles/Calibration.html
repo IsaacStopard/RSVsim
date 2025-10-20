@@ -84,11 +84,11 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span></span>
 <span><span class="co"># get the default model parameters with a b0 value of 0.08, b1 value of 0, phi value of 0 and change the initial conditions </span></span>
 <span></span>
-<span><span class="va">overrides</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.08</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">0</span>,</span>
+<span><span class="va">overrides</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="fl">0.05</span>, <span class="st">"b1"</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="st">"phi"</span> <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>                  <span class="st">"R0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="fl">0.1</span>,</span>
-<span>                  <span class="st">"Sp0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.1</span> <span class="op">-</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                  <span class="st">"Sp0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.1</span> <span class="op">-</span> <span class="fl">0.001</span><span class="op">)</span>,</span>
 <span>                  <span class="st">"Ep0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="fl">0</span>,</span>
-<span>                  <span class="st">"Ip0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="fl">0.01</span>,</span>
+<span>                  <span class="st">"Ip0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">27536874</span> <span class="op">*</span> <span class="fl">0.001</span>,</span>
 <span>                  <span class="st">"Ss0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">0</span>,</span>
 <span>                  <span class="st">"Es0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">0</span>,</span>
 <span>                  <span class="st">"Is0"</span> <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">$</span><span class="va">rel_sizes</span> <span class="op">*</span> <span class="fl">0</span>,</span>
@@ -102,7 +102,7 @@ modelling.” Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epi
 <span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
 <span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
-<span>                        cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
+<span>                        cohort_step_size <span class="op">=</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
 <span>                        warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fitted_parameter_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span>, <span class="st">"R0"</span>, <span class="st">"Sp0"</span><span class="op">)</span></span>
@@ -162,7 +162,7 @@ be provided to set up the parameters to run the model.</p>
 <span></span>
 <span>  <span class="va">x5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_prior_attempts</span>,</span>
 <span>               <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span><span class="op">{</span></span>
-<span>                 <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.01</span> <span class="op">-</span> <span class="va">x</span><span class="op">[</span><span class="va">i</span>,<span class="fl">4</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="va">rel_sizes</span> <span class="op">*</span> <span class="va">total_population</span></span>
+<span>                 <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.001</span> <span class="op">-</span> <span class="va">x</span><span class="op">[</span><span class="va">i</span>,<span class="fl">4</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="va">rel_sizes</span> <span class="op">*</span> <span class="va">total_population</span></span>
 <span>               <span class="op">}</span></span>
 <span>               <span class="op">)</span></span>
 <span>  </span>
@@ -194,8 +194,8 @@ approximately 1% of all simulations are accepted.</p>
 <code class="sourceCode R"><span><span class="co">#################################</span></span>
 <span><span class="co">##### setting the tolerance #####</span></span>
 <span><span class="co">#################################</span></span>
-<span><span class="co"># calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation</span></span>
-<span><span class="co"># getting 1000 samples from the priors</span></span>
+<span><span class="co"># calculating a tolerance that means at least 1 particle combination is accepted every 100 simulations</span></span>
+<span><span class="co"># getting 100 samples from the priors</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">prior_params</span> <span class="op">&lt;-</span> <span class="fu">prior_fun</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
 <span></span>
@@ -231,7 +231,7 @@ parallel socket cluster with the parallel R package.</p>
 <span><span class="co">##### running the ABC-rejection algorithm #####</span></span>
 <span><span class="co">###############################################</span></span>
 <span></span>
-<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">200</span></span>
+<span><span class="va">nparticles</span> <span class="op">=</span> <span class="fl">500</span></span>
 <span></span>
 <span><span class="va">used_seeds_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span><span class="op">)</span></span>
 <span></span>
@@ -260,9 +260,7 @@ parallel socket cluster with the parallel R package.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_phi</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_R0</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_b1</span>, <span class="va">fit_phi</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_R0</span><span class="op">)</span></span></code></pre></div>
   </main>
 </div>
 
