@@ -105,21 +105,6 @@ RSVsim_parameters <- function(overrides = list(),
          }
   )
 
-  # default initial conditions
-  rep_z <- rep(0, parameters$nAges)
-
-  parameters <- purrr::list_modify(
-    parameters,
-    Sp0 = contact_population_list$rel_sizes * parameters$total_population * 0.999,
-    Ep0 = rep_z,
-    Ip0 = contact_population_list$rel_sizes * parameters$total_population * 0.001,
-    Ss0 = rep_z,
-    Es0 = rep_z,
-    Is0 = rep_z,
-    R0 = rep_z,
-    Incidence0 = rep_z
-    )
-
   for (name in names(overrides)) {
     if (!(name %in% names(parameters))) {
       stop(paste('RSVsim_parameters: unknown parameter:', name, sep=' '))
@@ -133,6 +118,42 @@ RSVsim_parameters <- function(overrides = list(),
     parameters[[name]] <- overrides[[name]]
   }
 
+  # default initial conditions
+  rep_z <- rep(0, parameters$nAges)
+
+
+  if(is.null(parameters$Sp0)){
+    parameters$Sp0 = contact_population_list$rel_sizes * parameters$total_population * 0.999
+  }
+
+  if(is.null(parameters$Ep0)){
+    parameters$Ep0 <- rep_z
+    }
+
+  if(is.null(parameters$Ip0)){
+    parameters$Ip0 <- contact_population_list$rel_sizes * parameters$total_population * 0.001
+    }
+
+    if(is.null(parameters$Ss0)){
+      parameters$Ss0 <- rep_z
+      }
+
+    if(is.null(parameters$Es0)){
+      parameters$Es0 <- rep_z
+      }
+
+    if(is.null(parameters$Is0)){
+      parameters$Is0 <- rep_z
+    }
+
+    if(is.null(parameters$R0)){
+      parameters$R0 <- rep_z
+    }
+
+    if(is.null(parameters$Incidence0)){
+      parameters$Incidence0 <- rep_z
+    }
+
   with(parameters,
        {
          if((round(sum(Sp0) + sum(Ss0) + sum(Es0) + sum(Ep0) + sum(Ip0) + sum(Is0) + sum(R0), digits = 2)) != round(total_population, digits = 2)){
@@ -140,7 +161,6 @@ RSVsim_parameters <- function(overrides = list(),
          }
        }
        )
-
 
   if(!is.null(fitted_parameter_names)){
     for(name in fitted_parameter_names){

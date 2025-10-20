@@ -34,11 +34,11 @@ contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age
 
 # get the default model parameters with a b0 value of 0.08, b1 value of 0, phi value of 0 and change the initial conditions 
 
-overrides <- list("b0" = 0.08, "b1" = 0, "phi" = 0,
+overrides <- list("b0" = 0.05, "b1" = 0.1, "phi" = 10,
                   "R0" = contact_population_list$rel_sizes * 27536874 * 0.1,
-                  "Sp0" = contact_population_list$rel_sizes * 27536874 * (1 - 0.1 - 0.01),
+                  "Sp0" = contact_population_list$rel_sizes * 27536874 * (1 - 0.1 - 0.001),
                   "Ep0" = contact_population_list$rel_sizes * 27536874 * 0,
-                  "Ip0" = contact_population_list$rel_sizes * 27536874 * 0.01,
+                  "Ip0" = contact_population_list$rel_sizes * 27536874 * 0.001,
                   "Ss0" = contact_population_list$rel_sizes * 0,
                   "Es0" = contact_population_list$rel_sizes * 0,
                   "Is0" = contact_population_list$rel_sizes * 0,
@@ -52,7 +52,7 @@ nAges <- length(age.limits)
 
 out <- RSVsim_run_model(parameters = parameters,
                         times = seq(0, 365, 0.25), # maximum time to run the model for
-                        cohort_step_size = 0.2*365, # time at which to age people\
+                        cohort_step_size = 0.2 * 365, # time at which to age people\
                         warm_up = NULL)
 
 fitted_parameter_names <- c("b0", "b1", "phi", "R0", "Sp0")
@@ -104,7 +104,7 @@ prior_fun <- function(n_prior_attempts){
 
   x5 <- lapply(1:n_prior_attempts,
                function(i){
-                 (1 - 0.01 - x[i,4]) * rel_sizes * total_population
+                 (1 - 0.001 - x[i,4]) * rel_sizes * total_population
                }
                )
   
@@ -138,8 +138,8 @@ To implement the ABC-rejection algorithm we must specify the tolerance. We speci
 #################################
 ##### setting the tolerance #####
 #################################
-# calculating a tolerance that means at least 1 particle combination is accepted every 1000 simulation
-# getting 1000 samples from the priors
+# calculating a tolerance that means at least 1 particle combination is accepted every 100 simulations
+# getting 100 samples from the priors
 set.seed(123)
 prior_params <- prior_fun(100)
 
@@ -176,7 +176,7 @@ To run the model we specify the number of particles to fit, and the seeds for ea
 ##### running the ABC-rejection algorithm #####
 ###############################################
 
-nparticles = 200
+nparticles = 500
 
 used_seeds_all <- seq(1, nparticles)
 
@@ -206,7 +206,5 @@ hist(fit_b0)
 hist(fit_b1)
 hist(fit_phi)
 hist(fit_R0)
-
-plot(fit_b1, fit_phi)
 
 ```
