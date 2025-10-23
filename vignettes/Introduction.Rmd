@@ -47,7 +47,7 @@ contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age
 To obtain a list of the default parameters to run the model use the [R/RSVsim_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_parameters.R) function. The parameters can be changed by using the overrides argument; for example we override $b0$ (the transmission rate coefficient) with a value of $0.15$. The "fitted" argument refers to parameters that will be excluded - the function will not return any parameters named in this vector. Initial conditions are defined in the parameter list. If no initial conditions are given, it is assumed there is 0.1% prevalence in the primary infection compartment across all ages and everyone else is susceptible to primary infection. All new-borns are assumed to be in the susceptible to primary infection compartment.
 
 ```{r parameters, dependson="contact_matrix", eval=FALSE}
-parameters <- RSVsim_parameters(overrides = list("b0" = 0.15), 
+parameters <- RSVsim_parameters(overrides = list("b0" = 0.15, "b1" = 1, "phi" = 0), 
                                 contact_population_list = contact_population_list,
                                 fitted = NULL)
 ```
@@ -57,9 +57,9 @@ To run the model the [R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVs
 
 ```{r model_run, dependson="parameters", eval=FALSE}
 out <- RSVsim_run_model(parameters = parameters,
-                        times = seq(0, 365 * 2, 0.25), # maximum time to run the model for
-                        cohort_step_size = 60, # time at which to age people\
-                        warm_up = 365)
+                        times = seq(0, 365 * 10, 0.25), # maximum time to run the model for
+                        cohort_step_size = 5, # time at which to age people\
+                        warm_up = NULL)
 
 ```
 

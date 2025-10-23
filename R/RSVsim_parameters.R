@@ -33,7 +33,7 @@ RSVsim_parameters <- function(overrides = list(),
                        ){
 
   # override parameters with any client specified ones
-  if (!is.list(overrides)) {
+  if(!is.list(overrides)) {
     stop('RSVsim_parameters: overrides must be a list')
   }
 
@@ -105,8 +105,12 @@ RSVsim_parameters <- function(overrides = list(),
          }
   )
 
+
+
+
   for (name in names(overrides)) {
-    if (!(name %in% names(parameters))) {
+
+    if (!(name %in% c(names(parameters), "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0"))){
       stop(paste('RSVsim_parameters: unknown parameter:', name, sep=' '))
     }
 

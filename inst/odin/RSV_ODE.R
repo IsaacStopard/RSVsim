@@ -43,6 +43,8 @@ deriv(Es[1:nAges]) <- incidence_rate_s[i] - delta * Es[i]
 deriv(Is[1:nAges]) <- delta * Es[i] - gamma_s * Is[i]
 
 deriv(R[1:nAges]) <- gamma_p * Ip[i] + gamma_s * Is[i] - nu * R[i]
+
+# used to tracks the incidence in a given age-group (the incidence of the age when infected)
 deriv(Incidence[1:nAges]) <- incidence_rate_s[i] + incidence_rate_p[i]
 
 N[1:nAges] <- Ss[i] + Es[i] + Is[i] + Sp[i] + Ep[i] + Ip[i] + R[i]

@@ -49,15 +49,16 @@ RSVsim_run_model <- function(parameters,
   # the order is determined by the order in the odin RSV_ODE.R file
   states <- dust2::dust_unpack_index(RSV_dust)
 
+  states_order <- names(states)
+
   states <- lapply(1:length(states), function(i){rep(names(states[i]), length(states[[i]]))}) |> unlist()
 
-  n_states <- length(unique(states))
+  n_states <- length(states_order)
 
   ages <- rep(parameters$age.limits, n_states)
 
+  # no cohort aging in these variables
   output_variable_names <- c("Incidence", "DetIncidence", "prev", "prev_p", "prev_s", "Incidence_rate", "DetIncidence_rate")
-
-  incidence_i <- which(states %in% output_variable_names)
 
   if(is.numeric(cohort_step_size)){
 
@@ -95,9 +96,9 @@ RSVsim_run_model <- function(parameters,
                             names_to = "time") |>
         dplyr::mutate(time = as.numeric(time)) |>
         dplyr::arrange(factor(state,
-                              levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence", "Incidence_rate", "DetIncidence_rate", "prev", "prev_p", "prev_s")), age)
+                              levels = states_order), age)
 
-      # calculating the initial states with cohort ageing in the S, E, I and R compartments only
+      # calculating the initial states with cohort ageing in the S, E, I, R, CumCohortIncidencep and DetCumCohortIncidencep compartments only
       next_state <- out_list[[i]] |>
         dplyr::filter(time == max(time) & !(state %in% output_variable_names)) |>
         dplyr::group_by(state) |>
@@ -116,21 +117,20 @@ RSVsim_run_model <- function(parameters,
         dplyr::mutate(lag_transition =
                         ifelse(is.na(lag_transition) & age == 0 & state == "Sp",
                                rel_sizes[1] * transition_rate[1] * parameters$total_population,
-                               ifelse(is.na(lag_transition) & age == 0, 0,
-                                      lag_transition)
-                               )
+                               ifelse(is.na(lag_transition) & age == 0, 0, lag_transition)
+                               ),
+                      next_value = value - transition_ct + lag_transition
                       )
 
-      next_state <- next_state |>
-        dplyr::mutate(next_value = value - transition_ct + lag_transition) |>
+      next_state_output_variables = out_list[[i]] |> dplyr::filter(time == max(time) & state %in% output_variable_names) |> dplyr::rename(next_value = value)
+
+      next_state <- rbind(next_state[,colnames(next_state_output_variables)], next_state_output_variables) |>
+        dplyr::arrange(factor(state,
+                              levels = states_order), age) |>
         dplyr::select(next_value) |>
         unlist() |> unname() |> as.vector()
 
-      next_state_output_variables = out_list[[i]] |> dplyr::filter(time == max(time) & state %in% output_variable_names) |>
-        dplyr::select(value) |>
-        unlist() |> unname() |> as.vector()
-
-      dust2::dust_system_set_state(sys = RSV_dust, state = c(next_state, next_state_output_variables))
+      dust2::dust_system_set_state(sys = RSV_dust, state = next_state)
 
       # if(all(dust2::dust_system_state(RSV_dust) != next_state)){
       #   stop("RSVsim_run_model: states have not been updated")
@@ -154,7 +154,7 @@ RSVsim_run_model <- function(parameters,
                           names_to = "time") |>
       dplyr::mutate(time = as.numeric(time)) |>
       dplyr::arrange(factor(state,
-                            levels = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R", "Incidence", "DetIncidence", "Incidence_rate", "DetIncidence_rate", "prev", "prev_p", "prev_s")), age) |>
+                            levels = states_order), age) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
