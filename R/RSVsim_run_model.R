@@ -151,8 +151,6 @@ RSVsim_run_model <- function(parameters,
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
-  out <- out |> dplyr::filter(time %in% times)
-
   # incidence calculation
   out_checkout <- out |> dplyr::group_by(age) |> dplyr::mutate(Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
                                                                DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0)
