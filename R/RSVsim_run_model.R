@@ -71,16 +71,9 @@ RSVsim_run_model <- function(parameters,
 
     times_all <- sort(unique(round(c(times, 1:n_steps * cohort_step_size), digits = 3)))
 
-    times_in <- lapply(2:n_steps, FUN = function(i){
-      c(times_all[times_all > ((i - 1) * cohort_step_size) & times_all <= (i * cohort_step_size)])
+    times_in <- lapply(1:n_steps, FUN = function(i){
+      c(times_all[times_all >= ((i - 1) * cohort_step_size) & times_all < (i * cohort_step_size)])
       })
-
-    times_in <- c(
-      list(
-        sort(unique(c(0, times[times >= 0 & times <= cohort_step_size], cohort_step_size)))
-        ),
-      times_in
-      )
 
     for(i in 1:n_steps){
 
@@ -98,7 +91,7 @@ RSVsim_run_model <- function(parameters,
         dplyr::arrange(factor(state,
                               levels = states_order), age)
 
-      # calculating the initial states with cohort ageing in the S, E, I, R, CumCohortIncidencep and DetCumCohortIncidencep compartments only
+      # calculating the initial states with cohort ageing in the S, E, I, R compartments only
       next_state <- out_list[[i]] |>
         dplyr::filter(time == max(time) & !(state %in% output_variable_names)) |>
         dplyr::group_by(state) |>
