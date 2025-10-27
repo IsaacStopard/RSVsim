@@ -14,6 +14,16 @@ A deterministic, ODE model of Respiratory Synctial Virus (RSV)
 transmission. This package is under constant development, so will change
 without notice. The current model outputs are yet to be fully tested.
 
+## Installation
+
+You can install the development version of RSVsim from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("IsaacStopard/RSVsim")
+```
+
 ## Model structure
 
 The model is an adapted version of an
@@ -38,13 +48,3 @@ contacts per person, $M$). The population is stratified into susceptible
 ($S$), exposed ($E$), infectious ($I$) and recovered states ($R$).
 
 ![](ODE_model.png)
-
-## Installation
-
-You can install the development version of RSVsim from
-[GitHub](https://github.com/) with:
-
-``` r
-# install.packages("pak")
-pak::pak("IsaacStopard/RSVsim")
-```
