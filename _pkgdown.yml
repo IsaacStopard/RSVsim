@@ -1,4 +1,5 @@
 url: https://isaacstopard.github.io/RSVsim/
 template:
   bootstrap: 5
-
+resource_files:
+      - ODE_model.png
