@@ -155,7 +155,7 @@ RSVsim_run_model <- function(parameters,
   out_checkout <- out |> dplyr::group_by(age) |> dplyr::mutate(Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
                                                                DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0)
                                                                ) |>
-    dplyr::ungroup() |> as.data.frame()
+    dplyr::ungroup()
 
   if(!is.null(warm_up)){
       out_checkout <- out_checkout |> dplyr::filter(time >= warm_up) |> dplyr::mutate(time = time - warm_up)
@@ -168,6 +168,6 @@ RSVsim_run_model <- function(parameters,
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 
-  return(out_checkout)
+  return(out_checkout |> as.data.frame())
 }
 
