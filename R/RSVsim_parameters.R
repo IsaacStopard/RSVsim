@@ -67,15 +67,15 @@ RSVsim_parameters <- function(overrides = list(),
          omega_vect[age.limits >= 5] <- 0.35
          omega_vect[age.limits < 5] <- 1
 
-         sigma_vect[age.limits <= 1/12] <- 0.7
-         sigma_vect[age.limits > 1/12 & age.limits <= 2/12] <- 0.8
-         sigma_vect[age.limits > 2/12 & age.limits < 3/12] <- 0.9
-         sigma_vect[age.limits >= 3/12] <- 1
+         sigma_vect[age.limits < 1/12] <- 0.7
+         sigma_vect[age.limits >= 1/12 & age.limits < 2/12] <- 0.8
+         sigma_vect[age.limits >= 2/12 & age.limits < 3/12] <- 0.9
+         sigma_vect[age.limits > 3/12] <- 1
 
-         prop_detected_vect[age.limits <= 3 * 1/12] <- 0.424
-         prop_detected_vect[age.limits > 3 * 1/12 & age.limits <= 6 * 1/12] <- 0.088
-         prop_detected_vect[age.limits > 6 * 1/12 & age.limits <= 1] <- 0.047
-         prop_detected_vect[age.limits > 1 & age.limits < 2] <- 0.02
+         prop_detected_vect[age.limits < 3 * 1/12] <- 0.424
+         prop_detected_vect[age.limits >= 3 * 1/12 & age.limits < 6 * 1/12] <- 0.088
+         prop_detected_vect[age.limits >= 6 * 1/12 & age.limits < 1] <- 0.047
+         prop_detected_vect[age.limits >= 1 & age.limits < 2] <- 0.02
          prop_detected_vect[age.limits >= 2] <- 0.01 # very little detection in > 2 year olds
 
          alpha_vect[nAges >= 10] <- 0.3
