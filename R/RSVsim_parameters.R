@@ -70,7 +70,7 @@ RSVsim_parameters <- function(overrides = list(),
          sigma_vect[age.limits < 1/12] <- 0.7
          sigma_vect[age.limits >= 1/12 & age.limits < 2/12] <- 0.8
          sigma_vect[age.limits >= 2/12 & age.limits < 3/12] <- 0.9
-         sigma_vect[age.limits > 3/12] <- 1
+         sigma_vect[age.limits >= 3/12] <- 1
 
          prop_detected_vect[age.limits < 3 * 1/12] <- 0.424
          prop_detected_vect[age.limits >= 3 * 1/12 & age.limits < 6 * 1/12] <- 0.088
