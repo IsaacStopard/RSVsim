@@ -69,7 +69,7 @@ RSVsim_run_model <- function(parameters,
     # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
     out_list <- vector(mode = "list", length = n_steps)
 
-    times_all <- sort(unique(round(c(times, 1:n_steps * cohort_step_size), digits = 3)))
+    times_all <- sort(unique(round(c(times, 1:n_steps * cohort_step_size), digits = 7)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
       c(times_all[times_all >= ((i - 1) * cohort_step_size) & times_all < (i * cohort_step_size)])
