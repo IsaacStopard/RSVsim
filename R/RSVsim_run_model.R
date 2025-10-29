@@ -23,11 +23,11 @@ RSVsim_run_model <- function(parameters,
   rel_sizes <- parameters$rel_sizes
 
   # running for the time of the smallest cohort
-  if(is.numeric(cohort_step_size) & max(diff(times)) >= cohort_step_size){
+  if(is.numeric(cohort_step_size) & round(max(diff(times)), digits = 5) >= round(cohort_step_size, digits = 5)){
     stop("The maximum time difference is greater than or equal to the cohort step size")
   }
 
-  if(is.numeric(cohort_step_size) & min(size_cohorts) < cohort_step_size){
+  if(is.numeric(cohort_step_size) & round(min(size_cohorts), digits = 5) < round(cohort_step_size, digits = 5)){
     stop("The smallest cohort age size is smaller than the cohort_step_size: increase the differences in age limits or decrease the cohort_step_size")
   }
 
