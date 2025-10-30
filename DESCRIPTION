@@ -8,7 +8,7 @@ Description: Deterministic, ODE model of Respiratory Synctial Virus (RSV) transm
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
+RoxygenNote: 7.3.3
 Suggests: 
     knitr,
     rmarkdown,

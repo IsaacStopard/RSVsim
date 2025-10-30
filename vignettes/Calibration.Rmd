@@ -208,3 +208,30 @@ hist(fit_phi)
 hist(fit_R0)
 
 ```
+
+We also provide a function to run a Sequential Monte Carlo ABC algorithm (ABC-SMC).
+
+```{r run_ABC_SMC, dependson="calc_tol", eval=FALSE}
+
+overrides_smc <- list("b0" = 0.1, "b1" = 0.1, "phi" = 10, "total_population" = 27536874)
+
+parameters_smc <- RSVsim_parameters(overrides = overrides_smc,
+                                contact_population_list = contact_population_list,
+                                fitted = NULL)
+
+out_smc <- RSVsim_run_model(parameters = parameters_smc,
+                        times = seq(0, 365.25, 0.25), # maximum time to run the model for
+                        cohort_step_size = 1/12 * 365.25, # time at which to age people\
+                        warm_up = NULL)
+
+fitted_parameter_names_smc <- c("b0", "b1", "phi")
+
+fixed_parameter_list_smc <- RSVsim_parameters(overrides = overrides_SMC,
+                                              contact_population_list = contact_population_list,
+                                              fitted_parameter_names = fitted_parameter_names_SMC)
+
+prior_dens_fun <- function(){
+  
+}
+
+```

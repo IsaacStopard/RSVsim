@@ -99,9 +99,9 @@ RSVsim_ABC_rejection <- function(target,
                                  ncores=1,
                                  fitted_parameter_names,
                                  fixed_parameter_list,
-                                 times = seq(0, 365*5, 0.25), # maximum time to run the model for
-                                 cohort_step_size = 0.2*365, # time at which to age people
-                                 warm_up = 365 * 4){
+                                 times = seq(0, 365.25*5, 0.25), # maximum time to run the model for
+                                 cohort_step_size = 1/12*365.25, # time at which to age people
+                                 warm_up = 365.25 * 4){
 
   # checking the inputs
   if(!all(is.numeric(target))){
@@ -194,7 +194,8 @@ RSVsim_ABC_rejection <- function(target,
                                             "n_prior_attempts",
                                             "summary_fun",
                                             "dist_fun",
-                                            "nparams"),
+                                            "nparams",
+                                            "used_seeds_all"),
                             envir = environment()
                             )
 
@@ -224,180 +225,257 @@ RSVsim_ABC_rejection <- function(target,
   return(res)
 }
 
-#' #' Function to run a Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
-#' #'
-#' #' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm.
-#' #'
-#' #' @param target Values to fit to.
-#' #' @param epsilon_matrix Matrix of acceptable error for each target (columns) for each generation (rows). The row number of is used to determine the number of generations.
-#' #' @param summary_fun Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.
-#' #' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.
-#' #' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
-#' #' @param prior_dens_fun Function that calculates the joint probability density of all parameters given the prior distributions.
-#' #' @param nparticles Number of samples from the approximate posterior for each generation.
-#' #' @param ncores Number of cores. If greater than one then it is run in parallel.
-#' #' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
-#' #' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
-#' #' @inheritParams RSVsim_run_model
-#' #' @return List of fixed parameters, max_t and warm_up.
-#' #' @export
-#' RSVsim_ABC_SMC <- function(target,
-#'                            epsilon_matrix,
-#'                            summary_fun,
-#'                            dist_fun,
-#'                            prior_fun,
-#'                            prior_dens_fun,
-#'                            particle_low,
-#'                            particle_up,
-#'                            nparticles,
-#'                            ncores=1,
-#'                            fitted_parameter_names,
-#'                            fixed_parameter_list,
-#'                            times = seq(0, 365*5, 0.25), # maximum time to run the model for
-#'                            cohort_step_size = 0.2*365, # time at which to age people
-#'                            warm_up = 365 * 4){
+#' Function to run a Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 #'
-#'   nparams <- length(fitted_parameter_names)
+#' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm.
 #'
-#'   ntargets <- length(target)
-#'
-#'   nAges <- fixed_parameter_list$nAges
-#'
-#'   # checking the inputs
-#'   if(!all(is.numeric(target))){
-#'     stop("target must be numeric")
-#'   }
-#'
-#'   if(!all(is.numeric(epsilon_matrix))){
-#'     stop("epsilon_matrix must be numeric")
-#'   }
-#'
-#'   if(any(epsilon_matrix <= 0)){
-#'     stop("increase all epsilon_matrix values above zero")
-#'   }
-#'
-#'   if(ncol(epsilon_matrix)!=nparams){
-#'     stop("incorrect number of columns in epsilon_matrix")
-#'   }
-#'
-#'   if(length(particle_up) != length(particle_low) | length(particle_low) != nparams){
-#'     stop("incorrect number of lower or upper particle boundaries")
-#'   }
-#'
-#'   # number of generations
-#'   G <- nrow(epsilon_matrix)
-#'
-#'   # Number of simulations for each parameter set
-#'   n <- 1
-#'
-#'   # Empty matrices to store results (5 model parameters)
-#'   res_old <- matrix(ncol = nparams, nrow = nparticles)
-#'   res_new <- matrix(ncol = nparams, nrow = nparticles)
-#'
-#'   # Empty vectors to store weights
-#'   w_old <- matrix(ncol = 1, nrow = nparticles)
-#'   w_new <- matrix(ncol = 1, nrow = nparticles)
-#'
-#'   for(g in 1:G){
-#'
-#'     while(i <= nparticles){
-#'
-#'       ### selecting parameters (particles)
-#'       if(g == 1){
-#'
-#'         fitted_parameters <- prior_fun(1)
-#'
-#'       } else{
-#'
-#'         # sample particle set from previously fitted parameters
-#'         p <- sample(seq(1, nparticles), 1, prob = w_old)
-#'
-#'         # perturb the particle to obtain theta**
-#'         fitted_parameters <- tmvtnorm::rtmvnorm(1, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up)
-#'
-#'       }
-#'
-#'       parameters <- c(as.list(setNames(fitted_parameters, fitted_parameter_names)),
-#'                       fixed_parameter_list)
-#'
-#'       p_non_zero <- as.numeric(prior_dens_fun(fitted_parameters) > 0)
-#'
-#'       if(p_non_zero){
-#'         m <- 0
-#'         distance <- matrix(nrow = n, ncol = ntargets)
-#'
-#'         for(j in 1:n){
-#'
-#'           out <- RSVsim_run_model(parameters = parameters,
-#'                               times = times,
-#'                               cohort_step_size = cohort_step_size,
-#'                               warm_up = warm_up)
-#'
-#'           target_star <- summary_fun(out)
-#'
-#'           distance[j,] <- dist_fun(target, target_star)
-#'
-#'
-#'         }
-#'
-#'
-#'
-#'       }
-#'
-#'
-#'     }
-#'
-#'
-#'   }
-#'
-#'
-#'   if(ncores > 1){
-#'
-#'     chunk_size <- ceiling(nparticles / ncores)
-#'
-#'     start_rows <- seq(1, nparticles, by = chunk_size)
-#'     end_rows <- c(start_rows[-1] - 1, nparticles)
-#'
-#'     res_chunks <-
-#'       lapply(1:ncores, function(i){
-#'         as.matrix(res[start_rows[i]:end_rows[i], ])
-#'       }
-#'       )
-#'
-#'     cl <- parallel::makeCluster(ncores) #not to overload your computer
-#'     parallel::clusterExport(cl, varlist = c("while_fun",
-#'                                             "RSVsim_run_model",
-#'                                             "RSVsim_total_incidence",
-#'                                             "RSVsim_amplitude",
-#'                                             "RSVsim_peak",
-#'                                             "RSVsim_abs_dist_fun",
-#'                                             "RSVsim_shortest_periodic_dist_fun",
-#'                                             "fixed_parameter_list",
-#'                                             "fitted_parameter_names",
-#'                                             "nAges",
-#'                                             "times", "cohort_step_size",
-#'                                             "warm_up",
-#'                                             "target",
-#'                                             "epsilon",
-#'                                             "prior_fun",
-#'                                             "summary_fun",
-#'                                             "dist_fun",
-#'                                             "res_chunks",
-#'                                             "nparams")
-#'     )
-#'
-#'     res_out <- parallel::parLapply(cl = cl, X = res_chunks, fun = while_fun)
-#'
-#'     #stop cluster
-#'     parallel::stopCluster(cl)
-#'
-#'     res_out <- do.call(rbind, res_out)
-#'
-#'   } else{
-#'     res_out <- while_fun(res_in = res)
-#'   }
-#'
-#'   return()
-#' }
-#'
+#' @param target Values to fit to.
+#' @param epsilon_matrix Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.
+#' @param summary_fun Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.
+#' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.
+#' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
+#' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
+#' @param used_seeds_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
+#' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.
+#' @param particle_low Lower bounds on the parameters.
+#' @param particle_up Upper bounds on the parameters.
+#' @param nparticles Number of samples from the approximate posterior for each generation.
+#' @param ncores Number of cores. If greater than one then it is run in parallel.
+#' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
+#' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
+#' @inheritParams RSVsim_run_model
+#' @return List of fixed parameters, max_t and warm_up.
+#' @export
+RSVsim_ABC_SMC <- function(target,
+                           epsilon_matrix,
+                           summary_fun,
+                           dist_fun,
+                           prior_fun,
+                           n_param_attempts_per_accept,
+                           used_seed_matrix,
+                           prior_dens_fun,
+                           particle_low,
+                           particle_up,
+                           nparticles,
+                           ncores=1,
+                           fitted_parameter_names,
+                           fixed_parameter_list,
+                           times = seq(0, 365.25*5, 0.25), # maximum time to run the model for
+                           cohort_step_size = 1/12*365.25, # time at which to age people
+                           warm_up = 365.25 * 4){
+
+  nparams <- length(fitted_parameter_names)
+
+  ntargets <- length(target)
+
+  nAges <- fixed_parameter_list$nAges
+
+  # checking the inputs
+  if(!all(is.numeric(target))){
+    stop("target must be numeric")
+  }
+
+  if(!all(is.numeric(epsilon_matrix))){
+    stop("epsilon_matrix must be numeric")
+  }
+
+  if(any(epsilon_matrix <= 0)){
+    stop("increase all epsilon_matrix values above zero")
+  }
+
+  if(ncol(epsilon_matrix)!=ntargets){
+    stop("incorrect number of columns in epsilon_matrix")
+  }
+
+  if(length(particle_up) != length(particle_low) | length(particle_low) != nparams){
+    stop("incorrect number of lower or upper particle boundaries")
+  }
+
+  # number of generations
+  G <- nrow(epsilon_matrix)
+
+  # Number of simulations for each parameter set
+  n <- 1
+
+  while_fun_SMC <- function(particle, g, w_old, res_old, nparticles, sigma, n_param_attempts_per_accept, n, target, epsilon_matrix, fitted_parameter_names, fixed_parameter_list,
+                            times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix){
+
+    used_seed <- used_seed_matrix[g, particle]
+    set.seed(used_seed)
+
+    ### selecting parameters (particles)
+      if(g == 1){
+
+        fitted_parameters <- prior_fun(n_param_attempts_per_accept)
+
+      } else{
+
+        # sample particle set from previously fitted parameters
+        p <- sample(seq(1, nparticles), 1, prob = w_old)
+
+        # perturb the particle to obtain theta**
+        fitted_parameters <- tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up)
+
+      }
+
+    i <- 1  # initialise the number of accepted particles
+    k <- 1 # initialise the number of attempted particles
+
+    while(i <= 1){
+
+      parameters <- fitted_parameters[k, ]
+
+      parameters_ODE <- c(as.list(setNames(parameters, fitted_parameter_names)), fixed_parameter_list)
+
+      p_non_zero <- as.numeric(prod(prior_dens_fun(parameters)) > 0)
+
+      if(p_non_zero){
+        m <- 0
+        distance <- matrix(nrow = n, ncol = ntargets)
+
+        for(j in 1:n){
+
+          out <- RSVsim_run_model(parameters = parameters_ODE,
+                                  times = times,
+                                  cohort_step_size = cohort_step_size,
+                                  warm_up = warm_up)
+
+          target_star <- summary_fun(out)
+
+          distance[j,] <- dist_fun(target, target_star)
+
+          if(all(distance[j,] <= epsilon_matrix[g,])){
+            m <- m + 1
+          }
+        }
+
+        if(m > 0){
+          res_new_out <- parameters
+
+          w1 <- prod(prior_dens_fun(parameters))
+
+          if(g == 1){
+            w2 <- 1
+          } else{
+            w2 <- sum(sapply(1:nparticles, function(a){
+              w_old[a]*tmvtnorm::dtmvnorm(res_new_out, mean = res_old[a,], sigma = sigma, lower = particle_low, upper = particle_up)
+            }))
+          }
+          w_new_out <- (m/n)*w1/w2
+          i <- i + 1
+        }
+      }
+
+      k <- k + 1
+
+    }
+
+    return(list("res_new" = res_new_out,
+                "w_new" = w_new_out,
+                "seed" = used_seed))
+  }
+
+
+  w_list <- vector(mode = "list", length = G)
+  res_list <- vector(mode = "list", length = G)
+  sigma_list <- vector(mode = "list", length = G)
+
+  # Empty matrices to store results (5 model parameters)
+  res_old <- matrix(nrow = nparticles, ncol = nparams)
+  res_new <- matrix(nrow = nparticles, ncol = nparams)
+
+  # Empty vectors to store weights
+  w_old <- matrix(nrow = nparticles, ncol = 1)
+  w_new <- matrix(nrow = nparticles, ncol = 1)
+
+  sigma = matrix(nrow = nparams, ncol = nparams)
+
+  for(g in 1:G){
+
+
+    nparticles
+
+    if(ncores > 1){
+      cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
+      parallel::clusterExport(cl, varlist = c("RSV_ODE",
+                                              "while_fun_SMC",
+                                              "RSVsim_run_model",
+                                              "fixed_parameter_list",
+                                              "fitted_parameter_names",
+                                              "nAges",
+                                              "times",
+                                              "cohort_step_size",
+                                              "warm_up",
+                                              "target",
+                                              "epsilon_matrix",
+                                              "prior_fun",
+                                              "prior_dens_fun",
+                                              "n_param_attempts_per_accept",
+                                              "summary_fun",
+                                              "dist_fun",
+                                              "nparams",
+                                              "used_seed_matrix",
+                                              "particle_low",
+                                              "particle_up"),
+                              envir = environment()
+      )
+
+      parallel::clusterEvalQ(cl, {
+        library(RSVsim)
+        library(tidyr)
+        library(dplyr)
+        library(tmvtnorm)
+      }
+      )
+
+    } else{
+      cl <- NULL
+    }
+
+    pbapply::pboptions(type = "timer", char = "-")
+    res <- pbapply::pblapply(cl = cl, X = 1:nparticles, FUN = while_fun_SMC,
+                             g = g,
+                             w_old = w_old,
+                             res_old = res_old,
+                             nparticles = nparticles,
+                             sigma = sigma,
+                             n_param_attempts_per_accept = n_param_attempts_per_accept,
+                             n = n,
+                             target = target,
+                             epsilon_matrix = epsilon_matrix,
+                             fitted_parameter_names = fitted_parameter_names,
+                             fixed_parameter_list = fixed_parameter_list,
+                             times = times,
+                             cohort_step_size = cohort_step_size,
+                             warm_up = warm_up,
+                             prior_fun = prior_fun,
+                             prior_dens_fun = prior_dens_fun,
+                             particle_low = particle_low,
+                             particle_up = particle_up,
+                             used_seed_matrix = used_seed_matrix)
+
+    if(ncores > 1){
+
+      #stop cluster
+      parallel::stopCluster(cl)
+
+    }
+
+    w_new <- sapply(res, '[[', "w_new")
+    res_new <- do.call(rbind, lapply(res, '[[', 'res_new'))
+
+    sigma <- cov(res_new)
+    res_old <- res_new
+    w_old <- w_new / sum(w_new)
+
+    w_list[[g]] <- w_old
+    res_list[[g]] <- res_old
+    sigma_list[[g]] <- sigma
+  }
+
+  return(list("fitted_parameters" = res_list,
+              "weights" = w_list,
+              "sigma" = sigma_list))
+}
+
 
