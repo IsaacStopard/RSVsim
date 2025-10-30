@@ -49,6 +49,8 @@
 <span>  <span class="va">summary_fun</span>,</span>
 <span>  <span class="va">dist_fun</span>,</span>
 <span>  <span class="va">prior_fun</span>,</span>
+<span>  <span class="va">n_param_attempts_per_accept</span>,</span>
+<span>  <span class="va">used_seed_matrix</span>,</span>
 <span>  <span class="va">prior_dens_fun</span>,</span>
 <span>  <span class="va">particle_low</span>,</span>
 <span>  <span class="va">particle_up</span>,</span>
@@ -56,10 +58,9 @@
 <span>  ncores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">fitted_parameter_names</span>,</span>
 <span>  <span class="va">fixed_parameter_list</span>,</span>
-<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>  cohort_step_size <span class="op">=</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="fl">365</span>,</span>
-<span>  init_conds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  warm_up <span class="op">=</span> <span class="fl">365</span> <span class="op">*</span> <span class="fl">4</span></span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">5</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>  cohort_step_size <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365.25</span>,</span>
+<span>  warm_up <span class="op">=</span> <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">4</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -72,7 +73,7 @@
 
 
 <dt id="arg-epsilon-matrix">epsilon_matrix<a class="anchor" aria-label="anchor" href="#arg-epsilon-matrix"></a></dt>
-<dd><p>Matrix of acceptable error for each target (columns) for each generation (rows). The row number of is used to determine the number of generations.</p></dd>
+<dd><p>Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.</p></dd>
 
 
 <dt id="arg-summary-fun">summary_fun<a class="anchor" aria-label="anchor" href="#arg-summary-fun"></a></dt>
@@ -87,8 +88,20 @@
 <dd><p>Function to sample from the priors for all parameters. Must return a vector.</p></dd>
 
 
+<dt id="arg-n-param-attempts-per-accept">n_param_attempts_per_accept<a class="anchor" aria-label="anchor" href="#arg-n-param-attempts-per-accept"></a></dt>
+<dd><p>Number of samples to try for each accepted particle.</p></dd>
+
+
 <dt id="arg-prior-dens-fun">prior_dens_fun<a class="anchor" aria-label="anchor" href="#arg-prior-dens-fun"></a></dt>
-<dd><p>Function that calculates the joint probability density of all parameters given the prior distributions.</p></dd>
+<dd><p>Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.</p></dd>
+
+
+<dt id="arg-particle-low">particle_low<a class="anchor" aria-label="anchor" href="#arg-particle-low"></a></dt>
+<dd><p>Lower bounds on the parameters.</p></dd>
+
+
+<dt id="arg-particle-up">particle_up<a class="anchor" aria-label="anchor" href="#arg-particle-up"></a></dt>
+<dd><p>Upper bounds on the parameters.</p></dd>
 
 
 <dt id="arg-nparticles">nparticles<a class="anchor" aria-label="anchor" href="#arg-nparticles"></a></dt>
@@ -108,21 +121,21 @@
 
 
 <dt id="arg-times">times<a class="anchor" aria-label="anchor" href="#arg-times"></a></dt>
-<dd><p>Simulation times. Default: 0 - 3650 days with intervals of 0.25 days.</p></dd>
+<dd><p>Simulation times. Default: 0 to 365 days with intervals of 0.25 days.</p></dd>
 
 
 <dt id="arg-cohort-step-size">cohort_step_size<a class="anchor" aria-label="anchor" href="#arg-cohort-step-size"></a></dt>
-<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 10 days.</p></dd>
-
-
-<dt id="arg-init-conds">init_conds<a class="anchor" aria-label="anchor" href="#arg-init-conds"></a></dt>
-<dd><p>Initial conditions to run the model - these are given as prevalence and the initial conditions calculated in this function. List. Default: <code>NULL</code>.
-If <code>NULL</code>: 1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
+<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If <code>is.numeric(cohort_step_size) == FALSE</code> then cohort ageing is not applied. Can have a maximum of 3 decimal places.
+If <code>NULL</code>: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.</p></dd>
 
 
 <dt id="arg-warm-up">warm_up<a class="anchor" aria-label="anchor" href="#arg-warm-up"></a></dt>
 <dd><p>Length of time-points to exclude before calculating the likelihood. Default: <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-used-seeds-matrix">used_seeds_matrix<a class="anchor" aria-label="anchor" href="#arg-used-seeds-matrix"></a></dt>
+<dd><p>Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.</p></dd>
 
 </dl></div>
     <div class="section level2">
