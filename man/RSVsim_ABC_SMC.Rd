@@ -65,5 +65,5 @@ All other people are assumed to be susceptible to their primary infection.}
 List of fixed parameters, max_t and warm_up.
 }
 \description{
------ NOT FINISHED ------ implementation of an ABC-SMC algorithm.
+----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
 }

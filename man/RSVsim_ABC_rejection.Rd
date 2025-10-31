@@ -56,5 +56,5 @@ All other people are assumed to be susceptible to their primary infection.}
 List of fixed parameters, max_t and warm_up.
 }
 \description{
-Runs the ABC-rejection algorithm.
+Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
 }
