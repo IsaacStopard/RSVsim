@@ -314,7 +314,7 @@ RSVsim_ABC_SMC <- function(target,
         p <- sample(seq(1, nparticles), 1, prob = w_old)
 
         # perturb the particle to obtain theta**
-        fitted_parameters <- as.data.frame(tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up))
+        fitted_parameters <- as.data.frame(tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = as.vector(unname(unlist(res_old[p,]))), sigma = sigma, lower = particle_low, upper = particle_up))
 
       }
 
