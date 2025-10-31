@@ -72,16 +72,12 @@
 <dd><p>Values to fit to.</p></dd>
 
 
-<dt id="arg-epsilon-matrix">epsilon_matrix<a class="anchor" aria-label="anchor" href="#arg-epsilon-matrix"></a></dt>
-<dd><p>Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.</p></dd>
-
-
 <dt id="arg-summary-fun">summary_fun<a class="anchor" aria-label="anchor" href="#arg-summary-fun"></a></dt>
-<dd><p>Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.</p></dd>
+<dd><p>Function to calculate the summary statistics equivalent to the target values.</p></dd>
 
 
 <dt id="arg-dist-fun">dist_fun<a class="anchor" aria-label="anchor" href="#arg-dist-fun"></a></dt>
-<dd><p>Function to the calculate the error between the target and <code>summary_fun</code> outputs. Should take one argument: the model outputs.</p></dd>
+<dd><p>Function to the calculate the error between the target and <code>summary_fun</code> outputs.</p></dd>
 
 
 <dt id="arg-prior-fun">prior_fun<a class="anchor" aria-label="anchor" href="#arg-prior-fun"></a></dt>
@@ -90,6 +86,10 @@
 
 <dt id="arg-n-param-attempts-per-accept">n_param_attempts_per_accept<a class="anchor" aria-label="anchor" href="#arg-n-param-attempts-per-accept"></a></dt>
 <dd><p>Number of samples to try for each accepted particle.</p></dd>
+
+
+<dt id="arg-used-seed-matrix">used_seed_matrix<a class="anchor" aria-label="anchor" href="#arg-used-seed-matrix"></a></dt>
+<dd><p>Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.</p></dd>
 
 
 <dt id="arg-prior-dens-fun">prior_dens_fun<a class="anchor" aria-label="anchor" href="#arg-prior-dens-fun"></a></dt>
@@ -105,7 +105,7 @@
 
 
 <dt id="arg-nparticles">nparticles<a class="anchor" aria-label="anchor" href="#arg-nparticles"></a></dt>
-<dd><p>Number of samples from the approximate posterior for each generation.</p></dd>
+<dd><p>Integer. Number of samples from the approximate posterior.</p></dd>
 
 
 <dt id="arg-ncores">ncores<a class="anchor" aria-label="anchor" href="#arg-ncores"></a></dt>
@@ -132,10 +132,6 @@ All other people are assumed to be susceptible to their primary infection.</p></
 
 <dt id="arg-warm-up">warm_up<a class="anchor" aria-label="anchor" href="#arg-warm-up"></a></dt>
 <dd><p>Length of time-points to exclude before calculating the likelihood. Default: <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-used-seeds-matrix">used_seeds_matrix<a class="anchor" aria-label="anchor" href="#arg-used-seeds-matrix"></a></dt>
-<dd><p>Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.</p></dd>
 
 </dl></div>
     <div class="section level2">
