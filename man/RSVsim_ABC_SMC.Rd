@@ -2,7 +2,7 @@
 % Please edit documentation in R/calibration_functions.r
 \name{RSVsim_ABC_SMC}
 \alias{RSVsim_ABC_SMC}
-\title{Function to run a Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm}
+\title{Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm}
 \usage{
 RSVsim_ABC_SMC(
   target,
@@ -51,9 +51,9 @@ RSVsim_ABC_SMC(
 
 \item{fixed_parameter_list}{List of parameter values to run the model excluding the fitted parameters.}
 
-\item{times}{Simulation times. Default: 0 to 365 days with intervals of 0.25 days.}
+\item{times}{Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 60 days. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
 If \code{NULL}: 0.1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.}
 

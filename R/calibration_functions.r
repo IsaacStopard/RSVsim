@@ -70,9 +70,9 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
-#' Function to run a Approximate Bayesian Computation (ABC) rejection algorithm
+#' Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 #'
-#' Runs the ABC-rejection algorithm.
+#' Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
 #'
 #' @param target Values to fit to.
 #' @param epsilon Acceptable error for each target.
@@ -225,9 +225,9 @@ RSVsim_ABC_rejection <- function(target,
   return(res)
 }
 
-#' Function to run a Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
+#' Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 #'
-#' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm.
+#' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
 #'
 #' @param target Values to fit to.
 #' @param epsilon_matrix Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.
@@ -298,7 +298,7 @@ RSVsim_ABC_SMC <- function(target,
   n <- 1
 
   while_fun_SMC <- function(particle, g, w_old, res_old, nparticles, sigma, n_param_attempts_per_accept, n, target, epsilon_matrix, fitted_parameter_names, fixed_parameter_list,
-                            times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix){
+                            times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix, ntargets){
 
     used_seed <- used_seed_matrix[g, particle]
     set.seed(used_seed)
@@ -314,7 +314,7 @@ RSVsim_ABC_SMC <- function(target,
         p <- sample(seq(1, nparticles), 1, prob = w_old)
 
         # perturb the particle to obtain theta**
-        fitted_parameters <- tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up)
+        fitted_parameters <- as.data.frame(tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = res_old[p,], sigma = sigma, lower = particle_low, upper = particle_up))
 
       }
 
@@ -358,7 +358,7 @@ RSVsim_ABC_SMC <- function(target,
             w2 <- 1
           } else{
             w2 <- sum(sapply(1:nparticles, function(a){
-              w_old[a]*tmvtnorm::dtmvnorm(res_new_out, mean = res_old[a,], sigma = sigma, lower = particle_low, upper = particle_up)
+              w_old[a]*tmvtnorm::dtmvnorm(as.vector(unname(unlist(res_new_out))), mean = as.vector(unname(unlist(res_old[a,]))), sigma = sigma, lower = particle_low, upper = particle_up)
             }))
           }
           w_new_out <- (m/n)*w1/w2
@@ -388,12 +388,9 @@ RSVsim_ABC_SMC <- function(target,
   w_old <- matrix(nrow = nparticles, ncol = 1)
   w_new <- matrix(nrow = nparticles, ncol = 1)
 
-  sigma = matrix(nrow = nparams, ncol = nparams)
+  sigma <- matrix(nrow = nparams, ncol = nparams)
 
   for(g in 1:G){
-
-
-    nparticles
 
     if(ncores > 1){
       cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
@@ -416,7 +413,8 @@ RSVsim_ABC_SMC <- function(target,
                                               "nparams",
                                               "used_seed_matrix",
                                               "particle_low",
-                                              "particle_up"),
+                                              "particle_up",
+                                              "ntargets"),
                               envir = environment()
       )
 
@@ -452,7 +450,8 @@ RSVsim_ABC_SMC <- function(target,
                              prior_dens_fun = prior_dens_fun,
                              particle_low = particle_low,
                              particle_up = particle_up,
-                             used_seed_matrix = used_seed_matrix)
+                             used_seed_matrix = used_seed_matrix,
+                             ntargets = ntargets)
 
     if(ncores > 1){
 
