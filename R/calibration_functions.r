@@ -310,12 +310,20 @@ RSVsim_ABC_SMC <- function(target,
 
       } else{
 
+        p <- sample(seq(1, nparticles), n_param_attempts_per_accept, prob = w_old, replace = TRUE)
+
         # sample particle set from previously fitted parameters
-        p <- sample(seq(1, nparticles), 1, prob = w_old)
-
-        # perturb the particle to obtain theta**
-        fitted_parameters <- as.data.frame(tmvtnorm::rtmvnorm(n_param_attempts_per_accept, mean = as.vector(unname(unlist(res_old[p,]))), sigma = sigma, lower = particle_low, upper = particle_up))
-
+        fitted_parameters <- as.data.frame(
+          t(
+            sapply(1:n_param_attempts_per_accept, function(a){
+              return(
+                tmvtnorm::rtmvnorm(1,
+                                   mean = unlist(as.vector(unname(res_old[p[a],, drop = FALSE]))),
+                                   sigma = sigma, lower = particle_low, upper = particle_up))
+              },
+              simplify = TRUE)
+            )
+          )
       }
 
     i <- 1  # initialise the number of accepted particles
@@ -391,6 +399,8 @@ RSVsim_ABC_SMC <- function(target,
   sigma <- matrix(nrow = nparams, ncol = nparams)
 
   for(g in 1:G){
+
+    print(paste("Generation", g, "of", G))
 
     if(ncores > 1){
       cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
