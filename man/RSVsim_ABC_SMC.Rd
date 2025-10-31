@@ -27,15 +27,15 @@ RSVsim_ABC_SMC(
 \arguments{
 \item{target}{Values to fit to.}
 
-\item{epsilon_matrix}{Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.}
+\item{summary_fun}{Function to calculate the summary statistics equivalent to the target values.}
 
-\item{summary_fun}{Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.}
-
-\item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.}
+\item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs.}
 
 \item{prior_fun}{Function to sample from the priors for all parameters. Must return a vector.}
 
 \item{n_param_attempts_per_accept}{Number of samples to try for each accepted particle.}
+
+\item{used_seed_matrix}{Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.}
 
 \item{prior_dens_fun}{Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.}
 
@@ -43,7 +43,7 @@ RSVsim_ABC_SMC(
 
 \item{particle_up}{Upper bounds on the parameters.}
 
-\item{nparticles}{Number of samples from the approximate posterior for each generation.}
+\item{nparticles}{Integer. Number of samples from the approximate posterior.}
 
 \item{ncores}{Number of cores. If greater than one then it is run in parallel.}
 
@@ -58,8 +58,6 @@ If \code{NULL}: 0.1\% RSV prevalence is assumed for people during the primary in
 All other people are assumed to be susceptible to their primary infection.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
-
-\item{used_seeds_matrix}{Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.}
 }
 \value{
 List of fixed parameters, max_t and warm_up.

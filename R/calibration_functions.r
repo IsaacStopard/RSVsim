@@ -229,21 +229,13 @@ RSVsim_ABC_rejection <- function(target,
 #'
 #' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
 #'
-#' @param target Values to fit to.
-#' @param epsilon_matrix Matrix of acceptable error for each target (columns) for each generation (rows). The number of rows is used to determine the number of generations.
-#' @param summary_fun Function to calculate the summary statistics equivalent to the target values. Should take one argument: the model outputs.
-#' @param dist_fun Function to the calculate the error between the target and \code{summary_fun} outputs. Should take one argument: the model outputs.
-#' @param prior_fun Function to sample from the priors for all parameters. Must return a vector.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
-#' @param used_seeds_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
+#' @param used_seed_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
 #' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.
 #' @param particle_low Lower bounds on the parameters.
 #' @param particle_up Upper bounds on the parameters.
-#' @param nparticles Number of samples from the approximate posterior for each generation.
-#' @param ncores Number of cores. If greater than one then it is run in parallel.
-#' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
-#' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
 #' @inheritParams RSVsim_run_model
+#' @inheritParams RSVsim_ABC_rejection
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
 RSVsim_ABC_SMC <- function(target,
