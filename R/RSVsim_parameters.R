@@ -26,6 +26,8 @@
 #' \code{rel_sizes}: the relative size of each cohort (age category duration in days divided by the total number of days). \cr
 #' \code{total_population}: 1861923. Total population size. \cr
 #' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
+#' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
+#' All other people are assumed to be susceptible to their primary infection.
 #' @export
 RSVsim_parameters <- function(overrides = list(),
                               contact_population_list,

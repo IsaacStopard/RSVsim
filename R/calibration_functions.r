@@ -229,6 +229,7 @@ RSVsim_ABC_rejection <- function(target,
 #'
 #' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
 #'
+#' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
 #' @param used_seed_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
 #' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.

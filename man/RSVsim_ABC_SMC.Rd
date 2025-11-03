@@ -27,6 +27,8 @@ RSVsim_ABC_SMC(
 \arguments{
 \item{target}{Values to fit to.}
 
+\item{epsilon_matrix}{Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.}
+
 \item{summary_fun}{Function to calculate the summary statistics equivalent to the target values.}
 
 \item{dist_fun}{Function to the calculate the error between the target and \code{summary_fun} outputs.}
@@ -53,9 +55,7 @@ RSVsim_ABC_SMC(
 
 \item{times}{Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
-If \code{NULL}: 0.1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
-All other people are assumed to be susceptible to their primary infection.}
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
 }

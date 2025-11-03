@@ -5,8 +5,6 @@
 #' @param parameters List of parameters from \code{RSVsim_parameters} function.
 #' @param times Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days.
 #' @param cohort_step_size Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 3 decimal places.
-#' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
-#' All other people are assumed to be susceptible to their primary infection.
 #' @param warm_up Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.
 #' @return Simulation output (dataframe). In the dataframe, age refers to the lowest age in the age group.
 #' @export
