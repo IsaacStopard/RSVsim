@@ -23,13 +23,13 @@ test_that("RSVsim_contact_matrix function", {
 
     # checking the matrix is numeric
     testthat::expect_true(
-      all(c(is.numeric(t_mat$matrix_mean),
+      all(c(is.numeric(t_mat$matrix_per_person),
             is.numeric(t_mat$matrix_contacts),
             is.numeric(t_mat$population)))
     )
 
     testthat::expect_true(
-      sum(c(sum(is.na(t_mat$matrix_mean)),
+      sum(c(sum(is.na(t_mat$matrix_per_person)),
             sum(is.na(t_mat$matrix_contacts)),
             sum(is.na(t_mat$population)))) == 0
       )
