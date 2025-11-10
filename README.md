@@ -10,7 +10,7 @@
 coverage](https://codecov.io/gh/IsaacStopard/RSVsim/graph/badge.svg)](https://app.codecov.io/gh/IsaacStopard/RSVsim)
 <!-- badges: end -->
 
-A deterministic, ODE model of Respiratory Synctial Virus (RSV)
+A deterministic, ODE model of Respiratory Syncytial Virus (RSV)
 transmission. This package is under constant development, so will change
 without notice. The current model outputs are yet to be fully tested.
 

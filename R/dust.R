@@ -6,7 +6,7 @@ RSV_ODE <- structure(
   package = "RSVsim",
   path = NULL,
   parameters = data.frame(
-    name = c("nAges", "b0", "b1", "phi", "delta", "gamma_s", "gamma_p", "nu", "omega_vect", "prop_detected_vect", "sigma_vect", "alpha_vect", "matrix_mean", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0"),
+    name = c("nAges", "b0", "b1", "phi", "delta", "gamma_s", "gamma_p", "nu", "omega_vect", "prop_detected_vect", "sigma_vect", "alpha_vect", "matrix_per_person", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0"),
     type = c("int", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type", "real_type"),
     constant = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
     required = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),

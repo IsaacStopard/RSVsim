@@ -16,7 +16,7 @@
 // [[dust2::parameter(prop_detected_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(sigma_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(alpha_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(matrix_mean, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(matrix_per_person, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Sp0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ep0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ip0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
@@ -40,7 +40,7 @@ public:
       } offset;
     } odin;
     struct dim_type {
-      dust2::array::dimensions<2> matrix_mean;
+      dust2::array::dimensions<2> matrix_per_person;
       dust2::array::dimensions<1> sigma_vect;
       dust2::array::dimensions<1> omega_vect;
       dust2::array::dimensions<1> prop_detected_vect;
@@ -86,7 +86,7 @@ public:
     std::vector<real_type> prop_detected_vect;
     std::vector<real_type> sigma_vect;
     std::vector<real_type> alpha_vect;
-    std::vector<real_type> matrix_mean;
+    std::vector<real_type> matrix_per_person;
     std::vector<real_type> Sp0;
     std::vector<real_type> Ep0;
     std::vector<real_type> Ip0;
@@ -124,7 +124,7 @@ public:
     const real_type gamma_s = dust2::r::read_real(parameters, "gamma_s");
     const real_type gamma_p = dust2::r::read_real(parameters, "gamma_p");
     const real_type nu = dust2::r::read_real(parameters, "nu");
-    dim.matrix_mean.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
+    dim.matrix_per_person.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
     dim.sigma_vect.set({static_cast<size_t>(nAges)});
     dim.omega_vect.set({static_cast<size_t>(nAges)});
     dim.prop_detected_vect.set({static_cast<size_t>(nAges)});
@@ -165,8 +165,8 @@ public:
     dust2::r::read_real_array(parameters, dim.sigma_vect, sigma_vect.data(), "sigma_vect", true);
     std::vector<real_type> alpha_vect(dim.alpha_vect.size);
     dust2::r::read_real_array(parameters, dim.alpha_vect, alpha_vect.data(), "alpha_vect", true);
-    std::vector<real_type> matrix_mean(dim.matrix_mean.size);
-    dust2::r::read_real_array(parameters, dim.matrix_mean, matrix_mean.data(), "matrix_mean", true);
+    std::vector<real_type> matrix_per_person(dim.matrix_per_person.size);
+    dust2::r::read_real_array(parameters, dim.matrix_per_person, matrix_per_person.data(), "matrix_per_person", true);
     std::vector<real_type> Sp0(dim.Sp0.size);
     dust2::r::read_real_array(parameters, dim.Sp0, Sp0.data(), "Sp0", true);
     std::vector<real_type> Ep0(dim.Ep0.size);
@@ -201,7 +201,7 @@ public:
       {"prev_s", std::vector<size_t>(dim.prev_s.dim.begin(), dim.prev_s.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_mean, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0};
+    return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_per_person, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> N(shared.dim.N.size);
@@ -230,7 +230,7 @@ public:
     dust2::r::read_real_array(parameters, shared.dim.prop_detected_vect, shared.prop_detected_vect.data(), "prop_detected_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.sigma_vect, shared.sigma_vect.data(), "sigma_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.alpha_vect, shared.alpha_vect.data(), "alpha_vect", false);
-    dust2::r::read_real_array(parameters, shared.dim.matrix_mean, shared.matrix_mean.data(), "matrix_mean", false);
+    dust2::r::read_real_array(parameters, shared.dim.matrix_per_person, shared.matrix_per_person.data(), "matrix_per_person", false);
     dust2::r::read_real_array(parameters, shared.dim.Sp0, shared.Sp0.data(), "Sp0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ep0, shared.Ep0.data(), "Ep0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ip0, shared.Ip0.data(), "Ip0", false);
@@ -284,7 +284,7 @@ public:
     }
     for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
       for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
-        internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_mean[i - 1 + (j - 1) * shared.dim.matrix_mean.mult[1]] * internal.temp[j - 1];
+        internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_per_person[i - 1 + (j - 1) * shared.dim.matrix_per_person.mult[1]] * internal.temp[j - 1];
       }
     }
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
@@ -350,7 +350,7 @@ public:
     }
     for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
       for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
-        internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_mean[i - 1 + (j - 1) * shared.dim.matrix_mean.mult[1]] * internal.temp[j - 1];
+        internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_per_person[i - 1 + (j - 1) * shared.dim.matrix_per_person.mult[1]] * internal.temp[j - 1];
       }
     }
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {

@@ -71,6 +71,15 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
   out <- list("age.limits" = age.limits,
               "max_age" = max_age)
 
+  # labels for the ages
+  age_chr <- c()
+
+  for(i in 1:(nAges - 1)){
+    age_chr <- c(age_chr, c(paste0("[",round(age.limits[i], digits = 2),",", round(age.limits[i+1], digits = 2),")")))
+  }
+
+  age_chr <- c(age_chr, paste0("[",round(age.limits[nAges], digits = 2),",", round(max_age, digits = 2),")"))
+
   if(any(age.limits %% 1 != 0)){
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
@@ -124,10 +133,11 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
     }
     }
 
-  rownames(matrix_out) <- colnames(matrix_out) <- age.limits
-  rownames(M) <- colnames(M) <- age.limits.default
 
-  mean_matrix_out <- matrix_out / D_out
+  rownames(matrix_out) <- colnames(matrix_out) <- age_chr
+  # rownames(M) <- colnames(M) <- age.limits.default
+
+  per_person_matrix_out <- matrix_out / D_out
 
   if(abs(sum(total_contacts_M) - sum(matrix_out)) > 1E-5){
     stop("Total contacts do not add up correctly")
@@ -143,12 +153,12 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
   }
 
   out <- append(out, list("matrix_contacts" = matrix_out,
-                          "matrix_mean" = mean_matrix_out,
+                          "matrix_per_person" = per_person_matrix_out,
                           "population" = D_out,
                           "age_distribution" = D_out/sum(D_out))
               )
   } else{
-    out <- append(out, list("matrix_mean" = M,
+    out <- append(out, list("matrix_per_person" = M,
                           "matrix_contacts" = total_contacts_M,
                           "population" = D,
                           "age_distribution" = D/sum(D)))
@@ -158,14 +168,7 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
     stop("age_distribution does not sum to 1")
   }
 
-  # labels for the ages
-  age_chr <- c()
 
-  for(i in 1:(nAges - 1)){
-    age_chr <- c(age_chr, c(paste0("[",round(age.limits[i], digits = 2),",", round(age.limits[i+1], digits = 2),")")))
-  }
-
-  age_chr <- c(age_chr, paste0("[",round(age.limits[nAges], digits = 2),",", round(max_age, digits = 2),")"))
 
   # age differences in days
   size_cohorts <- c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
