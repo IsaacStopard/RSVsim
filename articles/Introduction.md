@@ -1,0 +1,78 @@
+# Introduction
+
+In this vignette, we give an overview of the mathematical model of RSV
+transmission and how to use this package to run the model.
+
+``` r
+library(RSVsim)
+```
+
+## Contact matrix
+
+The
+[R/RSVsim_contact_matrix.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_contact_matrix.R)
+function obtains contact matrices with age groupings that are less than
+one year. To do so, the socialmixr
+(<https://epiforecasts.io/socialmixr/>) package is used to obtain the
+contact matrix for the age groupings to the nearest whole year, using
+the POLYMOD data (<https://doi.org/10.1371/journal.pmed.0050074>). This
+contact matrix is calculated such that the total contacts in the
+population are symmetric (assuming population data from World Population
+Prospects of the United Nations). Within age groups less than one year,
+these contacts are divided evenly according to the size of the age group
+(in years). The function takes two arguments: (1) the country to obtain
+the POLYMOD contact data from and (2) the lower age limits of the age
+groups.
+
+``` r
+# specifying the some age limits to use with the model
+age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 20))
+
+contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+```
+
+## Default parameters
+
+To obtain a list of the default parameters to run the model use the
+[R/RSVsim_parameters.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/RSVsim_parameters.R)
+function. The parameters can be changed by using the overrides argument;
+for example we override $b0$ (the transmission rate coefficient) with a
+value of $0.15$. The “fitted” argument refers to parameters that will be
+excluded - the function will not return any parameters named in this
+vector. Initial conditions are defined in the parameter list. If no
+initial conditions are given, it is assumed there is 0.1% prevalence in
+the primary infection compartment across all ages and everyone else is
+susceptible to primary infection. All new-borns are assumed to be in the
+susceptible to primary infection compartment.
+
+``` r
+parameters <- RSVsim_parameters(overrides = list("b0" = 0.15, "b1" = 1, "phi" = 0), 
+                                contact_population_list = contact_population_list,
+                                fitted = NULL)
+```
+
+## Running the model
+
+To run the model the
+[R/RSVsim_run_model.R](https://github.com/IsaacStopard/RSVsim/blob/master/R/run_model.R)
+function is used. Cohort aging is used to age the population. At each
+time, a proportion of each cohort is aged, with this proportion
+determined by the length of time before people are aged
+(cohort_step_size) as a proportion of the total length of time in each
+age group.
+
+``` r
+out <- RSVsim_run_model(parameters = parameters,
+                        times = seq(0, 365 * 10, 0.25), # maximum time to run the model for
+                        cohort_step_size = 5, # time at which to age people\
+                        warm_up = NULL)
+```
+
+The simulated number of people that are susceptible and infected, and
+whether the infection is primary or secondary is tracked in the model
+outputs. The incidence and detected incidence since the previous
+time-step are calculated and provided in the model outputs. To calculate
+the detected incidence age-specific detection probabilities are used,
+and in the default parameters we assume very few people (1%) over the
+age of 2 years old are tested. The age-specific prevalence is also
+calculated.

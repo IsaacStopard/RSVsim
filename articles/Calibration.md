@@ -1,0 +1,240 @@
+# Calibration
+
+``` r
+library(RSVsim)
+```
+
+In this vignette, we give an overview of how to use an Approximate
+Bayesian Computation (ABC) rejection algorithm to calibrate the
+mathematical model of RSV transmission to simulated data. The code to
+run these samplers was adapted from code provided in Minter, Amanda, and
+Renata Retkute. “Approximate Bayesian Computation for infectious disease
+modelling.” Epidemics 29 (2019): 100368
+<https://doi.org/10.1016/j.epidem.2019.100368>.
+
+First, we run the model to generate some data to fit to.
+
+``` r
+
+# specify age categories to run the model with
+age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
+
+# get contact matrix
+contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+
+# get the default model parameters with a b0 value of 0.08, b1 value of 0, phi value of 0 and change the initial conditions 
+
+overrides <- list("b0" = 0.05, "b1" = 0.1, "phi" = 10,
+                  "R0" = contact_population_list$rel_sizes * 27536874 * 0.1,
+                  "Sp0" = contact_population_list$rel_sizes * 27536874 * (1 - 0.1 - 0.001),
+                  "Ep0" = contact_population_list$rel_sizes * 27536874 * 0,
+                  "Ip0" = contact_population_list$rel_sizes * 27536874 * 0.001,
+                  "Ss0" = contact_population_list$rel_sizes * 0,
+                  "Es0" = contact_population_list$rel_sizes * 0,
+                  "Is0" = contact_population_list$rel_sizes * 0,
+                  "total_population" = 27536874)
+
+parameters <- RSVsim_parameters(overrides = overrides,
+                                contact_population_list = contact_population_list,
+                                fitted = NULL)
+
+nAges <- length(age.limits)
+
+out <- RSVsim_run_model(parameters = parameters,
+                        times = seq(0, 365, 0.25), # maximum time to run the model for
+                        cohort_step_size = 0.2 * 365, # time at which to age people\
+                        warm_up = NULL)
+
+fitted_parameter_names <- c("b0", "b1", "phi", "R0", "Sp0")
+
+fixed_parameter_list <- RSVsim_parameters(overrides = overrides,
+                                          contact_population_list = contact_population_list,
+                                          fitted_parameter_names = fitted_parameter_names)
+```
+
+Next, we define a function to calculate some summary statistics from the
+model output. Specifically, we calculate the age-specific peak time of
+incidence infections, the amplitude of incidence (difference between
+maximum and minimum incidence) and the total yearly incidence. RSVsim
+has built in functions to calculate these metrics from the model output.
+We define a function summary_fun to combine these metrics. We will use
+these as the target for the ABC-rejection algorithm. We must also
+specify a function the randomly samples from the prior distributions of
+all fitted parameters and returns a vector of the parameters. We use
+latin hypercube sampling to efficiently sample the prior space. In this
+example we fit the b0 and b1 parameters. A vector of the parameter names
+that are being fitted in the same order as the prior samples must also
+be provided to set up the parameters to run the model.
+
+``` r
+
+#########################
+##### ABC functions #####
+#########################
+
+# calculate the summary statistics
+summary_fun <- function(out){
+  return(c(RSVsim_total_incidence(out), RSVsim_amplitude(out), RSVsim_peak(out)))
+}
+
+target <- summary_fun(out)
+
+# a function that samples from the priors is required
+# we use latin hypercube sampling to efficiently sample from the prior distributions
+prior_fun <- function(n_prior_attempts){
+  
+  total_population <- 27536874
+  
+  rel_sizes <- c(0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222, 0.002222222,
+                 0.002222222, 0.088888889, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556, 0.055555556,
+                 0.055555556, 0.055555556, 0.055555556, 0.333333333)
+  
+  x <- lhs::randomLHS(n_prior_attempts, 4)
+  
+  # adjusting the prior distributions
+  x[,1] <- qunif(x[,1], min = 0.05, 0.25)
+  x[,2] <- qunif(x[,2], min = 0, max = 1) # not necessary but added for completeness
+  x[,3] <- qunif(x[,3], min = -365.25/2, max = 365.25/2)
+  x[,4] <- qbeta(x[,4], shape1 = 1, shape2 = 5)
+  
+  x4 <- lapply(1:n_prior_attempts,
+               function(i){
+                 x[i,4] * rel_sizes * total_population
+               }
+               )
+
+  x5 <- lapply(1:n_prior_attempts,
+               function(i){
+                 (1 - 0.001 - x[i,4]) * rel_sizes * total_population
+               }
+               )
+  
+  x_out <- data.frame("b0" = x[,1],
+                      "b1" = x[,2],
+                      "phi" = x[,3])
+  
+  x_out$R0 <- x4
+  x_out$Sp0 <- x5
+  
+  return(x_out)
+}
+
+# a function that calculates the distance between the summary statistics is required
+dist_fun <- function(target, target_star, n = nAges){
+  return(
+    c(
+      RSVsim_abs_dist_fun(target[1:n], target_star[1:n]),
+      RSVsim_abs_dist_fun(target[(n+1):(n*2)], target_star[(n+1):(n*2)]),
+      RSVsim_shortest_periodic_dist_fun(target[(2*n+1):(n*3)], target_star[(2*n+1):(n*3)], period = 365.25)
+    )
+  )
+
+}
+```
+
+To implement the ABC-rejection algorithm we must specify the tolerance.
+We specify a specific tolerance for each metric that means approximately
+1% of all simulations are accepted.
+
+``` r
+#################################
+##### setting the tolerance #####
+#################################
+# calculating a tolerance that means at least 1 particle combination is accepted every 100 simulations
+# getting 100 samples from the priors
+set.seed(123)
+prior_params <- prior_fun(100)
+
+# simulating the summary statistics for each particle
+prior_distances <- sapply(1:100, function(i){
+  parameters_in <- c(setNames(unlist(prior_params[i,], recursive = FALSE), fitted_parameter_names),
+                     fixed_parameter_list)
+  
+  out <- RSVsim_run_model(parameters = parameters_in,
+                   times = seq(0, 365*1, 0.25), # maximum time to run the model for
+                   cohort_step_size = 0.2*365, # time at which to age people
+                   warm_up = NULL)
+  
+  return(dist_fun(target, summary_fun(out)))
+})
+
+# calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics 
+nsuccess <- rep(NA, 100)
+q <- seq(0.01, 1, 0.01)
+for(i in 1:100){
+  epsilon_check <- round(apply(prior_distances, 1, quantile, probs = c(q[i])), digits = 2)
+  nsuccess[i] <- sum(sapply(1:100, function(j){all(prior_distances[,j] <= epsilon_check)}))
+}
+
+# selecting a tolerance where at least 1 particle is accepted for the 100 simulations
+epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsuccess >= 1))])), digits = 2)
+```
+
+To run the model we specify the number of particles to fit, and the
+seeds for each particle. The number of cores can also be specified - if
+greater than one then parallel processing is implemented using a
+parallel socket cluster with the parallel R package.
+
+``` r
+###############################################
+##### running the ABC-rejection algorithm #####
+###############################################
+
+nparticles = 500
+
+used_seeds_all <- seq(1, nparticles)
+
+ncores <- 8
+
+fit <- RSVsim_ABC_rejection(target = target,
+                            epsilon = epsilon,
+                            summary_fun = summary_fun,
+                            dist_fun = dist_fun,
+                            prior_fun = prior_fun,
+                            n_prior_attempts = 10000,
+                            nparticles = nparticles,
+                            used_seeds_all = used_seeds_all,
+                            ncores = ncores,
+                            fitted_parameter_names = fitted_parameter_names,
+                            fixed_parameter_list = fixed_parameter_list,
+                            times = seq(0, 365, 0.25), # maximum time to run the model for
+                            cohort_step_size = 0.2*365, # time at which to age people\
+                            warm_up = NULL)
+
+fit_b0 <- unlist(fit[,"b0"])
+fit_b1 <- unlist(fit[,"b1"])
+fit_phi <- unlist(fit[,"phi"])
+fit_R0 <- unlist(lapply(fit[,"R0"], function(x){unique(round(x / (parameters$rel_sizes * parameters$total_population), digits = 2))}))
+
+hist(fit_b0)
+hist(fit_b1)
+hist(fit_phi)
+hist(fit_R0)
+```
+
+We also provide a function to run a Sequential Monte Carlo ABC algorithm
+(ABC-SMC).
+
+``` r
+
+overrides_smc <- list("b0" = 0.1, "b1" = 0.1, "phi" = 10, "total_population" = 27536874)
+
+parameters_smc <- RSVsim_parameters(overrides = overrides_smc,
+                                contact_population_list = contact_population_list,
+                                fitted = NULL)
+
+out_smc <- RSVsim_run_model(parameters = parameters_smc,
+                        times = seq(0, 365.25, 0.25), # maximum time to run the model for
+                        cohort_step_size = 1/12 * 365.25, # time at which to age people\
+                        warm_up = NULL)
+
+fitted_parameter_names_smc <- c("b0", "b1", "phi")
+
+fixed_parameter_list_smc <- RSVsim_parameters(overrides = overrides_SMC,
+                                              contact_population_list = contact_population_list,
+                                              fitted_parameter_names = fitted_parameter_names_SMC)
+
+prior_dens_fun <- function(){
+  
+}
+```
