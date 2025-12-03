@@ -80,8 +80,8 @@ RSVsim_parameters <- function(overrides = list(),
          prop_detected_vect[age.limits >= 1 & age.limits < 2] <- 0.02
          prop_detected_vect[age.limits >= 2] <- 0.01 # very little detection in > 2 year olds
 
-         alpha_vect[nAges >= 10] <- 0.3
-         alpha_vect[nAges < 10] <- 0.4
+         alpha_vect[age.limits >= 10] <- 0.3
+         alpha_vect[age.limits < 10] <- 0.4
 
          parameters <- list(
            "b0" = 0.08, # transmission rate coefficient 0.087

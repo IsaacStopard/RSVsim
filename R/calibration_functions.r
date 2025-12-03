@@ -70,6 +70,24 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
+#' #' Function to change vector parameters
+#' #'
+#' #' @param parameters Output from RSVsim_parameters function.
+#' #' @return List of parameters.
+#' #'
+#' RSVsim_adjust_vector_parameter <- function(parameters){
+#'
+#'   param_names <- names(parameters)
+#'
+#'   vector_list <- c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")
+#'
+#'   for(name in ){
+#'
+#'     if(grepl(name, , fixed = TRUE))
+#'
+#'   }
+#' }
+
 #' Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 #'
 #' Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
