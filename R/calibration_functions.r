@@ -70,23 +70,55 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
-#' #' Function to change vector parameters
-#' #'
-#' #' @param parameters Output from RSVsim_parameters function.
-#' #' @return List of parameters.
-#' #'
-#' RSVsim_adjust_vector_parameter <- function(parameters){
+#' Function to change vector parameters
 #'
-#'   param_names <- names(parameters)
+#' @param parameters Output from RSVsim_parameters function.
+#' @return List of parameters.
 #'
-#'   vector_list <- c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")
-#'
-#'   for(name in ){
-#'
-#'     if(grepl(name, , fixed = TRUE))
-#'
-#'   }
-#' }
+RSVsim_adjust_vector_parameters <- function(parameters, name_index){
+
+  param_names <- names(parameters)
+
+  bracket_inds <- unique(c(grep("\\[\\d+\\]", param_names), grep("\\[\\d+:\\d+\\]", param_names)))
+  candidate_names <- param_names[bracket_inds]
+  names_to_remove <- c()
+
+  vector_list <- c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")
+
+  process_index_string <- function(s) {
+    if (grepl(":", s, fixed = TRUE)) {
+      range_parts <- as.integer(strsplit(s, ":", fixed = TRUE)[[1]])
+      return(range_parts[1]:range_parts[2])
+    } else {
+      return(s |> as.integer())
+    }
+  }
+
+  for(vec_name in vector_list){
+
+    matches <- grep(vec_name, candidate_names, fixed = TRUE, value = TRUE)
+
+    if(length(matches) > 0){
+
+      bracket_content <- sub(".*?\\[(.*?)\\].*", "\\1", matches)
+
+      indices <- sapply(bracket_content, process_index_string, USE.NAMES = FALSE, simplify = FALSE)
+
+      values <- rep(unlist(parameters[matches]), lengths(indices))
+
+      parameters[[vec_name]][unlist(indices)] <- values
+
+      names_to_remove <- c(names_to_remove, matches)
+
+    }
+  }
+
+  if(length(names_to_remove) > 0){
+    parameters <- parameters[!names(parameters) %in% names_to_remove]
+  }
+
+  return(parameters)
+}
 
 #' Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 #'
@@ -166,6 +198,8 @@ RSVsim_ABC_rejection <- function(target,
       parameters_in <- c(setNames(unlist(fitted_parameters, recursive = FALSE), fitted_parameter_names),
                          fixed_parameter_list)
 
+      parameters_in <- RSVsim_adjust_vector_parameters(parameters_in)
+
       out <- RSVsim_run_model(parameters = parameters_in,
                               times = times,
                               cohort_step_size = cohort_step_size,
@@ -194,6 +228,7 @@ RSVsim_ABC_rejection <- function(target,
     cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
     parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                             "while_fun",
+                                            "RSVsim_adjust_vector_parameters",
                                             "RSVsim_run_model",
                                             "RSVsim_total_incidence",
                                             "RSVsim_amplitude",
@@ -346,6 +381,8 @@ RSVsim_ABC_SMC <- function(target,
 
       parameters_ODE <- c(as.list(setNames(parameters, fitted_parameter_names)), fixed_parameter_list)
 
+      parameters_ODE <- RSVsim_adjust_vector_parameters(parameters_ODE)
+
       p_non_zero <- as.numeric(prod(prior_dens_fun(parameters)) > 0)
 
       if(p_non_zero){
@@ -417,6 +454,7 @@ RSVsim_ABC_SMC <- function(target,
       cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
       parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                               "while_fun_SMC",
+                                              "RSV_adjust_vector_parameters",
                                               "RSVsim_run_model",
                                               "fixed_parameter_list",
                                               "fitted_parameter_names",
