@@ -40,9 +40,9 @@ RSVsim_ABC_rejection(
 
 \item{ncores}{Number of cores. If greater than one then it is run in parallel.}
 
-\item{fitted_parameter_names}{Vector of names of the parameters that are being estimated.}
+\item{fitted_parameter_names}{Vector of names of the parameters that are being estimated. To fit vectors or matrices the individual element must be identified in the fitted_parameter_names.}
 
-\item{fixed_parameter_list}{List of parameter values to run the model excluding the fitted parameters.}
+\item{fixed_parameter_list}{List of the original parameter values to run the model.}
 
 \item{times}{Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days.}
 
@@ -54,5 +54,5 @@ RSVsim_ABC_rejection(
 List of fixed parameters, max_t and warm_up.
 }
 \description{
-Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
+Runs the ABC-rejection algorithm.
 }

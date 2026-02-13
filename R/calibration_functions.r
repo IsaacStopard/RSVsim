@@ -70,27 +70,31 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
-#' #' Function to change vector parameters
-#' #'
-#' #' @param parameters Output from RSVsim_parameters function.
-#' #' @return List of parameters.
-#' #'
-#' RSVsim_adjust_vector_parameter <- function(parameters){
+#' Helper function to update the parameter list by names
 #'
-#'   param_names <- names(parameters)
+#' Calculates the absolute distance between two times when the times are circular. Vectorised.
 #'
-#'   vector_list <- c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")
-#'
-#'   for(name in ){
-#'
-#'     if(grepl(name, , fixed = TRUE))
-#'
-#'   }
-#' }
+#' @param fixed_parameter_list List of parameters, should be the output of the \code{RSVsim_parameters} function.
+#' @param fitted_parameter_names Vector of parameter names to be updated. Can include indexing such as "parameter_name\[i\]".
+#' @param fitted_parameter_values Vector of updated parameter values.
+#' @return Parameter list.
+RSVsim_update_parameters <- function(fixed_parameter_list, fitted_parameter_names, fitted_parameter_values){
+
+  updated_parameters <- fixed_parameter_list
+
+  update_string <- paste(
+    paste0("updated_parameters$", fitted_parameter_names, " <- ", fitted_parameter_values),
+    collapse = "\n")
+
+  # 3. Evaluate once
+  eval(parse(text = update_string))
+
+  return(updated_parameters)
+}
 
 #' Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 #'
-#' Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
+#' Runs the ABC-rejection algorithm.
 #'
 #' @param target Values to fit to.
 #' @param epsilon Acceptable error for each target.
@@ -101,8 +105,8 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
 #' @param nparticles Integer. Number of samples from the approximate posterior.
 #' @param used_seeds_all Vector. Seeds used when generating the prior samples for each accepted particle.
 #' @param ncores Number of cores. If greater than one then it is run in parallel.
-#' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
-#' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
+#' @param fitted_parameter_names Vector of names of the parameters that are being estimated. To fit vectors or matrices the individual element must be identified in the fitted_parameter_names.
+#' @param fixed_parameter_list List of the original parameter values to run the model.
 #' @inheritParams RSVsim_run_model
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
@@ -163,8 +167,7 @@ RSVsim_ABC_rejection <- function(target,
 
       fitted_parameters <- fitted_parameters_all[j,]
 
-      parameters_in <- c(setNames(unlist(fitted_parameters, recursive = FALSE), fitted_parameter_names),
-                         fixed_parameter_list)
+      parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, fitted_parameters)
 
       out <- RSVsim_run_model(parameters = parameters_in,
                               times = times,
@@ -200,6 +203,7 @@ RSVsim_ABC_rejection <- function(target,
                                             "RSVsim_peak",
                                             "RSVsim_abs_dist_fun",
                                             "RSVsim_shortest_periodic_dist_fun",
+                                            "RSVsim_update_parameters",
                                             "fixed_parameter_list",
                                             "fitted_parameter_names",
                                             "nAges",
@@ -245,7 +249,7 @@ RSVsim_ABC_rejection <- function(target,
 
 #' Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 #'
-#' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
+#' This function will not work when fitting the initial conditions or parameters that are more than one value.
 #'
 #' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
@@ -344,7 +348,7 @@ RSVsim_ABC_SMC <- function(target,
 
       parameters <- fitted_parameters[k, ]
 
-      parameters_ODE <- c(as.list(setNames(parameters, fitted_parameter_names)), fixed_parameter_list)
+      parameters_ODE <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, parameters)
 
       p_non_zero <- as.numeric(prod(prior_dens_fun(parameters)) > 0)
 
@@ -418,6 +422,7 @@ RSVsim_ABC_SMC <- function(target,
       parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                               "while_fun_SMC",
                                               "RSVsim_run_model",
+                                              "RSVsim_update_parameters",
                                               "fixed_parameter_list",
                                               "fitted_parameter_names",
                                               "nAges",

@@ -3,26 +3,34 @@
 // [[dust2::class(RSV_ODE)]]
 // [[dust2::time_type(continuous)]]
 // [[dust2::parameter(nAges, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
+// [[dust2::parameter(nVaccStates, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
 // [[dust2::parameter(b0, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(b1, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(phi, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(delta, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(gamma_s, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(gamma_p, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(gamma_vaccine, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(nu, type = "real_type", rank = 0, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(omega_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(prop_detected_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(sigma_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(alpha_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(matrix_per_person, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Sp0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Ep0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Ip0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Ss0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Es0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Is0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(R0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(Incidence0, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(VE, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Sp0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Ep0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Ip0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Ss0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Es0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Is0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(R0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(Incidence0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(doses0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(nVaccTimes, type = "int", rank = 0, required = TRUE, constant = TRUE)]]
+// [[dust2::parameter(vaccine_times, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(vaccine_cov, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(vaccine_period, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 class RSV_ODE {
 public:
   RSV_ODE() = delete;
@@ -34,45 +42,60 @@ public:
         dust2::packing state;
       } packing;
       struct {
-        std::array<size_t, 14> state;
+        std::array<size_t, 16> state;
       } offset;
     } odin;
     struct dim_type {
       dust2::array::dimensions<2> matrix_per_person;
       dust2::array::dimensions<1> sigma_vect;
       dust2::array::dimensions<1> omega_vect;
-      dust2::array::dimensions<1> prop_detected_vect;
       dust2::array::dimensions<1> alpha_vect;
-      dust2::array::dimensions<1> Sp;
-      dust2::array::dimensions<1> Ep;
-      dust2::array::dimensions<1> Ip;
-      dust2::array::dimensions<1> R;
-      dust2::array::dimensions<1> Ss;
-      dust2::array::dimensions<1> Es;
-      dust2::array::dimensions<1> Is;
-      dust2::array::dimensions<1> Incidence;
-      dust2::array::dimensions<1> N;
-      dust2::array::dimensions<1> DetIncidence;
-      dust2::array::dimensions<1> Incidence_rate;
-      dust2::array::dimensions<1> DetIncidence_rate;
-      dust2::array::dimensions<1> prev;
-      dust2::array::dimensions<1> prev_s;
-      dust2::array::dimensions<1> prev_p;
-      dust2::array::dimensions<1> incidence_rate_s;
-      dust2::array::dimensions<1> incidence_rate_p;
-      dust2::array::dimensions<1> Sp0;
-      dust2::array::dimensions<1> Ep0;
-      dust2::array::dimensions<1> Ip0;
-      dust2::array::dimensions<1> Ss0;
-      dust2::array::dimensions<1> Es0;
-      dust2::array::dimensions<1> Is0;
-      dust2::array::dimensions<1> R0;
-      dust2::array::dimensions<1> Incidence0;
-      dust2::array::dimensions<1> lambda;
-      dust2::array::dimensions<2> s_ij;
+      dust2::array::dimensions<1> prop_detected_vect;
+      dust2::array::dimensions<1> gamma_vaccine;
+      dust2::array::dimensions<2> temp_rel;
       dust2::array::dimensions<1> temp;
+      dust2::array::dimensions<2> s_ij;
+      dust2::array::dimensions<1> lambda;
+      dust2::array::dimensions<1> VE;
+      dust2::array::dimensions<2> doses;
+      dust2::array::dimensions<2> Sp;
+      dust2::array::dimensions<2> Ep;
+      dust2::array::dimensions<2> Ip;
+      dust2::array::dimensions<2> R;
+      dust2::array::dimensions<2> Ss;
+      dust2::array::dimensions<2> Es;
+      dust2::array::dimensions<2> Is;
+      dust2::array::dimensions<2> Incidence;
+      dust2::array::dimensions<2> N;
+      dust2::array::dimensions<1> N_age;
+      dust2::array::dimensions<2> DetIncidence;
+      dust2::array::dimensions<2> Incidence_rate;
+      dust2::array::dimensions<2> DetIncidence_rate;
+      dust2::array::dimensions<2> prev;
+      dust2::array::dimensions<2> prev_s;
+      dust2::array::dimensions<2> prev_p;
+      dust2::array::dimensions<2> incidence_rate_s;
+      dust2::array::dimensions<2> incidence_rate_p;
+      dust2::array::dimensions<2> Sp0;
+      dust2::array::dimensions<2> Ep0;
+      dust2::array::dimensions<2> Ip0;
+      dust2::array::dimensions<2> Ss0;
+      dust2::array::dimensions<2> Es0;
+      dust2::array::dimensions<2> Is0;
+      dust2::array::dimensions<2> R0;
+      dust2::array::dimensions<2> Incidence0;
+      dust2::array::dimensions<2> doses0;
+      dust2::array::dimensions<1> vaccine_times;
+      dust2::array::dimensions<2> vaccine_cov;
+      dust2::array::dimensions<1> vaccine_period;
+      dust2::array::dimensions<2> vaccine_rate;
+      dust2::array::dimensions<1> vr;
+      dust2::array::dimensions<2> VaccState_rate;
+      dust2::array::dimensions<1> gamma_vaccine_I;
+      dust2::array::dimensions<2> VaccState_doses;
     } dim;
     int nAges;
+    int nVaccStates;
     real_type b0;
     real_type b1;
     real_type phi;
@@ -80,11 +103,14 @@ public:
     real_type gamma_s;
     real_type gamma_p;
     real_type nu;
+    int nVaccTimes;
+    std::vector<real_type> gamma_vaccine;
     std::vector<real_type> omega_vect;
     std::vector<real_type> prop_detected_vect;
     std::vector<real_type> sigma_vect;
     std::vector<real_type> alpha_vect;
     std::vector<real_type> matrix_per_person;
+    std::vector<real_type> VE;
     std::vector<real_type> Sp0;
     std::vector<real_type> Ep0;
     std::vector<real_type> Ip0;
@@ -93,12 +119,24 @@ public:
     std::vector<real_type> Is0;
     std::vector<real_type> R0;
     std::vector<real_type> Incidence0;
+    std::vector<real_type> doses0;
+    std::vector<real_type> vaccine_times;
+    std::vector<real_type> vaccine_cov;
+    std::vector<real_type> vaccine_period;
+    std::vector<real_type> vaccine_rate;
+    std::vector<real_type> gamma_vaccine_I;
+    dust2::interpolate::InterpolateConstantArray<real_type, 1> interpolate_vr;
   };
   struct internal_state {
     std::vector<real_type> N;
+    std::vector<real_type> temp_rel;
+    std::vector<real_type> N_age;
     std::vector<real_type> temp;
     std::vector<real_type> s_ij;
+    std::vector<real_type> vr;
     std::vector<real_type> lambda;
+    std::vector<real_type> VaccState_rate;
+    std::vector<real_type> VaccState_doses;
     std::vector<real_type> incidence_rate_p;
     std::vector<real_type> incidence_rate_s;
     std::vector<real_type> DetIncidence;
@@ -115,6 +153,7 @@ public:
   static shared_state build_shared(cpp11::list parameters) {
     shared_state::dim_type dim;
     const int nAges = dust2::r::read_int(parameters, "nAges");
+    const int nVaccStates = dust2::r::read_int(parameters, "nVaccStates");
     const real_type b0 = dust2::r::read_real(parameters, "b0");
     const real_type b1 = dust2::r::read_real(parameters, "b1");
     const real_type phi = dust2::r::read_real(parameters, "phi");
@@ -122,39 +161,56 @@ public:
     const real_type gamma_s = dust2::r::read_real(parameters, "gamma_s");
     const real_type gamma_p = dust2::r::read_real(parameters, "gamma_p");
     const real_type nu = dust2::r::read_real(parameters, "nu");
+    const int nVaccTimes = dust2::r::read_int(parameters, "nVaccTimes");
     dim.matrix_per_person.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
     dim.sigma_vect.set({static_cast<size_t>(nAges)});
     dim.omega_vect.set({static_cast<size_t>(nAges)});
-    dim.prop_detected_vect.set({static_cast<size_t>(nAges)});
     dim.alpha_vect.set({static_cast<size_t>(nAges)});
-    dim.Sp.set({static_cast<size_t>(nAges)});
-    dim.Ep.set({static_cast<size_t>(nAges)});
-    dim.Ip.set({static_cast<size_t>(nAges)});
-    dim.R.set({static_cast<size_t>(nAges)});
-    dim.Ss.set({static_cast<size_t>(nAges)});
-    dim.Es.set({static_cast<size_t>(nAges)});
-    dim.Is.set({static_cast<size_t>(nAges)});
-    dim.Incidence.set({static_cast<size_t>(nAges)});
-    dim.N.set({static_cast<size_t>(nAges)});
-    dim.DetIncidence.set({static_cast<size_t>(nAges)});
-    dim.Incidence_rate.set({static_cast<size_t>(nAges)});
-    dim.DetIncidence_rate.set({static_cast<size_t>(nAges)});
-    dim.prev.set({static_cast<size_t>(nAges)});
-    dim.prev_s.set({static_cast<size_t>(nAges)});
-    dim.prev_p.set({static_cast<size_t>(nAges)});
-    dim.incidence_rate_s.set({static_cast<size_t>(nAges)});
-    dim.incidence_rate_p.set({static_cast<size_t>(nAges)});
-    dim.Sp0.set({static_cast<size_t>(nAges)});
-    dim.Ep0.set({static_cast<size_t>(nAges)});
-    dim.Ip0.set({static_cast<size_t>(nAges)});
-    dim.Ss0.set({static_cast<size_t>(nAges)});
-    dim.Es0.set({static_cast<size_t>(nAges)});
-    dim.Is0.set({static_cast<size_t>(nAges)});
-    dim.R0.set({static_cast<size_t>(nAges)});
-    dim.Incidence0.set({static_cast<size_t>(nAges)});
-    dim.lambda.set({static_cast<size_t>(nAges)});
-    dim.s_ij.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
+    dim.prop_detected_vect.set({static_cast<size_t>(nAges)});
+    dim.gamma_vaccine.set({static_cast<size_t>(nVaccStates - 1)});
+    dim.temp_rel.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
     dim.temp.set({static_cast<size_t>(nAges)});
+    dim.s_ij.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
+    dim.lambda.set({static_cast<size_t>(nAges)});
+    dim.VE.set({static_cast<size_t>(nVaccStates - 1)});
+    dim.doses.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Sp.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ep.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ip.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.R.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ss.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Es.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Is.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Incidence.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.N.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.N_age.set({static_cast<size_t>(nAges)});
+    dim.DetIncidence.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Incidence_rate.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.DetIncidence_rate.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.prev.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.prev_s.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.prev_p.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.incidence_rate_s.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.incidence_rate_p.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Sp0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ep0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ip0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Ss0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Es0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Is0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.R0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.Incidence0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.doses0.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.vaccine_times.set({static_cast<size_t>(nVaccTimes)});
+    dim.vaccine_cov.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccTimes)});
+    dim.vaccine_period.set({static_cast<size_t>(nVaccTimes)});
+    dim.vaccine_rate.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccTimes)});
+    dim.vr.set({static_cast<size_t>(nAges)});
+    dim.VaccState_rate.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    dim.gamma_vaccine_I.set({static_cast<size_t>(nVaccStates)});
+    dim.VaccState_doses.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
+    std::vector<real_type> gamma_vaccine(dim.gamma_vaccine.size);
+    dust2::r::read_real_array(parameters, dim.gamma_vaccine, gamma_vaccine.data(), "gamma_vaccine", true);
     std::vector<real_type> omega_vect(dim.omega_vect.size);
     dust2::r::read_real_array(parameters, dim.omega_vect, omega_vect.data(), "omega_vect", true);
     std::vector<real_type> prop_detected_vect(dim.prop_detected_vect.size);
@@ -165,6 +221,8 @@ public:
     dust2::r::read_real_array(parameters, dim.alpha_vect, alpha_vect.data(), "alpha_vect", true);
     std::vector<real_type> matrix_per_person(dim.matrix_per_person.size);
     dust2::r::read_real_array(parameters, dim.matrix_per_person, matrix_per_person.data(), "matrix_per_person", true);
+    std::vector<real_type> VE(dim.VE.size);
+    dust2::r::read_real_array(parameters, dim.VE, VE.data(), "VE", true);
     std::vector<real_type> Sp0(dim.Sp0.size);
     dust2::r::read_real_array(parameters, dim.Sp0, Sp0.data(), "Sp0", true);
     std::vector<real_type> Ep0(dim.Ep0.size);
@@ -181,6 +239,25 @@ public:
     dust2::r::read_real_array(parameters, dim.R0, R0.data(), "R0", true);
     std::vector<real_type> Incidence0(dim.Incidence0.size);
     dust2::r::read_real_array(parameters, dim.Incidence0, Incidence0.data(), "Incidence0", true);
+    std::vector<real_type> doses0(dim.doses0.size);
+    dust2::r::read_real_array(parameters, dim.doses0, doses0.data(), "doses0", true);
+    std::vector<real_type> vaccine_times(dim.vaccine_times.size);
+    dust2::r::read_real_array(parameters, dim.vaccine_times, vaccine_times.data(), "vaccine_times", true);
+    std::vector<real_type> vaccine_cov(dim.vaccine_cov.size);
+    dust2::r::read_real_array(parameters, dim.vaccine_cov, vaccine_cov.data(), "vaccine_cov", true);
+    std::vector<real_type> vaccine_period(dim.vaccine_period.size);
+    dust2::r::read_real_array(parameters, dim.vaccine_period, vaccine_period.data(), "vaccine_period", true);
+    std::vector<real_type> vaccine_rate(dim.vaccine_rate.size);
+    for (size_t i = 1; i <= static_cast<size_t>(nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(nVaccTimes); ++j) {
+        vaccine_rate[i - 1 + (j - 1) * dim.vaccine_rate.mult[1]] = -monty::math::log(1 - vaccine_cov[i - 1 + (j - 1) * dim.vaccine_cov.mult[1]]) / vaccine_period[j - 1];
+      }
+    }
+    std::vector<real_type> gamma_vaccine_I(dim.gamma_vaccine_I.size);
+    for (size_t i = 1; i <= static_cast<size_t>(nVaccStates); ++i) {
+      gamma_vaccine_I[i - 1] = (i == 1 ? 0 : gamma_vaccine[(i - 1) - 1]);
+    }
+    const auto interpolate_vr = dust2::interpolate::InterpolateConstantArray<real_type, 1>(vaccine_times, vaccine_rate, dim.vr, "vaccine_times", "vaccine_rate");
     shared_state::odin_internals_type odin;
     odin.packing.state = dust2::packing{
       {"Sp", std::vector<size_t>(dim.Sp.dim.begin(), dim.Sp.dim.end())},
@@ -191,21 +268,28 @@ public:
       {"Is", std::vector<size_t>(dim.Is.dim.begin(), dim.Is.dim.end())},
       {"R", std::vector<size_t>(dim.R.dim.begin(), dim.R.dim.end())},
       {"Incidence", std::vector<size_t>(dim.Incidence.dim.begin(), dim.Incidence.dim.end())},
+      {"doses", std::vector<size_t>(dim.doses.dim.begin(), dim.doses.dim.end())},
       {"DetIncidence", std::vector<size_t>(dim.DetIncidence.dim.begin(), dim.DetIncidence.dim.end())},
       {"Incidence_rate", std::vector<size_t>(dim.Incidence_rate.dim.begin(), dim.Incidence_rate.dim.end())},
       {"DetIncidence_rate", std::vector<size_t>(dim.DetIncidence_rate.dim.begin(), dim.DetIncidence_rate.dim.end())},
       {"prev", std::vector<size_t>(dim.prev.dim.begin(), dim.prev.dim.end())},
       {"prev_p", std::vector<size_t>(dim.prev_p.dim.begin(), dim.prev_p.dim.end())},
-      {"prev_s", std::vector<size_t>(dim.prev_s.dim.begin(), dim.prev_s.dim.end())}
+      {"prev_s", std::vector<size_t>(dim.prev_s.dim.begin(), dim.prev_s.dim.end())},
+      {"VaccState_rate", std::vector<size_t>(dim.VaccState_rate.dim.begin(), dim.VaccState_rate.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, nAges, b0, b1, phi, delta, gamma_s, gamma_p, nu, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_per_person, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0};
+    return shared_state{odin, dim, nAges, nVaccStates, b0, b1, phi, delta, gamma_s, gamma_p, nu, nVaccTimes, gamma_vaccine, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_per_person, VE, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0, doses0, vaccine_times, vaccine_cov, vaccine_period, vaccine_rate, gamma_vaccine_I, interpolate_vr};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> N(shared.dim.N.size);
+    std::vector<real_type> temp_rel(shared.dim.temp_rel.size);
+    std::vector<real_type> N_age(shared.dim.N_age.size);
     std::vector<real_type> temp(shared.dim.temp.size);
     std::vector<real_type> s_ij(shared.dim.s_ij.size);
+    std::vector<real_type> vr(shared.dim.vr.size);
     std::vector<real_type> lambda(shared.dim.lambda.size);
+    std::vector<real_type> VaccState_rate(shared.dim.VaccState_rate.size);
+    std::vector<real_type> VaccState_doses(shared.dim.VaccState_doses.size);
     std::vector<real_type> incidence_rate_p(shared.dim.incidence_rate_p.size);
     std::vector<real_type> incidence_rate_s(shared.dim.incidence_rate_s.size);
     std::vector<real_type> DetIncidence(shared.dim.DetIncidence.size);
@@ -214,7 +298,7 @@ public:
     std::vector<real_type> prev_s(shared.dim.prev_s.size);
     std::vector<real_type> Incidence_rate(shared.dim.Incidence_rate.size);
     std::vector<real_type> DetIncidence_rate(shared.dim.DetIncidence_rate.size);
-    return internal_state{N, temp, s_ij, lambda, incidence_rate_p, incidence_rate_s, DetIncidence, prev, prev_p, prev_s, Incidence_rate, DetIncidence_rate};
+    return internal_state{N, temp_rel, N_age, temp, s_ij, vr, lambda, VaccState_rate, VaccState_doses, incidence_rate_p, incidence_rate_s, DetIncidence, prev, prev_p, prev_s, Incidence_rate, DetIncidence_rate};
   }
   static void update_shared(cpp11::list parameters, shared_state& shared) {
     shared.b0 = dust2::r::read_real(parameters, "b0", shared.b0);
@@ -224,11 +308,13 @@ public:
     shared.gamma_s = dust2::r::read_real(parameters, "gamma_s", shared.gamma_s);
     shared.gamma_p = dust2::r::read_real(parameters, "gamma_p", shared.gamma_p);
     shared.nu = dust2::r::read_real(parameters, "nu", shared.nu);
+    dust2::r::read_real_array(parameters, shared.dim.gamma_vaccine, shared.gamma_vaccine.data(), "gamma_vaccine", false);
     dust2::r::read_real_array(parameters, shared.dim.omega_vect, shared.omega_vect.data(), "omega_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.prop_detected_vect, shared.prop_detected_vect.data(), "prop_detected_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.sigma_vect, shared.sigma_vect.data(), "sigma_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.alpha_vect, shared.alpha_vect.data(), "alpha_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.matrix_per_person, shared.matrix_per_person.data(), "matrix_per_person", false);
+    dust2::r::read_real_array(parameters, shared.dim.VE, shared.VE.data(), "VE", false);
     dust2::r::read_real_array(parameters, shared.dim.Sp0, shared.Sp0.data(), "Sp0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ep0, shared.Ep0.data(), "Ep0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ip0, shared.Ip0.data(), "Ip0", false);
@@ -237,33 +323,67 @@ public:
     dust2::r::read_real_array(parameters, shared.dim.Is0, shared.Is0.data(), "Is0", false);
     dust2::r::read_real_array(parameters, shared.dim.R0, shared.R0.data(), "R0", false);
     dust2::r::read_real_array(parameters, shared.dim.Incidence0, shared.Incidence0.data(), "Incidence0", false);
+    dust2::r::read_real_array(parameters, shared.dim.doses0, shared.doses0.data(), "doses0", false);
+    dust2::r::read_real_array(parameters, shared.dim.vaccine_times, shared.vaccine_times.data(), "vaccine_times", false);
+    dust2::r::read_real_array(parameters, shared.dim.vaccine_cov, shared.vaccine_cov.data(), "vaccine_cov", false);
+    dust2::r::read_real_array(parameters, shared.dim.vaccine_period, shared.vaccine_period.data(), "vaccine_period", false);
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccTimes); ++j) {
+        shared.vaccine_rate[i - 1 + (j - 1) * shared.dim.vaccine_rate.mult[1]] = -monty::math::log(1 - shared.vaccine_cov[i - 1 + (j - 1) * shared.dim.vaccine_cov.mult[1]]) / shared.vaccine_period[j - 1];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nVaccStates); ++i) {
+      shared.gamma_vaccine_I[i - 1] = (i == 1 ? 0 : shared.gamma_vaccine[(i - 1) - 1]);
+    }
+    const auto interpolate_vr = dust2::interpolate::InterpolateConstantArray<real_type, 1>(shared.vaccine_times, shared.vaccine_rate, shared.dim.vr, "vaccine_times", "vaccine_rate");
   }
   static void update_internal(const shared_state& shared, internal_state& internal) {
   }
   static void initial(real_type time, const shared_state& shared, internal_state& internal, rng_state_type& rng_state, real_type* state) {
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + 0] = shared.Sp0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Sp.mult[1] + 0] = shared.Sp0[i - 1 + (j - 1) * shared.dim.Sp0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[1]] = shared.Ep0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Ep.mult[1] + shared.odin.offset.state[1]] = shared.Ep0[i - 1 + (j - 1) * shared.dim.Ep0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[2]] = shared.Ip0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Ip.mult[1] + shared.odin.offset.state[2]] = shared.Ip0[i - 1 + (j - 1) * shared.dim.Ip0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[3]] = shared.Ss0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Ss.mult[1] + shared.odin.offset.state[3]] = shared.Ss0[i - 1 + (j - 1) * shared.dim.Ss0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[4]] = shared.Es0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Es.mult[1] + shared.odin.offset.state[4]] = shared.Es0[i - 1 + (j - 1) * shared.dim.Es0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[5]] = shared.Is0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Is.mult[1] + shared.odin.offset.state[5]] = shared.Is0[i - 1 + (j - 1) * shared.dim.Is0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[6]] = shared.R0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.R.mult[1] + shared.odin.offset.state[6]] = shared.R0[i - 1 + (j - 1) * shared.dim.R0.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state[i - 1 + shared.odin.offset.state[7]] = shared.Incidence0[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.Incidence.mult[1] + shared.odin.offset.state[7]] = shared.Incidence0[i - 1 + (j - 1) * shared.dim.Incidence0.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state[i - 1 + (j - 1) * shared.dim.doses.mult[1] + shared.odin.offset.state[8]] = shared.doses0[i - 1 + (j - 1) * shared.dim.doses0.mult[1]];
+      }
     }
   }
   static void rhs(real_type time, const real_type* state, const shared_state& shared, internal_state& internal, real_type* state_deriv) {
@@ -275,48 +395,121 @@ public:
     const auto * Is = state + shared.odin.offset.state[5];
     const auto * R = state + shared.odin.offset.state[6];
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.N[i - 1] = Ss[i - 1] + Es[i - 1] + Is[i - 1] + Sp[i - 1] + Ep[i - 1] + Ip[i - 1] + R[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.N[i - 1 + (j - 1) * shared.dim.N.mult[1]] = Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]] + Es[i - 1 + (j - 1) * shared.dim.Es.mult[1]] + Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] + Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]] + Ep[i - 1 + (j - 1) * shared.dim.Ep.mult[1]] + Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= shared.dim.temp_rel.dim[0]; ++i) {
+      for (size_t j = 1; j <= shared.dim.temp_rel.dim[1]; ++j) {
+        internal.temp_rel[i - 1 + (j - 1) * shared.dim.temp_rel.mult[1]] = shared.omega_vect[i - 1] * (Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] + Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.N_age[i - 1] = dust2::array::sum<real_type>(internal.N.data(), shared.dim.N, {i - 1, i - 1}, {0, shared.dim.N.dim[1] - 1});
     }
     for (size_t i = 1; i <= shared.dim.temp.size; ++i) {
-      internal.temp[i - 1] = shared.omega_vect[i - 1] * (Is[i - 1] + Ip[i - 1]) / internal.N[i - 1];
+      internal.temp[i - 1] = dust2::array::sum<real_type>(internal.temp_rel.data(), shared.dim.temp_rel, {i - 1, i - 1}, {0, shared.dim.temp_rel.dim[1] - 1}) / internal.N_age[i - 1];
     }
     for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
       for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
         internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_per_person[i - 1 + (j - 1) * shared.dim.matrix_per_person.mult[1]] * internal.temp[j - 1];
       }
     }
+    shared.interpolate_vr.eval(time, internal.vr);
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
       internal.lambda[i - 1] = shared.b0 * (1 - shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) / static_cast<real_type>(365.25) * (time - shared.phi))) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
     }
-    for (size_t i = 1; i <= shared.dim.incidence_rate_p.size; ++i) {
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]] = (j == 1 ? internal.vr[i - 1] : shared.gamma_vaccine[(j - 1) - 1]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.VaccState_doses[i - 1 + (j - 1) * shared.dim.VaccState_doses.mult[1]] = (j == 1 ? internal.vr[i - 1] : 0);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       internal.incidence_rate_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];
     }
-    for (size_t i = 1; i <= shared.dim.incidence_rate_s.size; ++i) {
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       internal.incidence_rate_s[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * shared.alpha_vect[i - 1] * Ss[i - 1];
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + 0] = -internal.incidence_rate_p[i - 1];
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[1]] = internal.incidence_rate_p[i - 1] - shared.delta * Ep[i - 1];
+      state_deriv[i - 1 + 0] = -internal.incidence_rate_p[i - 1] - (internal.VaccState_rate[i - 1] * Sp[i - 1]) + (internal.VaccState_rate[i - 1 + (shared.nVaccStates - 1) * shared.dim.VaccState_rate.mult[1]] * Sp[i - 1 + (shared.nVaccStates - 1) * shared.dim.Sp.mult[1]]);
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[2]] = shared.delta * Ep[i - 1] - shared.gamma_p * Ip[i - 1];
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Sp.mult[1] + 0] = -internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] - (internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]] * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]]) + (internal.VaccState_rate[i - 1 + ((j - 1) - 1) * shared.dim.VaccState_rate.mult[1]] * Sp[i - 1 + ((j - 1) - 1) * shared.dim.Sp.mult[1]]);
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[3]] = -internal.incidence_rate_s[i - 1] + shared.nu * R[i - 1];
+      state_deriv[i - 1 + shared.odin.offset.state[1]] = internal.incidence_rate_p[i - 1] - (shared.delta + internal.VaccState_rate[i - 1]) * Ep[i - 1] + internal.VaccState_rate[i - 1 + (shared.nVaccStates - 1) * shared.dim.VaccState_rate.mult[1]] * Ep[i - 1 + (shared.nVaccStates - 1) * shared.dim.Ep.mult[1]];
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[4]] = internal.incidence_rate_s[i - 1] - shared.delta * Es[i - 1];
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Ep.mult[1] + shared.odin.offset.state[1]] = internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] - (shared.delta + internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]]) * Ep[i - 1 + (j - 1) * shared.dim.Ep.mult[1]] + (internal.VaccState_rate[i - 1 + ((j - 1) - 1) * shared.dim.VaccState_rate.mult[1]] * Ep[i - 1 + ((j - 1) - 1) * shared.dim.Ep.mult[1]]);
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[5]] = shared.delta * Es[i - 1] - shared.gamma_s * Is[i - 1];
+      state_deriv[i - 1 + shared.odin.offset.state[2]] = shared.delta * Ep[i - 1] - shared.gamma_p * Ip[i - 1] + shared.gamma_vaccine_I[shared.nVaccStates - 1] * Ip[i - 1 + (shared.nVaccStates - 1) * shared.dim.Ip.mult[1]];
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[6]] = shared.gamma_p * Ip[i - 1] + shared.gamma_s * Is[i - 1] - shared.nu * R[i - 1];
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Ip.mult[1] + shared.odin.offset.state[2]] = shared.delta * Ep[i - 1 + (j - 1) * shared.dim.Ep.mult[1]] - (shared.gamma_p + shared.gamma_vaccine_I[j - 1]) * Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] + shared.gamma_vaccine_I[(j - 1) - 1] * Ip[i - 1 + ((j - 1) - 1) * shared.dim.Ip.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      state_deriv[i - 1 + shared.odin.offset.state[7]] = internal.incidence_rate_s[i - 1] + internal.incidence_rate_p[i - 1];
+      state_deriv[i - 1 + shared.odin.offset.state[3]] = -internal.incidence_rate_s[i - 1] + (shared.nu * R[i - 1]) - (internal.VaccState_rate[i - 1] * Ss[i - 1]) + (internal.VaccState_rate[i - 1 + (shared.nVaccStates - 1) * shared.dim.VaccState_rate.mult[1]] * Ss[i - 1 + (shared.nVaccStates - 1) * shared.dim.Ss.mult[1]]);
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Ss.mult[1] + shared.odin.offset.state[3]] = -internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] + (shared.nu * R[i - 1 + (j - 1) * shared.dim.R.mult[1]]) + (internal.VaccState_rate[i - 1 + ((j - 1) - 1) * shared.dim.VaccState_rate.mult[1]] * Ss[i - 1 + ((j - 1) - 1) * shared.dim.Ss.mult[1]]) - (internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      state_deriv[i - 1 + shared.odin.offset.state[4]] = internal.incidence_rate_s[i - 1] - (shared.delta + internal.VaccState_rate[i - 1]) * Es[i - 1] + internal.VaccState_rate[i - 1 + (shared.nVaccStates - 1) * shared.dim.VaccState_rate.mult[1]] * Es[i - 1 + (shared.nVaccStates - 1) * shared.dim.Es.mult[1]];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Es.mult[1] + shared.odin.offset.state[4]] = internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] - (shared.delta + internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]]) * Es[i - 1 + (j - 1) * shared.dim.Es.mult[1]] + (internal.VaccState_rate[i - 1 + ((j - 1) - 1) * shared.dim.VaccState_rate.mult[1]] * Es[i - 1 + ((j - 1) - 1) * shared.dim.Es.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      state_deriv[i - 1 + shared.odin.offset.state[5]] = shared.delta * Es[i - 1] - shared.gamma_s * Is[i - 1] + shared.gamma_vaccine_I[shared.nVaccStates - 1] * Is[i - 1 + (shared.nVaccStates - 1) * shared.dim.Is.mult[1]];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Is.mult[1] + shared.odin.offset.state[5]] = shared.delta * Es[i - 1 + (j - 1) * shared.dim.Es.mult[1]] - (shared.gamma_s + shared.gamma_vaccine_I[j - 1]) * Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] + shared.gamma_vaccine_I[(j - 1) - 1] * Is[i - 1 + ((j - 1) - 1) * shared.dim.Is.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      state_deriv[i - 1 + shared.odin.offset.state[6]] = shared.gamma_p * Ip[i - 1] + shared.gamma_s * Is[i - 1] - (shared.nu + internal.VaccState_rate[i - 1]) * R[i - 1] + internal.VaccState_rate[i - 1 + (shared.nVaccStates - 1) * shared.dim.VaccState_rate.mult[1]] * R[i - 1 + (shared.nVaccStates - 1) * shared.dim.R.mult[1]];
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.R.mult[1] + shared.odin.offset.state[6]] = shared.gamma_p * Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] + shared.gamma_s * Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] - (shared.nu + internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]]) * R[i - 1 + (j - 1) * shared.dim.R.mult[1]] + (internal.VaccState_rate[i - 1 + ((j - 1) - 1) * shared.dim.VaccState_rate.mult[1]] * R[i - 1 + ((j - 1) - 1) * shared.dim.R.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.Incidence.mult[1] + shared.odin.offset.state[7]] = internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] + internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        state_deriv[i - 1 + (j - 1) * shared.dim.doses.mult[1] + shared.odin.offset.state[8]] = internal.VaccState_doses[i - 1 + (j - 1) * shared.dim.VaccState_doses.mult[1]] * (Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]] + Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]] + Ep[i - 1 + (j - 1) * shared.dim.Ep.mult[1]] + Es[i - 1 + (j - 1) * shared.dim.Es.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]]);
+      }
     }
   }
   static void output(real_type time, real_type* state, const shared_state& shared, internal_state& internal) {
@@ -329,51 +522,90 @@ public:
     const auto * R = state + shared.odin.offset.state[6];
     const auto * Incidence = state + shared.odin.offset.state[7];
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.N[i - 1] = Ss[i - 1] + Es[i - 1] + Is[i - 1] + Sp[i - 1] + Ep[i - 1] + Ip[i - 1] + R[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.N[i - 1 + (j - 1) * shared.dim.N.mult[1]] = Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]] + Es[i - 1 + (j - 1) * shared.dim.Es.mult[1]] + Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] + Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]] + Ep[i - 1 + (j - 1) * shared.dim.Ep.mult[1]] + Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] + R[i - 1 + (j - 1) * shared.dim.R.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= shared.dim.temp_rel.dim[0]; ++i) {
+      for (size_t j = 1; j <= shared.dim.temp_rel.dim[1]; ++j) {
+        internal.temp_rel[i - 1 + (j - 1) * shared.dim.temp_rel.mult[1]] = shared.omega_vect[i - 1] * (Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] + Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.DetIncidence[i - 1 + (j - 1) * shared.dim.DetIncidence.mult[1]] = shared.prop_detected_vect[i - 1] * Incidence[i - 1 + (j - 1) * shared.dim.Incidence.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.prev[i - 1 + (j - 1) * shared.dim.prev.mult[1]] = (Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] + Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]]) / internal.N[i - 1 + (j - 1) * shared.dim.N.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.prev_p[i - 1 + (j - 1) * shared.dim.prev_p.mult[1]] = Ip[i - 1 + (j - 1) * shared.dim.Ip.mult[1]] / internal.N[i - 1 + (j - 1) * shared.dim.N.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.prev_s[i - 1 + (j - 1) * shared.dim.prev_s.mult[1]] = Is[i - 1 + (j - 1) * shared.dim.Is.mult[1]] / internal.N[i - 1 + (j - 1) * shared.dim.N.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      internal.N_age[i - 1] = dust2::array::sum<real_type>(internal.N.data(), shared.dim.N, {i - 1, i - 1}, {0, shared.dim.N.dim[1] - 1});
     }
     for (size_t i = 1; i <= shared.dim.temp.size; ++i) {
-      internal.temp[i - 1] = shared.omega_vect[i - 1] * (Is[i - 1] + Ip[i - 1]) / internal.N[i - 1];
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.DetIncidence[i - 1] = shared.prop_detected_vect[i - 1] * Incidence[i - 1];
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.prev[i - 1] = (Ip[i - 1] + Is[i - 1]) / internal.N[i - 1];
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.prev_p[i - 1] = Ip[i - 1] / internal.N[i - 1];
-    }
-    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.prev_s[i - 1] = Is[i - 1] / internal.N[i - 1];
+      internal.temp[i - 1] = dust2::array::sum<real_type>(internal.temp_rel.data(), shared.dim.temp_rel, {i - 1, i - 1}, {0, shared.dim.temp_rel.dim[1] - 1}) / internal.N_age[i - 1];
     }
     for (size_t i = 1; i <= shared.dim.s_ij.dim[0]; ++i) {
       for (size_t j = 1; j <= shared.dim.s_ij.dim[1]; ++j) {
         internal.s_ij[i - 1 + (j - 1) * shared.dim.s_ij.mult[1]] = shared.matrix_per_person[i - 1 + (j - 1) * shared.dim.matrix_per_person.mult[1]] * internal.temp[j - 1];
       }
     }
+    shared.interpolate_vr.eval(time, internal.vr);
     for (size_t i = 1; i <= shared.dim.lambda.size; ++i) {
       internal.lambda[i - 1] = shared.b0 * (1 - shared.b1 * monty::math::cos(2 * static_cast<real_type>(3.1415926535897927) / static_cast<real_type>(365.25) * (time - shared.phi))) * dust2::array::sum<real_type>(internal.s_ij.data(), shared.dim.s_ij, {i - 1, i - 1}, {0, shared.dim.s_ij.dim[1] - 1});
     }
-    for (size_t i = 1; i <= shared.dim.incidence_rate_p.size; ++i) {
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.VaccState_rate[i - 1 + (j - 1) * shared.dim.VaccState_rate.mult[1]] = (j == 1 ? internal.vr[i - 1] : shared.gamma_vaccine[(j - 1) - 1]);
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       internal.incidence_rate_p[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * Sp[i - 1];
     }
-    for (size_t i = 1; i <= shared.dim.incidence_rate_s.size; ++i) {
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+      }
+    }
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       internal.incidence_rate_s[i - 1] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * shared.alpha_vect[i - 1] * Ss[i - 1];
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.Incidence_rate[i - 1] = internal.incidence_rate_s[i - 1] + internal.incidence_rate_p[i - 1];
+      for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+      }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
-      internal.DetIncidence_rate[i - 1] = shared.prop_detected_vect[i - 1] * internal.Incidence_rate[i - 1];
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.Incidence_rate[i - 1 + (j - 1) * shared.dim.Incidence_rate.mult[1]] = internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] + internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]];
+      }
     }
-    std::copy(internal.DetIncidence.begin(), internal.DetIncidence.end(), state + shared.odin.offset.state[8]);
-    std::copy(internal.Incidence_rate.begin(), internal.Incidence_rate.end(), state + shared.odin.offset.state[9]);
-    std::copy(internal.DetIncidence_rate.begin(), internal.DetIncidence_rate.end(), state + shared.odin.offset.state[10]);
-    std::copy(internal.prev.begin(), internal.prev.end(), state + shared.odin.offset.state[11]);
-    std::copy(internal.prev_p.begin(), internal.prev_p.end(), state + shared.odin.offset.state[12]);
-    std::copy(internal.prev_s.begin(), internal.prev_s.end(), state + shared.odin.offset.state[13]);
+    for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
+      for (size_t j = 1; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
+        internal.DetIncidence_rate[i - 1 + (j - 1) * shared.dim.DetIncidence_rate.mult[1]] = shared.prop_detected_vect[i - 1] * internal.Incidence_rate[i - 1 + (j - 1) * shared.dim.Incidence_rate.mult[1]];
+      }
+    }
+    std::copy(internal.DetIncidence.begin(), internal.DetIncidence.end(), state + shared.odin.offset.state[9]);
+    std::copy(internal.Incidence_rate.begin(), internal.Incidence_rate.end(), state + shared.odin.offset.state[10]);
+    std::copy(internal.DetIncidence_rate.begin(), internal.DetIncidence_rate.end(), state + shared.odin.offset.state[11]);
+    std::copy(internal.prev.begin(), internal.prev.end(), state + shared.odin.offset.state[12]);
+    std::copy(internal.prev_p.begin(), internal.prev_p.end(), state + shared.odin.offset.state[13]);
+    std::copy(internal.prev_s.begin(), internal.prev_s.end(), state + shared.odin.offset.state[14]);
+    std::copy(internal.VaccState_rate.begin(), internal.VaccState_rate.end(), state + shared.odin.offset.state[15]);
   }
   static size_t size_output() {
-    return 6;
+    return 7;
   }
 };

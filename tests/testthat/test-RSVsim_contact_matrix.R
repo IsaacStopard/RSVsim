@@ -18,8 +18,8 @@ test_that("RSVsim_contact_matrix function", {
 
     age.limits <- list_age_limits[[i]]
 
-    t_mat <- RSVsim_contact_matrix(country = countries[i],
-                                   age.limits = age.limits)
+    t_mat <- suppressWarnings(RSVsim_contact_matrix(country = countries[i],
+                                   age.limits = age.limits))
 
     # checking the matrix is numeric
     testthat::expect_true(
