@@ -42,12 +42,6 @@ RSVsim_parameters <- function(overrides = list(),
                               contact_population_list
                        ){
 
-  for(name in fitted_parameter_names){
-    if(name %in% c("vaccine_times", "vaccine_cov", "nVaccTimes", "nVaccStates", "nAges", "matrix_per_person", "age.limits", "age_distribution")){
-    stop(paste("RSVsim_parameters: cannot fit:", name, sep = " "))
-    }
-  }
-
   # override parameters with any user specified ones
   if(!is.list(overrides)) {
     stop('RSVsim_parameters: overrides must be a list')
