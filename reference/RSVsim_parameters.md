@@ -5,11 +5,7 @@ Provides the default parameters to run the RSV model.
 ## Usage
 
 ``` r
-RSVsim_parameters(
-  overrides = list(),
-  contact_population_list,
-  fitted_parameter_names = NULL
-)
+RSVsim_parameters(overrides = list(), contact_population_list)
 ```
 
 ## Arguments
@@ -21,11 +17,6 @@ RSVsim_parameters(
 - contact_population_list:
 
   List of outputs from the `create_contact_matrix` function.
-
-- fitted_parameter_names:
-
-  Vector of parameter names to exclude from the list because they are
-  fitted. Default: `NULL`.
 
 ## Value
 
@@ -60,6 +51,23 @@ size of the cohorts.
 `rel_sizes`: the relative size of each cohort (age category duration in
 days divided by the total number of days).  
 `total_population`: 1861923. Total population size.  
+`nVaccStates`: 2. Number of vaccination states. Default: 1:
+unvaccinated, 2: vaccinated. Minimum is 2.  
+`gamma_vaccine`: 1 / (365\*2). Rate of waning between vaccinated states.
+Size of vector must be nVaccStates minus one.  
+`nVaccTimes`: 5. Length of start times of vaccination distributions.  
+`vaccine_times`: c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30). Times of
+vaccination distributions. First time should be 0.  
+`vaccine_period`: rep(30, 5). Duration of vaccination distributions.
+`vaccine_cov`: matrix with the rows corresponding to the vaccine_times
+and the columns corresponding to the ages. Age-specific proportion of
+unvaccinated people to have been vaccinated by the end of the
+vaccination distribution for each `vaccine_time`, assuming no waning of
+vaccination. The vaccination rate is calculated as
+`-log(1 - vaccine_cov) / vaccine_period`. Default is 0 coverage for all
+ages. Changes in effective coverage with are given as a model output.  
+`VE`: 0.85. Vaccine efficacy for each vaccinated state. Length should be
+equal to nVaccStates - 1.
 `Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0`: initial conditions to
 run the model for each compartment - these are given as prevalence and
 the initial conditions calculated in this function. List. Default:

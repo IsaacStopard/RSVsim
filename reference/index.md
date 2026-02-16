@@ -32,3 +32,5 @@
 - [`RSVsim_total_incidence()`](https://isaacstopard.github.io/RSVsim/reference/RSVsim_total_incidence.md)
   : Summary function to calculate the age-specific total incidence over
   the simulation.
+- [`RSVsim_update_parameters()`](https://isaacstopard.github.io/RSVsim/reference/RSVsim_update_parameters.md)
+  : Helper function to update the parameter list by names

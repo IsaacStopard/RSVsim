@@ -1,7 +1,6 @@
 # Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 
-Runs the ABC-rejection algorithm. This will also work with fitting the
-initial conditions.
+Runs the ABC-rejection algorithm.
 
 ## Usage
 
@@ -69,12 +68,13 @@ RSVsim_ABC_rejection(
 
 - fitted_parameter_names:
 
-  Vector of names of the parameters that are being estimated.
+  Vector of names of the parameters that are being estimated. To fit
+  vectors or matrices the individual element must be identified in the
+  fitted_parameter_names.
 
 - fixed_parameter_list:
 
-  List of parameter values to run the model excluding the fitted
-  parameters.
+  List of the original parameter values to run the model.
 
 - times:
 

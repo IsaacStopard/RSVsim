@@ -1,7 +1,7 @@
 # Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 
-—– NOT FINISHED —— implementation of an ABC-SMC algorithm. This function
-will not work when fitting the initial conditions.
+This function will not work when fitting the initial conditions or
+parameters that are more than one value.
 
 ## Usage
 
@@ -87,12 +87,13 @@ RSVsim_ABC_SMC(
 
 - fitted_parameter_names:
 
-  Vector of names of the parameters that are being estimated.
+  Vector of names of the parameters that are being estimated. To fit
+  vectors or matrices the individual element must be identified in the
+  fitted_parameter_names.
 
 - fixed_parameter_list:
 
-  List of parameter values to run the model excluding the fitted
-  parameters.
+  List of the original parameter values to run the model.
 
 - times:
 

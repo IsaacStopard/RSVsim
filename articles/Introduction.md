@@ -47,8 +47,7 @@ susceptible to primary infection compartment.
 
 ``` r
 parameters <- RSVsim_parameters(overrides = list("b0" = 0.15, "b1" = 1, "phi" = 0), 
-                                contact_population_list = contact_population_list,
-                                fitted = NULL)
+                                contact_population_list = contact_population_list)
 ```
 
 ## Running the model
@@ -76,3 +75,35 @@ the detected incidence age-specific detection probabilities are used,
 and in the default parameters we assume very few people (1%) over the
 age of 2 years old are tested. The age-specific prevalence is also
 calculated.
+
+## Turning on vaccination
+
+By default the model is run without vaccination. To turn on vaccination
+we must specify the number of vaccination states (nVaccStates; at a
+minimum 2, corresponding to unvaccinated and vaccinated), times at which
+the vaccination rate changes (vaccine_times; vector), the duration of
+vaccination for each time (vaccine_period; vector of same length as
+vaccine_times), the proportion of unvaccinated people for each age that
+are vaccinated during each vaccination period assuming no waning
+(vaccine_cov; matrix with rows corresponding to the ages and columns
+corresponding to the vaccination time) and the vaccine efficacy (VE;
+vector of same length as nVaccStates).
+
+``` r
+nAges <- length(contact_population_list$age.limits)
+
+parameters_vac <- RSVsim_parameters(overrides = list("nVaccStates" = 2,
+                                                     "vaccine_times" = c(0, 365.25, 395.25, 730.50, 760.50),
+                                                     "vaccine_period" = rep(30, 5),
+                                                     "vaccine_cov" = rbind(matrix(rep(0, (nAges-1) * 5),
+                                                                                  nrow = (nAges-1)),
+                                                                           c(0, 0.99, 0, 0.99, 0)),
+                                                     "VE" = matrix(rep(0.85, nAges), nrow = nAges, ncol = 1),
+                                    contact_population_list = contact_population_list
+                                    )
+
+out_vac <- RSVsim_run_model(parameters = parameters_vac,
+                        times = seq(0, 365 * 10, 0.25), # maximum time to run the model for
+                        cohort_step_size = 5, # time at which to age people\
+                        warm_up = NULL)
+```
