@@ -2,7 +2,7 @@ test_that("RSVsim_run_model function works", {
 
   #skip_if(Sys.getenv("RUN_TESTS") != "true", message = "Skipping tests (set environment to RUN_TESTS to true to run)")
 
-  expect_warning(contact_population_list <- RSVsim_contact_matrix())
+  testthat::expect_warning(contact_population_list <- RSVsim_contact_matrix())
   parameters <- RSVsim_parameters(overrides = list("b0" = 0.11, "b1" = 0.3, "vaccine_times" = c(0.00, c(365.25, 395.25, 730.50, 760.50) + 365.25)),
                                   contact_population_list = contact_population_list)
 
@@ -22,25 +22,25 @@ test_that("RSVsim_run_model function works", {
                           cohort_step_size = 10,
                           warm_up = 365.25 * 1)
 
-  expect_true(sum(is.na(subset(sim, vacc_state == 1))) == 0)
-  expect_true(max(sim$time) <= 3650)
+  testthat::expect_true(sum(is.na(subset(sim, vacc_state == 1))) == 0)
+  testthat::expect_true(max(sim$time) <= 3650)
 
   sim_vac <- RSVsim_run_model(parameters = parameters_vac,
                               times = seq(0, 365.25*10, 0.25),
                               cohort_step_size = 10,
                               warm_up = 365.25 * 1)
 
-  expect_true(sum(sim_vac$doses) > 0)
+  testthat::expect_true(sum(sim_vac$doses) > 0)
 
-  expect_error(RSVsim_run_model(parameters = parameters,
+  testthat::expect_error(RSVsim_run_model(parameters = parameters,
                                 times = seq(0, 3650, 0.25),
                                 cohort_step_size = min(parameters$size_cohorts) + 10,
                                 warm_up = 365 * 3))
 
-  expect_true(max(na.omit(sim$prev)) <= 1 & min(na.omit(sim$prev)) >= 0)
+  testthat::expect_true(max(na.omit(sim$prev)) <= 1 & min(na.omit(sim$prev)) >= 0)
 
   # checking the total population is correct
-  expect_true(all(abs(sim |> dplyr::group_by(time) |> dplyr::summarise(Sp = sum(Sp), Ep = sum(Ep), Ip = sum(Ip), Ss = sum(Ss), Es = sum(Es), Is = sum(Is), R = sum(R)) |>
+  testthat::expect_true(all(abs(sim |> dplyr::group_by(time) |> dplyr::summarise(Sp = sum(Sp), Ep = sum(Ep), Ip = sum(Ip), Ss = sum(Ss), Es = sum(Es), Is = sum(Is), R = sum(R)) |>
               dplyr::select(Sp, Ep, Ip, Ss, Es, Is, R) |> rowSums() - parameters$total_population) < 1E-5)
               )
 

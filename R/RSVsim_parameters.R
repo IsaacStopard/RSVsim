@@ -150,7 +150,7 @@ RSVsim_parameters <- function(overrides = list(),
       stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
     }
 
-    if(name == "VE" && nrow(overrides[[name]]) != nAges || name == "VE" && ncol(overrides[[name]]) != (nVaccStates - 1)){
+    if(name == "VE" & length(overrides[[name]]) != nAges * (nVaccStates - 1)){
       stop("RSVsim_parameters: VE is not the correct dimensions")
     }
 
@@ -168,8 +168,7 @@ RSVsim_parameters <- function(overrides = list(),
     }
 
     if(name %in% c("vaccine_cov") &&
-       nrow(overrides[[name]]) != nAges |
-       name %in% c("vaccine_cov") && ncol(overrides[[name]]) != nVaccTimes){
+       length(overrides[[name]]) != nAges * nVaccTimes){
       stop(paste("RSVsim_parameters:", name, "is not the correct size", sep = ' '))
     }
 
