@@ -60,18 +60,20 @@ Size of vector must be nVaccStates minus one.
 vaccination distributions. First time should be 0.  
 `vaccine_period`: rep(30, 5). Duration of vaccination distributions.
 `vaccine_cov`: matrix with the rows corresponding to the vaccine_times
-and the columns corresponding to the ages. Age-specific proportion of
-unvaccinated people to have been vaccinated by the end of the
-vaccination distribution for each `vaccine_time`, assuming no waning of
-vaccination. The vaccination rate is calculated as
+and the columns corresponding to the ages.  
+Age-specific proportion of unvaccinated people to have been vaccinated
+by the end of the vaccination distribution for each `vaccine_time`,
+assuming no waning of vaccination. The vaccination rate is calculated as
 `-log(1 - vaccine_cov) / vaccine_period`. Default is 0 coverage for all
 ages. Changes in effective coverage with are given as a model output.  
-`VE`: 0.85. Vaccine efficacy for each vaccinated state. Length should be
-equal to nVaccStates - 1.
-`Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0`: initial conditions to
-run the model for each compartment - these are given as prevalence and
-the initial conditions calculated in this function. List. Default:
-`NULL`. If `NULL`: 0.1% RSV prevalence is assumed for people during the
-primary infection, which is seeded at the beginning of the simulation.
-All other people are assumed to be susceptible to their primary
-infection.
+`VE`: 0.85 for all ages and vaccinated states. Vaccine efficacy for each
+age group and vaccinated state. Number of rows must be equal to the
+number of age groups, and the number of columns should be equal to
+nVaccStates - 1.  
+`Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0, doses0`: initial
+conditions to run the model for each compartment - these are given as
+prevalence and the initial conditions calculated in this function. List.
+Default: `NULL`. If `NULL`: 0.1% RSV prevalence is assumed for people
+during the primary infection, which is seeded at the beginning of the
+simulation. All other people are assumed to be susceptible to their
+primary infection.
