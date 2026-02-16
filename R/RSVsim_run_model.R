@@ -52,18 +52,6 @@ RSVsim_run_model <- function(parameters,
   # creating the infection state, vaccination state and age corresponding to each position in dust
   states <- rep(states_order, lengths(states))
 
-  # full_groups <- c("Sp", "Ss", "Ep", "Es", "Ip", "Is", "R", "Incidence", "DetIncidence", "Incidence_rate", "DetIncidence_rate", "prev", "prev_p", "prev_s","doses")
-  # age_groups <- c()
-  # vac_groups <- c()
-
-  # states_order_group <- dplyr::case_when(states_order %in% full_groups ~ "full", states_order %in% age_groups ~ "age", states_order %in% vac_groups ~ "vac", .default = "other")
-
-  # age_lookup <- list("full" = rep(parameters$age.limits, parameters$nVaccStates), "age" = parameters$age.limits, "vac" = rep(NA, parameters$nVaccStates), "other" = NA)
-  # vac_lookup <- list("full"  = rep(1:parameters$nVaccStates, each = parameters$nAges), "age" = rep(NA, parameters$nAges), "vac" = 1:parameters$nVaccStates, "other" = NA)
-
-  # ages <- unlist(age_lookup[states_order_group], use.names = FALSE)
-  # vacc_states <- unlist(vac_lookup[states_order_group], use.names = FALSE)
-
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
