@@ -169,6 +169,8 @@ RSVsim_ABC_rejection <- function(target,
 
       parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, fitted_parameters)
 
+      parameters_in <- RSVsim_adjust_vector_parameters(parameters_in)
+
       out <- RSVsim_run_model(parameters = parameters_in,
                               times = times,
                               cohort_step_size = cohort_step_size,
@@ -197,6 +199,7 @@ RSVsim_ABC_rejection <- function(target,
     cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
     parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                             "while_fun",
+                                            "RSVsim_adjust_vector_parameters",
                                             "RSVsim_run_model",
                                             "RSVsim_total_incidence",
                                             "RSVsim_amplitude",
@@ -350,6 +353,8 @@ RSVsim_ABC_SMC <- function(target,
 
       parameters_ODE <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, parameters)
 
+      parameters_ODE <- RSVsim_adjust_vector_parameters(parameters_ODE)
+
       p_non_zero <- as.numeric(prod(prior_dens_fun(parameters)) > 0)
 
       if(p_non_zero){
@@ -421,6 +426,7 @@ RSVsim_ABC_SMC <- function(target,
       cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
       parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                               "while_fun_SMC",
+                                              "RSV_adjust_vector_parameters",
                                               "RSVsim_run_model",
                                               "RSVsim_update_parameters",
                                               "fixed_parameter_list",
