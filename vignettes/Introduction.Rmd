@@ -58,7 +58,7 @@ The simulated number of people that are susceptible and infected, and whether th
 ## Turning on vaccination
 By default the model is run without vaccination. To turn on vaccination we must specify the number of vaccination states (nVaccStates; at a minimum 2, corresponding to unvaccinated and vaccinated), times at which the vaccination rate changes (vaccine_times; vector), the duration of vaccination for each time (vaccine_period; vector of same length as vaccine_times), the proportion of unvaccinated people for each age that are vaccinated during each vaccination period assuming no waning (vaccine_cov; matrix with rows corresponding to the ages and columns corresponding to the vaccination time) and the vaccine efficacy (VE; vector of same length as nVaccStates).
 
-```{r model_run, dependson="parameters", eval=FALSE}
+```{r model_run_vac, dependson="parameters", eval=FALSE}
 
 nAges <- length(contact_population_list$age.limits)
 
