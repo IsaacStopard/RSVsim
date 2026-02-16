@@ -4,7 +4,6 @@
 #'
 #' @param overrides List of default parameters to change.
 #' @param contact_population_list List of outputs from the \code{create_contact_matrix} function.
-#' @param fitted_parameter_names Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.
 #' @return Parameter list. Default values: \cr
 #' \code{b0}: 0.08. Transmission rate coefficient. \cr
 #' \code{b1}: 0. Amplitude of seasonal forcing in the transmission rate. \cr
@@ -25,30 +24,43 @@
 #' \code{size_cohorts}: the differences in ages in days - used to calculate the size of the cohorts. \cr
 #' \code{rel_sizes}: the relative size of each cohort (age category duration in days divided by the total number of days). \cr
 #' \code{total_population}: 1861923. Total population size. \cr
-#' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
+#' \code{nVaccStates}: 2. Number of vaccination states. Default: 1: unvaccinated, 2: vaccinated. Minimum is 2. \cr
+#' \code{gamma_vaccine}: 1 / (365*2). Rate of waning between vaccinated states. Size of vector must be nVaccStates minus one. \cr
+#' \code{nVaccTimes}: 5. Length of start times of vaccination distributions. \cr
+#' \code{vaccine_times}: c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30). Times of vaccination distributions. First time should be 0. \cr
+#' \code{vaccine_period}: rep(30, 5). Duration of vaccination distributions.
+#' \code{vaccine_cov}: matrix with the rows corresponding to the vaccine_times and the columns corresponding to the ages. \cr
+#' Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
+#' assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
+#' Changes in effective coverage with are given as a model output.  \cr
+#' \code{VE}: 0.85 for all ages and vaccinated states. Vaccine efficacy for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
+#' and the number of columns should be equal to nVaccStates - 1. \cr
+#' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment -
+#' these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @export
 RSVsim_parameters <- function(overrides = list(),
-                              contact_population_list,
-                              fitted_parameter_names = NULL
+                              contact_population_list
                        ){
 
-  # override parameters with any client specified ones
+  # override parameters with any user specified ones
   if(!is.list(overrides)) {
     stop('RSVsim_parameters: overrides must be a list')
   }
 
   if(!is.list(contact_population_list)){
     stop("RSVsim_parameters: contact_population_list must be a list")
-  }
-
-  if(is.list(contact_population_list)){
+  } else {
     for(name in c("matrix_per_person", "age.limits", "age_distribution")){
       if(!name %in% names(contact_population_list)){
         stop(paste("RSVsim_parameters: contact_population_list must contain", name, sep = " "))
-        }
-    }
+      }
+      }
+  }
+
+  if(any(diff(contact_population_list$age.limits) <= 0)){
+    stop("RSVsim_parameters: age.limits must be in ascending order")
   }
 
   nAges <- length(contact_population_list$age.limits)
@@ -102,23 +114,63 @@ RSVsim_parameters <- function(overrides = list(),
            "age_chr" = age_chr,
            "size_cohorts" = size_cohorts,
            "rel_sizes" = rel_sizes,
-           "total_population" = 1861923
+           "total_population" = 1861923,
+           "nVaccStates" = 2,
+           "gamma_vaccine" = 1/(365*2),
+           "nVaccTimes" = 5,
+           "vaccine_times" = c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30),
+           "vaccine_period" = rep(30, 5),
+           "vaccine_cov" = matrix(rep(0, nAges * 5), nrow = nAges, ncol = 5),
+           "VE" = matrix(rep(0.85, nAges * 2), ncol = 1, nrow = nAges)
          )
          }
   )
 
+  nVaccStates <- if(!is.null(overrides[["nVaccStates"]])){overrides[["nVaccStates"]]} else{parameters[["nVaccStates"]]}
 
+  if(nVaccStates < 2){
+    stop("nVaccStates must be at least 2 (unvaccinated and vaccinated)")
+  }
 
+  nVaccTimes <- if(!is.null(overrides[["nVaccTimes"]])){overrides[["nVaccTimes"]]} else{parameters[["nVaccTimes"]]}
 
   for (name in names(overrides)) {
 
-    if (!(name %in% c(names(parameters), "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0"))){
-      stop(paste('RSVsim_parameters: unknown parameter:', name, sep=' '))
+    if (!(name %in% c(names(parameters), "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0", "doses0"))){
+      stop(paste("RSVsim_parameters: unknown parameter:", name, sep=' '))
     }
 
-    if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0") &
+    if(name %in% c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect") &
        length(overrides[[name]]) != nAges){
       stop(paste("RSVsim_parameters:", name, 'is not correct length', sep = ' '))
+    }
+
+    if(name %in% c("Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0", "doses0") &&
+       length(overrides[[name]]) != nAges * nVaccStates){
+      stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
+    }
+
+    if(name == "VE" && nrow(overrides[[name]]) != nAges || name == "VE" && ncol(overrides[[name]]) != (nVaccStates - 1)){
+      stop("RSVsim_parameters: VE is not the correct dimensions")
+    }
+
+    if(name == "max_cov" &&
+       length(overrides[[name]]) != nAges){
+      stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
+    }
+
+    if(name == "vaccine_times" && length(overrides[[name]]) != nVaccTimes){
+      stop("RSVsim_parameters: vaccine_times is not the correct length")
+      }
+
+    if(name %in% c("gamma_vaccine") && length(overrides[[name]]) != (nVaccStates - 1)){
+      stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
+    }
+
+    if(name %in% c("vaccine_cov") &&
+       nrow(overrides[[name]]) != nAges |
+       name %in% c("vaccine_cov") && ncol(overrides[[name]]) != nVaccTimes){
+      stop(paste("RSVsim_parameters:", name, "is not the correct size", sep = ' '))
     }
 
     parameters[[name]] <- overrides[[name]]
@@ -126,39 +178,57 @@ RSVsim_parameters <- function(overrides = list(),
 
   # default initial conditions
   rep_z <- rep(0, parameters$nAges)
-
+  mat_z <- matrix(rep(rep_z, nVaccStates),
+                  nrow = nAges, ncol = nVaccStates)
 
   if(is.null(parameters$Sp0)){
-    parameters$Sp0 = contact_population_list$rel_sizes * parameters$total_population * 0.999
-  }
+    parameters$Sp0 = matrix(c(contact_population_list$rel_sizes * parameters$total_population * 0.999,
+                              rep(rep_z, nVaccStates - 1)),
+                            nrow = nAges, ncol = nVaccStates)
+
+    }
 
   if(is.null(parameters$Ep0)){
-    parameters$Ep0 <- rep_z
+    parameters$Ep0 <- mat_z
     }
 
   if(is.null(parameters$Ip0)){
-    parameters$Ip0 <- contact_population_list$rel_sizes * parameters$total_population * 0.001
+    parameters$Ip0 <- matrix(c(contact_population_list$rel_sizes * parameters$total_population * 0.001,
+                               rep(rep_z, nVaccStates - 1)),
+                             nrow = nAges, ncol = nVaccStates)
     }
 
-    if(is.null(parameters$Ss0)){
-      parameters$Ss0 <- rep_z
-      }
+  if(is.null(parameters$Ss0)){
+      parameters$Ss0 <- mat_z
+    }
 
     if(is.null(parameters$Es0)){
-      parameters$Es0 <- rep_z
+      parameters$Es0 <- mat_z
       }
 
     if(is.null(parameters$Is0)){
-      parameters$Is0 <- rep_z
+      parameters$Is0 <- mat_z
     }
 
     if(is.null(parameters$R0)){
-      parameters$R0 <- rep_z
+      parameters$R0 <- mat_z
     }
 
     if(is.null(parameters$Incidence0)){
-      parameters$Incidence0 <- rep_z
+      parameters$Incidence0 <- mat_z
     }
+
+  if(is.null(parameters$doses0)){
+    parameters$doses0 <- mat_z
+  }
+
+  if(max(parameters$vaccine_cov) > 1 | min(parameters$vaccine_cov)){
+    stop("vaccine_cov values must be between 0 and 1")
+  }
+
+  if(max(parameters$VE) > 1 | min(parameters$VE) < 0){
+    stop("VE must be between 0 and 1")
+  }
 
   with(parameters,
        {
@@ -167,17 +237,6 @@ RSVsim_parameters <- function(overrides = list(),
          }
        }
        )
-
-  if(!is.null(fitted_parameter_names)){
-    for(name in fitted_parameter_names){
-      names_all <- names(parameters)
-      if (!name %in% names_all) {
-        stop(paste('RSVsim_parameters: unknown fitted parameter:', name, sep=' '))
-      } else{
-        parameters <- parameters[-which(names_all == name)]
-      }
-    }
-  }
 
   return(parameters)
 }

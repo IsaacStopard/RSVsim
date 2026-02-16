@@ -32,8 +32,7 @@ test_that("calibration functions", {
 
   fitted_parameter_names <- c("b0")
 
-  fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_population_list,
-                                            fitted_parameter_names = fitted_parameter_names)
+  fixed_parameter_list <- RSVsim_parameters(contact_population_list = contact_population_list)
 
   check <- RSVsim_ABC_rejection(target = total_incidence,
                                 epsilon = total_incidence * 0.5,

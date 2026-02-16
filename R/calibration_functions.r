@@ -70,59 +70,31 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
   return(abs(pmin(target - target_star, period - (target - target_star))))
 }
 
-#' Function to change vector parameters
+#' Helper function to update the parameter list by names
 #'
-#' @param parameters Output from RSVsim_parameters function.
-#' @return List of parameters.
+#' Calculates the absolute distance between two times when the times are circular. Vectorised.
 #'
-RSVsim_adjust_vector_parameters <- function(parameters, name_index){
+#' @param fixed_parameter_list List of parameters, should be the output of the \code{RSVsim_parameters} function.
+#' @param fitted_parameter_names Vector of parameter names to be updated. Can include indexing such as "parameter_name\[i\]".
+#' @param fitted_parameter_values Vector of updated parameter values.
+#' @return Parameter list.
+RSVsim_update_parameters <- function(fixed_parameter_list, fitted_parameter_names, fitted_parameter_values){
 
-  param_names <- names(parameters)
+  updated_parameters <- fixed_parameter_list
 
-  bracket_inds <- unique(c(grep("\\[\\d+\\]", param_names), grep("\\[\\d+:\\d+\\]", param_names)))
-  candidate_names <- param_names[bracket_inds]
-  names_to_remove <- c()
+  update_string <- paste(
+    paste0("updated_parameters$", fitted_parameter_names, " <- ", fitted_parameter_values),
+    collapse = "\n")
 
-  vector_list <- c("alpha_vect", "prop_detected_vect", "sigma_vect", "omega_vect", "Sp0", "Ep0", "Ip0", "Ss0", "Es0", "Is0", "R0", "Incidence0")
+  # 3. Evaluate once
+  eval(parse(text = update_string))
 
-  process_index_string <- function(s) {
-    if (grepl(":", s, fixed = TRUE)) {
-      range_parts <- as.integer(strsplit(s, ":", fixed = TRUE)[[1]])
-      return(range_parts[1]:range_parts[2])
-    } else {
-      return(s |> as.integer())
-    }
-  }
-
-  for(vec_name in vector_list){
-
-    matches <- grep(vec_name, candidate_names, fixed = TRUE, value = TRUE)
-
-    if(length(matches) > 0){
-
-      bracket_content <- sub(".*?\\[(.*?)\\].*", "\\1", matches)
-
-      indices <- sapply(bracket_content, process_index_string, USE.NAMES = FALSE, simplify = FALSE)
-
-      values <- rep(unlist(parameters[matches]), lengths(indices))
-
-      parameters[[vec_name]][unlist(indices)] <- values
-
-      names_to_remove <- c(names_to_remove, matches)
-
-    }
-  }
-
-  if(length(names_to_remove) > 0){
-    parameters <- parameters[!names(parameters) %in% names_to_remove]
-  }
-
-  return(parameters)
+  return(updated_parameters)
 }
 
 #' Function to run an Approximate Bayesian Computation (ABC) rejection algorithm
 #'
-#' Runs the ABC-rejection algorithm. This will also work with fitting the initial conditions.
+#' Runs the ABC-rejection algorithm.
 #'
 #' @param target Values to fit to.
 #' @param epsilon Acceptable error for each target.
@@ -133,8 +105,8 @@ RSVsim_adjust_vector_parameters <- function(parameters, name_index){
 #' @param nparticles Integer. Number of samples from the approximate posterior.
 #' @param used_seeds_all Vector. Seeds used when generating the prior samples for each accepted particle.
 #' @param ncores Number of cores. If greater than one then it is run in parallel.
-#' @param fitted_parameter_names Vector of names of the parameters that are being estimated.
-#' @param fixed_parameter_list List of parameter values to run the model excluding the fitted parameters.
+#' @param fitted_parameter_names Vector of names of the parameters that are being estimated. To fit vectors or matrices the individual element must be identified in the fitted_parameter_names.
+#' @param fixed_parameter_list List of the original parameter values to run the model.
 #' @inheritParams RSVsim_run_model
 #' @return List of fixed parameters, max_t and warm_up.
 #' @export
@@ -195,8 +167,7 @@ RSVsim_ABC_rejection <- function(target,
 
       fitted_parameters <- fitted_parameters_all[j,]
 
-      parameters_in <- c(setNames(unlist(fitted_parameters, recursive = FALSE), fitted_parameter_names),
-                         fixed_parameter_list)
+      parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, fitted_parameters)
 
       parameters_in <- RSVsim_adjust_vector_parameters(parameters_in)
 
@@ -235,6 +206,7 @@ RSVsim_ABC_rejection <- function(target,
                                             "RSVsim_peak",
                                             "RSVsim_abs_dist_fun",
                                             "RSVsim_shortest_periodic_dist_fun",
+                                            "RSVsim_update_parameters",
                                             "fixed_parameter_list",
                                             "fitted_parameter_names",
                                             "nAges",
@@ -280,7 +252,7 @@ RSVsim_ABC_rejection <- function(target,
 
 #' Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 #'
-#' ----- NOT FINISHED ------ implementation of an ABC-SMC algorithm. This function will not work when fitting the initial conditions.
+#' This function will not work when fitting the initial conditions or parameters that are more than one value.
 #'
 #' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
@@ -379,7 +351,7 @@ RSVsim_ABC_SMC <- function(target,
 
       parameters <- fitted_parameters[k, ]
 
-      parameters_ODE <- c(as.list(setNames(parameters, fitted_parameter_names)), fixed_parameter_list)
+      parameters_ODE <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, parameters)
 
       parameters_ODE <- RSVsim_adjust_vector_parameters(parameters_ODE)
 
@@ -456,6 +428,7 @@ RSVsim_ABC_SMC <- function(target,
                                               "while_fun_SMC",
                                               "RSV_adjust_vector_parameters",
                                               "RSVsim_run_model",
+                                              "RSVsim_update_parameters",
                                               "fixed_parameter_list",
                                               "fitted_parameter_names",
                                               "nAges",

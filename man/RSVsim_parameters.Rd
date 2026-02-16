@@ -4,18 +4,12 @@
 \alias{RSVsim_parameters}
 \title{Get parameters for RSVsim}
 \usage{
-RSVsim_parameters(
-  overrides = list(),
-  contact_population_list,
-  fitted_parameter_names = NULL
-)
+RSVsim_parameters(overrides = list(), contact_population_list)
 }
 \arguments{
 \item{overrides}{List of default parameters to change.}
 
 \item{contact_population_list}{List of outputs from the \code{create_contact_matrix} function.}
-
-\item{fitted_parameter_names}{Vector of parameter names to exclude from the list because they are fitted. Default: \code{NULL}.}
 }
 \value{
 Parameter list. Default values: \cr
@@ -38,6 +32,16 @@ Parameter list. Default values: \cr
 \code{size_cohorts}: the differences in ages in days - used to calculate the size of the cohorts. \cr
 \code{rel_sizes}: the relative size of each cohort (age category duration in days divided by the total number of days). \cr
 \code{total_population}: 1861923. Total population size. \cr
+\code{nVaccStates}: 2. Number of vaccination states. Default: 1: unvaccinated, 2: vaccinated. Minimum is 2. \cr
+\code{gamma_vaccine}: 1 / (365*2). Rate of waning between vaccinated states. Size of vector must be nVaccStates minus one. \cr
+\code{nVaccTimes}: 5. Length of start times of vaccination distributions. \cr
+\code{vaccine_times}: c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30). Times of vaccination distributions. First time should be 0. \cr
+\code{vaccine_period}: rep(30, 5). Duration of vaccination distributions.
+\code{vaccine_cov}: matrix with the rows corresponding to the vaccine_times and the columns corresponding to the ages.
+Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
+assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
+Changes in effective coverage with are given as a model output.  \cr
+\code{VE}: 0.85. Vaccine efficacy for each vaccinated state. Length should be equal to nVaccStates - 1.
 \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 If \code{NULL}: 0.1\% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 All other people are assumed to be susceptible to their primary infection.
