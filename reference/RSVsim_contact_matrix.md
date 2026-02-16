@@ -12,7 +12,7 @@ dividing them uniformly.
 ``` r
 RSVsim_contact_matrix(
   country = "United Kingdom",
-  age.limits = c(seq(0, 5, 2/12), seq(10, 70, 5))
+  age_limits = c(seq(0, 5, 2/12), seq(10, 70, 5))
 )
 ```
 
@@ -24,7 +24,7 @@ RSVsim_contact_matrix(
   package. Can be given as country name or 2 digit ISO code. United
   Kingdom default.
 
-- age.limits:
+- age_limits:
 
   Lower limits of the age groups to run the simulation. Ages must be in
   years.

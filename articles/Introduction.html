@@ -86,9 +86,9 @@ the POLYMOD contact data from and (2) the lower age limits of the age
 groups.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specifying the some age limits to use with the model</span></span>
-<span><span class="va">age.limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">0.2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">60</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">age_limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">0.2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">60</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age.limits <span class="op">=</span> <span class="va">age.limits</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, age_limits <span class="op">=</span> <span class="va">age_limits</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="default-parameters">Default parameters<a class="anchor" aria-label="anchor" href="#default-parameters"></a>
@@ -148,7 +148,7 @@ assuming no waning (vaccine_cov; matrix with rows corresponding to the
 ages and columns corresponding to the vaccination time) and the vaccine
 efficacy (VE; vector of same length as nVaccStates).</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>nAges <span class="ot">&lt;-</span> <span class="fu">length</span>(contact_population_list<span class="sc">$</span>age.limits)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>nAges <span class="ot">&lt;-</span> <span class="fu">length</span>(contact_population_list<span class="sc">$</span>age_limits)</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>parameters_vac <span class="ot">&lt;-</span> <span class="fu">RSVsim_parameters</span>(<span class="at">overrides =</span> <span class="fu">list</span>(<span class="st">"nVaccStates"</span> <span class="ot">=</span> <span class="dv">2</span>,</span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                                                     <span class="st">"vaccine_times"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">365.25</span>, <span class="fl">395.25</span>, <span class="fl">730.50</span>, <span class="fl">760.50</span>),</span>

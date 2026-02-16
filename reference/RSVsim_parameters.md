@@ -38,8 +38,8 @@ old, else 1. Reduced susceptibility due to immunity in early life.
 `alpha_vect` = 0.4 if less than 10 years old else 0.3. Reduced
 susceptibility to secondary infections in each age group.  
 `nAges`: must be obtained from `contact_population_list`. Number of age
-groups - same length as age.limits.  
-`age.limits`: must be obtained from `contact_population_list`. Lower age
+groups - same length as age_limits.  
+`age_limits`: must be obtained from `contact_population_list`. Lower age
 limits in years.  
 `matrix_per_person`: must be obtained from `contact_population_list`.
 Contact matrix of mean contacts per person.  

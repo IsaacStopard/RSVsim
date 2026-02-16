@@ -17,10 +17,10 @@ First, we run the model to generate some data to fit to.
 ``` r
 
 # specify age categories to run the model with
-age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
+age_limits <- c(seq(0, 2, 0.2), seq(10, 60, 5))
 
 # get contact matrix
-contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age_limits = age_limits)
 
 # get the default model parameters with a b0 value of 0.08, b1 value of 0, phi value of 0 and change the initial conditions 
 overrides <- list("b0" = 0.11, "b1" = 0.3, "phi" = 10)

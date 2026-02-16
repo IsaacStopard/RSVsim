@@ -26,9 +26,9 @@ groups.
 
 ``` r
 # specifying the some age limits to use with the model
-age.limits <- c(seq(0, 2, 0.2), seq(10, 60, 20))
+age_limits <- c(seq(0, 2, 0.2), seq(10, 60, 20))
 
-contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age.limits = age.limits)
+contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom", age_limits = age_limits)
 ```
 
 ## Default parameters
@@ -90,7 +90,7 @@ corresponding to the vaccination time) and the vaccine efficacy (VE;
 vector of same length as nVaccStates).
 
 ``` r
-nAges <- length(contact_population_list$age.limits)
+nAges <- length(contact_population_list$age_limits)
 
 parameters_vac <- RSVsim_parameters(overrides = list("nVaccStates" = 2,
                                                      "vaccine_times" = c(0, 365.25, 395.25, 730.50, 760.50),
