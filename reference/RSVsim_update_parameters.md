@@ -1,7 +1,8 @@
 # Helper function to update the parameter list by names
 
-Calculates the absolute distance between two times when the times are
-circular. Vectorised.
+Changes the values in the list of parameters to run the model. To fit
+parameters stored within vectors or matrices, `fitted_parameter_names`
+can also include indexing such as "parameter_name\[i\]".
 
 ## Usage
 
@@ -22,8 +23,7 @@ RSVsim_update_parameters(
 
 - fitted_parameter_names:
 
-  Vector of parameter names to be updated. Can include indexing such as
-  "parameter_name\[i\]".
+  Vector of parameter names to be updated.
 
 - fitted_parameter_values:
 
