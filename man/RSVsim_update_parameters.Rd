@@ -13,7 +13,7 @@ RSVsim_update_parameters(
 \arguments{
 \item{fixed_parameter_list}{List of parameters, should be the output of the \code{RSVsim_parameters} function.}
 
-\item{fitted_parameter_names}{Vector of parameter names to be updated. Can include indexing such as "parameter_name[i]".}
+\item{fitted_parameter_names}{Vector of parameter names to be updated.}
 
 \item{fitted_parameter_values}{Vector of updated parameter values.}
 }
@@ -21,5 +21,6 @@ RSVsim_update_parameters(
 Parameter list.
 }
 \description{
-Calculates the absolute distance between two times when the times are circular. Vectorised.
+Changes the values in the list of parameters to run the model.
+To fit parameters stored within vectors or matrices, \code{fitted_parameter_names} can also include indexing such as "parameter_name[i]".
 }

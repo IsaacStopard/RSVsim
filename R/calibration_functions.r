@@ -72,10 +72,11 @@ RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
 
 #' Helper function to update the parameter list by names
 #'
-#' Calculates the absolute distance between two times when the times are circular. Vectorised.
+#' Changes the values in the list of parameters to run the model.
+#' To fit parameters stored within vectors or matrices, \code{fitted_parameter_names} can also include indexing such as "parameter_name\[i\]".
 #'
 #' @param fixed_parameter_list List of parameters, should be the output of the \code{RSVsim_parameters} function.
-#' @param fitted_parameter_names Vector of parameter names to be updated. Can include indexing such as "parameter_name\[i\]".
+#' @param fitted_parameter_names Vector of parameter names to be updated.
 #' @param fitted_parameter_values Vector of updated parameter values.
 #' @return Parameter list.
 #' @export
