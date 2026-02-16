@@ -6,8 +6,8 @@ test_that("RSVsim_run_model function works", {
   parameters <- RSVsim_parameters(overrides = list("b0" = 0.11, "b1" = 0.3, "vaccine_times" = c(0.00, c(365.25, 395.25, 730.50, 760.50) + 365.25)),
                                   contact_population_list = contact_population_list)
 
-  vacc_cov_old <- rbind(matrix(rep(0, (length(contact_population_list$age.limits)-1) * 5),
-                               nrow = (length(contact_population_list$age.limits)-1)),
+  vacc_cov_old <- rbind(matrix(rep(0, (length(contact_population_list$age_limits)-1) * 5),
+                               nrow = (length(contact_population_list$age_limits)-1)),
                         c(0, 0.99, 0, 0.99, 0))
 
   #c_fun <- cinterpolate::interpolation_function(x = parameters_vac$vaccine_times, y = vaccine_rate, type = "constant")

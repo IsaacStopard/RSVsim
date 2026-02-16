@@ -55,7 +55,7 @@ RSVsim_run_model <- function(parameters,
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
-  ages <- rep(rep(parameters$age.limits, parameters$nVaccStates), n_states)
+  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states)
   vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states)
 
   # no cohort aging in these variables
@@ -133,7 +133,7 @@ RSVsim_run_model <- function(parameters,
 
     out <- invisible(
       dplyr::bind_rows(out_list) |> tidyr::pivot_wider(names_from = state, values_from = value) |>
-        dplyr::left_join(data.frame(age = parameters$age.limits, age_chr = parameters$age_chr), by = dplyr::join_by(age))
+        dplyr::left_join(data.frame(age = parameters$age_limits, age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
 
   } else{

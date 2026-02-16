@@ -22,17 +22,13 @@ Imports:
     ggplot2,
     lhs,
     methods,
-    pak,
     parallel,
-    patchwork,
     pbapply,
     purrr,
     Rcpp,
-    readr,
     scales,
-    socialmixr,
+    socialmixr (>= 0.5.1),
     stats,
-    tibble,
     tidyr,
     tmvtnorm
 Depends: 

@@ -6,15 +6,15 @@
 #' into smaller age groupings by dividing them uniformly.
 #'
 #' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
-#' @param age.limits Lower limits of the age groups to run the simulation. Ages must be in years.
+#' @param age_limits Lower limits of the age groups to run the simulation. Ages must be in years.
 #' @return List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
 #' the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 #' @export
 RSVsim_contact_matrix <- function(country = "United Kingdom",
-                                  age.limits = c(seq(0,5,2/12), seq(10,70,5))){
+                                  age_limits = c(seq(0,5,2/12), seq(10,70,5))){
 
-  if(!is.numeric(age.limits)){
-    stop("age.limits must be numeric")
+  if(!is.numeric(age_limits)){
+    stop("age_limits must be numeric")
   }
 
   if(!country %in% c("Italy", "Germany", "Luxembourg", "Netherlands", "Poland", "United Kingdom", "Finland", "Belgium")){
@@ -23,24 +23,24 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
   }
 
 
-  if(max(age.limits) > 75){
+  if(max(age_limits) > 75){
     warning(paste0("polymod age groupings only go up to 75. Age limits above this have therefore been omitted."))
-    age.limits <- age.limits[age.limits <= 75]
+    age_limits <- age_limits[age_limits <= 75]
   }
 
-  if(is.unsorted(age.limits)){
-     age.limits <-  sort(age.limits)
-     warning("age.limits has been sorted")
+  if(is.unsorted(age_limits)){
+     age_limits <-  sort(age_limits)
+     warning("age_limits has been sorted")
   }
 
-  nAges <- length(age.limits)
+  nAges <- length(age_limits)
 
-  if(all(age.limits %% 1 == 0)){
-    age.limits.default <- age.limits
+  if(all(age_limits %% 1 == 0)){
+    age_limits_default <- age_limits
 
   } else{
-    age.limits.default <- age.limits[age.limits %% 1 == 0]
-    warning("Not all age.limits are integers.
+    age_limits_default <- age_limits[age_limits %% 1 == 0]
+    warning("Not all age_limits are integers.
             The contact matrix was calculated for the age groups given by the integers
             and divided uniformly within the smaller age groups.
             A warning from socialmixr about linearly estimating the integer age groups within the 5-year age bands will also appear.")
@@ -49,13 +49,13 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
 
   polymod_cm <- socialmixr::contact_matrix(survey = socialmixr::polymod,
                                            countries = country,
-                                           age.limits = age.limits.default,
+                                           age_limits = age_limits_default,
                                            symmetric = TRUE,
-                                           per.capita = FALSE,
+                                           per_capita = FALSE,
                                            counts = FALSE,
-                                           missing.contact.age = "remove",
-                                           missing.participant.age = "remove",
-                                           return.demography = TRUE)
+                                           missing_contact_age = "remove",
+                                           missing_participant_age = "remove",
+                                           return_demography = TRUE)
 
   D <- polymod_cm$demography$population
   M <- polymod_cm$matrix # total number of contacts matrix
@@ -68,38 +68,38 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
 
   max_age <- socialmixr::polymod$participants$part_age |> subset(country == country) |> na.omit() |> max()
 
-  out <- list("age.limits" = age.limits,
+  out <- list("age_limits" = age_limits,
               "max_age" = max_age)
 
   # labels for the ages
   age_chr <- c()
 
   for(i in 1:(nAges - 1)){
-    age_chr <- c(age_chr, c(paste0("[",round(age.limits[i], digits = 2),",", round(age.limits[i+1], digits = 2),")")))
+    age_chr <- c(age_chr, c(paste0("[",round(age_limits[i], digits = 2),",", round(age_limits[i+1], digits = 2),")")))
   }
 
-  age_chr <- c(age_chr, paste0("[",round(age.limits[nAges], digits = 2),",", round(max_age, digits = 2),")"))
+  age_chr <- c(age_chr, paste0("[",round(age_limits[nAges], digits = 2),",", round(max_age, digits = 2),")"))
 
-  if(any(age.limits %% 1 != 0)){
+  if(any(age_limits %% 1 != 0)){
     matrix_out <- matrix(NA, ncol = nAges, nrow = nAges)
     D_out <- rep(NA, length = nAges)
 
-    max_age_default <- max(age.limits.default)
+    max_age_default <- max(age_limits_default)
 
     for(i in 1:nAges){
 
-      m_i <- findInterval(age.limits[i], age.limits.default)
+      m_i <- findInterval(age_limits[i], age_limits_default)
 
-      default_size_i <- if(age.limits.default[m_i] <  max_age_default){
-        age.limits.default[m_i + 1] - age.limits.default[m_i]
+      default_size_i <- if(age_limits_default[m_i] <  max_age_default){
+        age_limits_default[m_i + 1] - age_limits_default[m_i]
       } else{
-        max_age - age.limits.default[m_i]
+        max_age - age_limits_default[m_i]
       }
 
-      actual_size_i <- if(age.limits[i] < max(age.limits)){
-        age.limits[i + 1] - age.limits[i]
+      actual_size_i <- if(age_limits[i] < max(age_limits)){
+        age_limits[i + 1] - age_limits[i]
       } else{
-        max_age - age.limits[i]
+        max_age - age_limits[i]
       }
 
       D_out[i] <- D[m_i] / (default_size_i / actual_size_i)
@@ -110,21 +110,21 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
         # i - rows
         # j - columns
 
-        m_j <- findInterval(age.limits[j], age.limits.default)
+        m_j <- findInterval(age_limits[j], age_limits_default)
 
         contacts <- total_contacts_M[m_i, m_j]
 
         # size interval of default ages
-        default_size_j <- if(age.limits.default[m_j] <  max_age_default){
-          age.limits.default[m_j + 1] - age.limits.default[m_j]
+        default_size_j <- if(age_limits_default[m_j] <  max_age_default){
+          age_limits_default[m_j + 1] - age_limits_default[m_j]
           } else{
-          max_age - age.limits.default[m_j]
+          max_age - age_limits_default[m_j]
           }
 
-        actual_size_j <- if(age.limits[j] < max(age.limits)){
-        age.limits[j + 1] - age.limits[j]
+        actual_size_j <- if(age_limits[j] < max(age_limits)){
+        age_limits[j + 1] - age_limits[j]
       } else{
-          max_age - age.limits[j]
+          max_age - age_limits[j]
       }
 
       div <- (default_size_j / actual_size_j) * (default_size_i / actual_size_i)
@@ -135,7 +135,7 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
 
 
   rownames(matrix_out) <- colnames(matrix_out) <- age_chr
-  # rownames(M) <- colnames(M) <- age.limits.default
+  # rownames(M) <- colnames(M) <- age_limits_default
 
   per_person_matrix_out <- matrix_out / D_out
 
@@ -171,7 +171,7 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
 
 
   # age differences in days
-  size_cohorts <- c(diff(age.limits * 365.25), max_age*365.25 - age.limits[length(age.limits)]*365.25)
+  size_cohorts <- c(diff(age_limits * 365.25), max_age*365.25 - age_limits[length(age_limits)]*365.25)
 
   rel_sizes <- size_cohorts/sum(size_cohorts)
 

@@ -1,9 +1,9 @@
 test_that("RSVsim_parameters_function", {
 
-  age.limits <- c(seq(0,5,1/12), seq(10,70,5))
+  age_limits <- c(seq(0,5,1/12), seq(10,70,5))
 
   contact_population_list <- RSVsim_contact_matrix(country = "United Kingdom",
-                                                   age.limits = age.limits)
+                                                   age_limits = age_limits)
 
   testthat::expect_error(RSVsim_parameters(overrides = list("vaccine_cov" = 1), contact_population_list = contact_population_list))
 

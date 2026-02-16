@@ -40,4 +40,4 @@ The model is an adapted version of an susceptible-exposed-infectious-recovered-s
 
 In brief, the model is age-structured and primary (the first, $p$) and secondary infections (any subsequent infection, $s$) are specifically tracked. The force of infection is determined by a seasonal forcing function ($\beta$) and the age-specific contact matrix (the mean contacts per person, $M$). The population is stratified into susceptible ($S$), exposed ($E$), infectious ($I$) and recovered states ($R$).
 
-![](ODE_model.png)
+![](man/figures/ODE_model.png)

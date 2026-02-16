@@ -47,4 +47,4 @@ function ($\beta$) and the age-specific contact matrix (the mean
 contacts per person, $M$). The population is stratified into susceptible
 ($S$), exposed ($E$), infectious ($I$) and recovered states ($R$).
 
-![](ODE_model.png)
+![](man/figures/ODE_model.png)
