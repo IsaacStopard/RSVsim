@@ -28,7 +28,6 @@ dim(alpha_vect) <- c(nAges)
 
 dim(prop_detected_vect) <- c(nAges)
 
-
 dim(gamma_vaccine) <- nVaccStates - 1
 
 ## Derivatives for Flows Between Compartments
@@ -55,13 +54,13 @@ lambda[] <- b0 * (1 - b1 * cos(2 * 3.14159265358979323846 / 365.25 * (time - phi
 dim(lambda) <- c(nAges)
 
 incidence_rate_p[1:nAges,1] <- lambda[i] * sigma_vect[i] * Sp[i,1]
-incidence_rate_p[1:nAges,2:nVaccStates] <- lambda[i] * sigma_vect[i] * (1 - VE[(j-1)]) * Sp[i,j]
+incidence_rate_p[1:nAges,2:nVaccStates] <- lambda[i] * sigma_vect[i] * (1 - VE[i,(j-1)]) * Sp[i,j]
 
 incidence_rate_s[1:nAges,1] <- lambda[i] * sigma_vect[i] * alpha_vect[i] * Ss[i,1]
-incidence_rate_s[1:nAges,2:nVaccStates] <- lambda[i] * sigma_vect[i] * (1 - VE[(j-1)]) * alpha_vect[i] * Ss[i,j]
+incidence_rate_s[1:nAges,2:nVaccStates] <- lambda[i] * sigma_vect[i] * (1 - VE[i,(j-1)]) * alpha_vect[i] * Ss[i,j]
 
 VE <- parameter()
-dim(VE) <- nVaccStates - 1
+dim(VE) <- c(nAges, nVaccStates - 1)
 
 # vr should be by age
 

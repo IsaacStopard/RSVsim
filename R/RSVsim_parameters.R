@@ -29,12 +29,14 @@
 #' \code{nVaccTimes}: 5. Length of start times of vaccination distributions. \cr
 #' \code{vaccine_times}: c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30). Times of vaccination distributions. First time should be 0. \cr
 #' \code{vaccine_period}: rep(30, 5). Duration of vaccination distributions.
-#' \code{vaccine_cov}: matrix with the rows corresponding to the vaccine_times and the columns corresponding to the ages.
+#' \code{vaccine_cov}: matrix with the rows corresponding to the vaccine_times and the columns corresponding to the ages. \cr
 #' Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
 #' assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
 #' Changes in effective coverage with are given as a model output.  \cr
-#' \code{VE}: 0.85. Vaccine efficacy for each vaccinated state. Length should be equal to nVaccStates - 1.
-#' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment - these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
+#' \code{VE}: 0.85 for all ages and vaccinated states. Vaccine efficacy for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
+#' and the number of columns should be equal to nVaccStates - 1. \cr
+#' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0}: initial conditions to run the model for each compartment -
+#' these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
 #' If \code{NULL}: 0.1% RSV prevalence is assumed for people during the primary infection, which is seeded at the beginning of the simulation.
 #' All other people are assumed to be susceptible to their primary infection.
 #' @export
@@ -119,7 +121,7 @@ RSVsim_parameters <- function(overrides = list(),
            "vaccine_times" = c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30),
            "vaccine_period" = rep(30, 5),
            "vaccine_cov" = matrix(rep(0, nAges * 5), nrow = nAges, ncol = 5),
-           "VE" = 0.85
+           "VE" = matrix(rep(0.85, nAges * 2), ncol = 1, nrow = nAges)
          )
          }
   )
@@ -148,7 +150,11 @@ RSVsim_parameters <- function(overrides = list(),
       stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
     }
 
-    if(name %in% c("max_cov", "VE") &&
+    if(name == "VE" && nrow(overrides[[name]]) != nAges || name == "VE" && ncol(overrides[[name]]) != (nVaccStates - 1)){
+      stop("RSVsim_parameters: VE is not the correct dimensions")
+    }
+
+    if(name == "max_cov" &&
        length(overrides[[name]]) != nAges){
       stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
     }

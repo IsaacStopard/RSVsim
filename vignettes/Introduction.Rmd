@@ -60,13 +60,15 @@ By default the model is run without vaccination. To turn on vaccination we must 
 
 ```{r model_run, dependson="parameters", eval=FALSE}
 
+nAges <- length(contact_population_list$age.limits)
+
 parameters_vac <- RSVsim_parameters(overrides = list("nVaccStates" = 2,
                                                      "vaccine_times" = c(0, 365.25, 395.25, 730.50, 760.50),
                                                      "vaccine_period" = rep(30, 5),
-                                                     "vaccine_cov" = rbind(matrix(rep(0, (length(contact_population_list$age.limits)-1) * 5),
-                                                                                  nrow = (length(contact_population_list$age.limits)-1)),
+                                                     "vaccine_cov" = rbind(matrix(rep(0, (nAges-1) * 5),
+                                                                                  nrow = (nAges-1)),
                                                                            c(0, 0.99, 0, 0.99, 0)),
-                                                     "VE" = rep(0.85, 2)),
+                                                     "VE" = matrix(rep(0.85, nAges), nrow = nAges, ncol = 1),
                                     contact_population_list = contact_population_list
                                     )
 

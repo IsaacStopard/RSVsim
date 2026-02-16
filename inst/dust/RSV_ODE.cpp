@@ -17,7 +17,7 @@
 // [[dust2::parameter(sigma_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(alpha_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(matrix_per_person, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(VE, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(VE, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Sp0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ep0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ip0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
@@ -56,7 +56,7 @@ public:
       dust2::array::dimensions<1> temp;
       dust2::array::dimensions<2> s_ij;
       dust2::array::dimensions<1> lambda;
-      dust2::array::dimensions<1> VE;
+      dust2::array::dimensions<2> VE;
       dust2::array::dimensions<2> doses;
       dust2::array::dimensions<2> Sp;
       dust2::array::dimensions<2> Ep;
@@ -172,7 +172,7 @@ public:
     dim.temp.set({static_cast<size_t>(nAges)});
     dim.s_ij.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
     dim.lambda.set({static_cast<size_t>(nAges)});
-    dim.VE.set({static_cast<size_t>(nVaccStates - 1)});
+    dim.VE.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates - 1)});
     dim.doses.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
     dim.Sp.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
     dim.Ep.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
@@ -434,7 +434,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[i - 1 + ((j - 1) - 1) * shared.dim.VE.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -442,7 +442,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[i - 1 + ((j - 1) - 1) * shared.dim.VE.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -576,7 +576,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[i - 1 + ((j - 1) - 1) * shared.dim.VE.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -584,7 +584,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[(j - 1) - 1]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE[i - 1 + ((j - 1) - 1) * shared.dim.VE.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
