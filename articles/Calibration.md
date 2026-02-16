@@ -112,8 +112,7 @@ prior_params <- prior_fun(n_check)
 
 # simulating the summary statistics for each particle
 prior_distances <- sapply(1:n_check, function(i){
-  parameters_in <- c(setNames(unlist(prior_params[i,], recursive = FALSE), fitted_parameter_names),
-                     fixed_parameter_list)
+  parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, prior_params[i, ])
   
   out <- RSVsim_run_model(parameters = parameters_in,
                    times = seq(0, 365*1, 0.25), # maximum time to run the model for
