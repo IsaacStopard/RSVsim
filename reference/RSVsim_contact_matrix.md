@@ -27,7 +27,7 @@ RSVsim_contact_matrix(
 - age_limits:
 
   Lower limits of the age groups to run the simulation. Ages must be in
-  years. Note the smallest age limits allowed are 1E-10.
+  years. Note the smallest age limits allowed are 1E-8.
 
 ## Value
 
