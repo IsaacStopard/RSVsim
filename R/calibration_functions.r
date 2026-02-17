@@ -252,7 +252,7 @@ RSVsim_ABC_rejection <- function(target,
 
 #' Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 #'
-#' This function will not work when fitting the initial conditions or parameters that are more than one value.
+#' Runs the ABC-SMC algorithm.
 #'
 #' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.

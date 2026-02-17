@@ -63,5 +63,5 @@ RSVsim_ABC_SMC(
 List of fixed parameters, max_t and warm_up.
 }
 \description{
-This function will not work when fitting the initial conditions or parameters that are more than one value.
+Runs the ABC-SMC algorithm.
 }

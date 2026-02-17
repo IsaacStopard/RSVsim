@@ -151,12 +151,15 @@ RSVsim_run_model <- function(parameters,
   }
 
   # incidence calculation
-  out_checkout <- out |> dplyr::group_by(age, vacc_state) |> dplyr::mutate(cumulativeIncidence = Incidence,
+  out_checkout <- out |> dplyr::group_by(age, vacc_state) |> dplyr::mutate(Incidence = as.numeric(Incidence),
+                                                                           DetIncidence = as.numeric(DetIncidence),
+                                                                           doses = as.numeric(doses),
+                                                                           cumulativeIncidence = Incidence,
                                                                            cumulativeDetIncidence = DetIncidence,
                                                                            cumulativeDoses = doses,
                                                                            Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
                                                                            DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0),
-                                                                           Doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)
+                                                                           doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)
                                                                            ) |>
     dplyr::ungroup()
 
