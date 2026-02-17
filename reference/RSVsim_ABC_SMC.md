@@ -1,7 +1,6 @@
 # Function to run an Approximate Bayesian Computation Sequential Monte Carlo (ABC-SMC) algorithm
 
-This function will not work when fitting the initial conditions or
-parameters that are more than one value.
+Runs the ABC-SMC algorithm.
 
 ## Usage
 
