@@ -138,7 +138,7 @@ RSVsim_run_model <- function(parameters,
 
     out <- invisible(
       dplyr::bind_rows(out_list) |>
-        # dplyr::distinct(time, state, age, vacc_state, .keep_all = TRUE) |> # make sure each row is distinct
+        dplyr::distinct(time, state, age, vacc_state, .keep_all = TRUE) |> # make sure each row is distinct
         tidyr::pivot_wider(names_from = state, values_from = value) |>
         dplyr::left_join(data.frame(age = round(parameters$age_limits, digits = 8), age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
