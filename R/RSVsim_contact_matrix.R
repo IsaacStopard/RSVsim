@@ -6,7 +6,7 @@
 #' into smaller age groupings by dividing them uniformly.
 #'
 #' @param country Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.
-#' @param age_limits Lower limits of the age groups to run the simulation. Ages must be in years.
+#' @param age_limits Lower limits of the age groups to run the simulation. Ages must be in years. Note the smallest age limits allowed are 1E-10.
 #' @return List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
 #' the age limits, the age distribution used to calculate the total contacts and the maximum age in the contact data.
 #' @export
@@ -34,6 +34,8 @@ RSVsim_contact_matrix <- function(country = "United Kingdom",
   }
 
   nAges <- length(age_limits)
+
+  age_limits <- base::round(age_limits, digits = 10)
 
   if(all(age_limits %% 1 == 0)){
     age_limits_default <- age_limits

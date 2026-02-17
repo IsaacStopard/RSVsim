@@ -21,11 +21,11 @@ RSVsim_run_model <- function(parameters,
   rel_sizes <- parameters$rel_sizes
 
   # running for the time of the smallest cohort
-  if(is.numeric(cohort_step_size) & round(max(diff(times)), digits = 5) >= round(cohort_step_size, digits = 5)){
+  if(is.numeric(cohort_step_size) & base::round(max(diff(times)), digits = 5) >= base::round(cohort_step_size, digits = 5)){
     stop("The maximum time difference is greater than or equal to the cohort step size")
   }
 
-  if(is.numeric(cohort_step_size) & round(min(size_cohorts), digits = 5) < round(cohort_step_size, digits = 5)){
+  if(is.numeric(cohort_step_size) & base::round(min(size_cohorts), digits = 5) < base::round(cohort_step_size, digits = 5)){
     stop("The smallest cohort age size is smaller than the cohort_step_size: increase the differences in age limits or decrease the cohort_step_size")
   }
 
@@ -55,8 +55,8 @@ RSVsim_run_model <- function(parameters,
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
-  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states)
-  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states)
+  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states) |> base::round(digits = 10)
+  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states) |> base::round(digits = 10)
 
   # no cohort aging in these variables
   output_variable_names <- states_order[!(states_order %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R"))]
@@ -75,7 +75,7 @@ RSVsim_run_model <- function(parameters,
     # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
     out_list <- vector(mode = "list", length = n_steps)
 
-    times_all <- sort(unique(round(c(times, 1:n_steps * cohort_step_size), digits = 10)))
+    times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 10)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
       c(times_all[times_all >= ((i - 1) * cohort_step_size) & times_all < (i * cohort_step_size)])
@@ -93,7 +93,7 @@ RSVsim_run_model <- function(parameters,
         tidyr::pivot_longer(cols = 1:length(times_in[[i]]),
                             values_to = "value",
                             names_to = "time") |>
-        dplyr::mutate(time = as.numeric(time))
+        dplyr::mutate(time = base::round(as.numeric(time), digits = 10))
 
       # calculating the initial states with cohort ageing in the S, E, I, R compartments only
       # assumes that ages are sequential
@@ -144,17 +144,15 @@ RSVsim_run_model <- function(parameters,
       tidyr::pivot_longer(cols = 1:length(times),
                           values_to = "value",
                           names_to = "time") |>
-      dplyr::mutate(time = as.numeric(time)) |>
+      dplyr::mutate(time = base::round(as.numeric(time), digits = 10)) |>
       dplyr::arrange(factor(state,
                             levels = states_order), vacc_state, age) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
   # incidence calculation
-  out_checkout <- out |> dplyr::group_by(age, vacc_state) |> dplyr::mutate(Incidence = as.numeric(Incidence),
-                                                                           DetIncidence = as.numeric(DetIncidence),
-                                                                           doses = as.numeric(doses),
-                                                                           cumulativeIncidence = Incidence,
+  out_checkout <- out |> dplyr::mutate(age = base::round(age, digits = 10), vacc_state = base::round(vacc_state, digits = 10)) |>
+    dplyr::group_by(age, vacc_state) |> dplyr::mutate(cumulativeIncidence = Incidence,
                                                                            cumulativeDetIncidence = DetIncidence,
                                                                            cumulativeDoses = doses,
                                                                            Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
@@ -170,7 +168,7 @@ RSVsim_run_model <- function(parameters,
   # checking the total population is correct
 
 
-  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = sum(Sp) + sum(Ep) + sum(Ip) + sum(Ss) + sum(Es) + sum(Is) + sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-1)){
+  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = base::sum(Sp) + base::sum(Ep) + base::sum(Ip) + base::sum(Ss) + base::sum(Es) + base::sum(Is) + base::sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-1)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 

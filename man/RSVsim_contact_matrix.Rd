@@ -12,7 +12,7 @@ RSVsim_contact_matrix(
 \arguments{
 \item{country}{Country for use in the \code{contact_matrix} function in the \code{socialmixr} package. Can be given as country name or 2 digit ISO code. United Kingdom default.}
 
-\item{age_limits}{Lower limits of the age groups to run the simulation. Ages must be in years.}
+\item{age_limits}{Lower limits of the age groups to run the simulation. Ages must be in years. Note the smallest age limits allowed are 1E-10.}
 }
 \value{
 List including the contact matrix (\code{matrix_mean} is the mean per person, \code{matrix_contacts} is the total contacts),
