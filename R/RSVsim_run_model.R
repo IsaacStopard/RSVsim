@@ -21,11 +21,11 @@ RSVsim_run_model <- function(parameters,
   rel_sizes <- parameters$rel_sizes
 
   # running for the time of the smallest cohort
-  if(is.numeric(cohort_step_size) & base::round(max(diff(times)), digits = 5) >= base::round(cohort_step_size, digits = 5)){
+  if(is.numeric(cohort_step_size) & base::round(max(diff(times)), digits = 7) >= base::round(cohort_step_size, digits = 7)){
     stop("The maximum time difference is greater than or equal to the cohort step size")
   }
 
-  if(is.numeric(cohort_step_size) & base::round(min(size_cohorts), digits = 5) < base::round(cohort_step_size, digits = 5)){
+  if(is.numeric(cohort_step_size) & base::round(min(size_cohorts), digits = 7) < base::round(cohort_step_size, digits = 7)){
     stop("The smallest cohort age size is smaller than the cohort_step_size: increase the differences in age limits or decrease the cohort_step_size")
   }
 
@@ -55,13 +55,13 @@ RSVsim_run_model <- function(parameters,
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
-  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states) |> base::round(digits = 5)
-  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states) |> base::round(digits = 5)
+  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states) |> base::round(digits = 7)
+  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states) |> base::round(digits = 7)
 
   # no cohort aging in these variables
   output_variable_names <- states_order[!(states_order %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R"))]
 
-  dust_df <- data.frame("state" = factor(states, levels = states_order),
+  dust_df <- data.frame("state" = states,
                         "age" = ages,
                         "vacc_state" = vacc_states
                         )
@@ -77,10 +77,10 @@ RSVsim_run_model <- function(parameters,
     # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
     out_list <- vector(mode = "list", length = n_steps)
 
-    times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 5)))
+    times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 7)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
-      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 5) & times_all < base::round((i * cohort_step_size), digits = 5)])
+      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 7) & times_all < base::round((i * cohort_step_size), digits = 7)])
       })
 
     times_in[[n_steps]] <- c(times_in[[n_steps]], times_all[length(times_all)])
@@ -100,7 +100,7 @@ RSVsim_run_model <- function(parameters,
         tidyr::pivot_longer(cols = 1:length(times_in[[i]]),
                             values_to = "value",
                             names_to = "time") |>
-        dplyr::mutate(time = base::round(as.numeric(time), digits = 5))
+        dplyr::mutate(time = base::round(as.numeric(time), digits = 7))
 
       out_list[[i]] <- out
 
@@ -109,6 +109,7 @@ RSVsim_run_model <- function(parameters,
 
       next_state <- out_list[[i]] |>
         dplyr::filter(time == max(time)) |>
+        mutate(state = factor(state, levels = states_order)) |>
         dplyr::arrange(state, vacc_state, age)
 
       # filling in births to keep the population size constant
@@ -143,15 +144,10 @@ RSVsim_run_model <- function(parameters,
     out <- invisible(
       dplyr::bind_rows(out_list) |>
         tidyr::pivot_wider(names_from = state, values_from = value) |>
-        dplyr::left_join(data.frame(age = round(parameters$age_limits, digits = 5), age_chr = parameters$age_chr), by = dplyr::join_by(age))
+        dplyr::left_join(data.frame(age = round(parameters$age_limits, digits = 7), age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
 
-    duplicates <- out |> dplyr::count(time, age, vacc_state) |> dplyr::filter(n > 1)
-    if(nrow(duplicates) > 0){
-      stop(paste("Duplicate time/age/vacc_state/state combinations found:", nrow(duplicates), "rows"))
-    }
-
-  } else{
+    } else{
 
     out <- dust2::dust_system_simulate(RSV_dust, times = times) |> as.data.frame()
     colnames(out) <- times
@@ -159,12 +155,12 @@ RSVsim_run_model <- function(parameters,
       tidyr::pivot_longer(cols = 1:length(times),
                           values_to = "value",
                           names_to = "time") |>
-      dplyr::mutate(time = base::round(as.numeric(time), digits = 5)) |>
+      dplyr::mutate(time = base::round(as.numeric(time), digits = 7)) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
   # incidence calculation
-  out_checkout <- out |> dplyr::mutate(age = base::round(age, digits = 5), vacc_state = base::round(vacc_state, digits = 5)) |>
+  out_checkout <- out |> dplyr::mutate(age = base::round(age, digits = 7), vacc_state = base::round(vacc_state, digits = 7)) |>
     dplyr::group_by(age, vacc_state) |>
     dplyr::mutate(cumulativeIncidence = Incidence,
                   cumulativeDetIncidence = DetIncidence,
