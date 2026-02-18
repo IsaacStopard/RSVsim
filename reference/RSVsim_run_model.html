@@ -61,11 +61,11 @@
 
 
 <dt id="arg-times">times<a class="anchor" aria-label="anchor" href="#arg-times"></a></dt>
-<dd><p>Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days.</p></dd>
+<dd><p>Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days. The minimum interval size is 1E-5.</p></dd>
 
 
 <dt id="arg-cohort-step-size">cohort_step_size<a class="anchor" aria-label="anchor" href="#arg-cohort-step-size"></a></dt>
-<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If <code>is.numeric(cohort_step_size) == FALSE</code> then cohort ageing is not applied. Can have a maximum of 3 decimal places.</p></dd>
+<dd><p>Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If <code>is.numeric(cohort_step_size) == FALSE</code> then cohort ageing is not applied. Can have a maximum of 5 decimal places.</p></dd>
 
 
 <dt id="arg-warm-up">warm_up<a class="anchor" aria-label="anchor" href="#arg-warm-up"></a></dt>

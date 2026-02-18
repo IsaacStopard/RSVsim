@@ -97,13 +97,13 @@ RSVsim_ABC_SMC(
 - times:
 
   Simulation times. Default: 0 to 365.25 days with intervals of 0.25
-  days.
+  days. The minimum interval size is 1E-5.
 
 - cohort_step_size:
 
   Time steps to run the model over before adjusting the ages of all
   cohorts. Default: 1 month. If `is.numeric(cohort_step_size) == FALSE`
-  then cohort ageing is not applied. Can have a maximum of 3 decimal
+  then cohort ageing is not applied. Can have a maximum of 5 decimal
   places.
 
 - warm_up:
