@@ -55,19 +55,21 @@ RSVsim_run_model <- function(parameters,
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
-  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states) |> base::round(digits = 8)
-  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states) |> base::round(digits = 8)
+  parameters$age_limits <-  base::round(parameters$age_limits, digits = 8)
+  parameters$vacc_states <- base::round(parameters$vacc_states, digits = 8)
 
-  index <- round(1:(parameters$nAges * parameters$nVaccStates * n_states), digits = 0)
+  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states)
+  vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states)
 
   # no cohort aging in these variables
   output_variable_names <- states_order[!(states_order %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R"))]
 
   dust_df <- data.frame("state" = factor(states, levels = states_order),
                         "age" = ages,
-                        "vacc_state" = vacc_states,
-                        "index" = index
+                        "vacc_state" = vacc_states
                         )
+
+  # n_dust <- nrow(dust_df)
 
   if(is.numeric(cohort_step_size)){
 
@@ -81,24 +83,27 @@ RSVsim_run_model <- function(parameters,
     times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 10)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
-      c(times_all[times_all >= round(((i - 1) * cohort_step_size), digits = 10) & times_all < round((i * cohort_step_size), digits = 10)])
+      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 10) & times_all < base::round((i * cohort_step_size), digits = 10)])
       })
 
     for(i in 1:n_steps){
 
-      out <- dust2::dust_system_simulate(RSV_dust, times = times_in[[i]])
+      out <- dust2::dust_system_simulate(RSV_dust, times = times_in[[i]]) |> as.data.frame()
 
-      out_list[[i]] <- out |> as.data.frame()
+      #if(nrow(out) != n_dust){
+      #  stop("dust error")
+      #}
 
-      colnames(out_list[[i]]) <- times_in[[i]]
+      colnames(out) <- times_in[[i]]
 
-      out_list[[i]] <- out_list[[i]] |> dplyr::mutate(index = index) |>
-        dplyr::left_join(dust_df, by = "index") |>
-        dplyr::select(-index) |>
+      out <- out |>
+        dplyr::bind_cols(dust_df) |>
         tidyr::pivot_longer(cols = 1:length(times_in[[i]]),
                             values_to = "value",
                             names_to = "time") |>
         dplyr::mutate(time = base::round(as.numeric(time), digits = 10))
+
+      out_list[[i]] <- out
 
       # calculating the initial states with cohort ageing in the S, E, I, R compartments only
       # assumes that ages are sequential
@@ -138,7 +143,6 @@ RSVsim_run_model <- function(parameters,
 
     out <- invisible(
       dplyr::bind_rows(out_list) |>
-        dplyr::distinct(time, state, age, vacc_state, .keep_all = TRUE) |> # make sure each row is distinct
         tidyr::pivot_wider(names_from = state, values_from = value) |>
         dplyr::left_join(data.frame(age = round(parameters$age_limits, digits = 8), age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
@@ -147,26 +151,23 @@ RSVsim_run_model <- function(parameters,
 
     out <- dust2::dust_system_simulate(RSV_dust, times = times) |> as.data.frame()
     colnames(out) <- times
-    out <- out |> dplyr::mutate(index = index) |> dplyr::left_join(dust_df, by = "index") |>
-      dplyr::select(-index) |>
+    out <- out |> dplyr::bind_cols(dust_df) |>
       tidyr::pivot_longer(cols = 1:length(times),
                           values_to = "value",
                           names_to = "time") |>
       dplyr::mutate(time = base::round(as.numeric(time), digits = 10)) |>
-      dplyr::arrange(factor(state,
-                            levels = states_order), vacc_state, age) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
   # incidence calculation
   out_checkout <- out |> dplyr::mutate(age = base::round(age, digits = 8), vacc_state = base::round(vacc_state, digits = 8)) |>
-    dplyr::group_by(age, vacc_state) |> dplyr::mutate(cumulativeIncidence = Incidence,
-                                                                           cumulativeDetIncidence = DetIncidence,
-                                                                           cumulativeDoses = doses,
-                                                                           Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
-                                                                           DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0),
-                                                                           doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)
-                                                                           ) |>
+    dplyr::group_by(age, vacc_state) |>
+    dplyr::mutate(cumulativeIncidence = Incidence,
+                  cumulativeDetIncidence = DetIncidence,
+                  cumulativeDoses = doses,
+                  Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
+                  DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0),
+                  doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)) |>
     dplyr::ungroup()
 
   if(!is.null(warm_up)){
