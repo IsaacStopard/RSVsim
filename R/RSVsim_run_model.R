@@ -176,7 +176,6 @@ RSVsim_run_model <- function(parameters,
 
   # checking the total population is correct
 
-
   if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = base::sum(Sp) + base::sum(Ep) + base::sum(Ip) + base::sum(Ss) + base::sum(Es) + base::sum(Is) + base::sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-1)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
