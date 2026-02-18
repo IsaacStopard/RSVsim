@@ -1,0 +1,23 @@
+---
+title: "Vaccination"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vaccination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  cache = TRUE,
+  autodep = TRUE
+)
+```
+
+```{r setup, eval=FALSE}
+library(RSVsim)
+```
+
+In this vignette, we give an overview of how to implement vaccination in the model. By default, there are no vaccination campaigns. va

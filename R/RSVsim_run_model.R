@@ -55,9 +55,7 @@ RSVsim_run_model <- function(parameters,
   n_states <- length(states_order)
 
   # important for maintaining the same order as RSV_ODE
-  parameters$age_limits <-  base::round(parameters$age_limits, digits = 8)
-
-  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states)
+  ages <- rep(rep(parameters$age_limits, parameters$nVaccStates), n_states) |> base::round(digits = 8)
   vacc_states <- rep(rep(1:parameters$nVaccStates, each = parameters$nAges), n_states) |> base::round(digits = 8)
 
   # no cohort aging in these variables
