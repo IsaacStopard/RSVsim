@@ -4,12 +4,13 @@
 library(RSVsim)
 ```
 
-In this vignette, we give an overview of how to use an Approximate
-Bayesian Computation (ABC) rejection algorithm to calibrate the
-mathematical model of RSV transmission to simulated data. The code to
-run these samplers was adapted from code provided in Minter, Amanda, and
-Renata Retkute. “Approximate Bayesian Computation for infectious disease
-modelling.” Epidemics 29 (2019): 100368
+In this vignette, we give an overview of how to use Approximate Bayesian
+Computation (ABC) rejection and Sequential Monte Carlo ABC algorithm
+(ABC-SMC) algorithms to calibrate the mathematical model of RSV
+transmission to simulated data. The code to run these samplers was
+adapted from code provided in Minter, Amanda, and Renata Retkute.
+“Approximate Bayesian Computation for infectious disease modelling.”
+Epidemics 29 (2019): 100368
 <https://doi.org/10.1016/j.epidem.2019.100368>.
 
 First, we run the model to generate some data to fit to.
@@ -43,14 +44,14 @@ model output. Specifically, we calculate the age-specific peak time of
 incidence infections, the amplitude of incidence (difference between
 maximum and minimum incidence) and the total yearly incidence. RSVsim
 has built in functions to calculate these metrics from the model output.
-We define a function summary_fun to combine these metrics. We will use
+We define a function `summary_fun` to combine these metrics. We will use
 these as the target for the ABC-rejection algorithm. We must also
 specify a function that randomly samples from the prior distributions of
 all fitted parameters and returns a vector of the parameters. We use
 latin hypercube sampling to efficiently sample the prior space. In this
-example we fit the b0 and b1 parameters. A vector of the parameter names
-that are being fitted in the same order as the prior samples must also
-be provided to set up the parameters to run the model.
+example we fit the `b0`, `b1` and `phi` parameters. A vector of the
+parameter names that are being fitted in the same order as the prior
+samples must also be provided to set up the parameters to run the model.
 
 ``` r
 
@@ -98,7 +99,13 @@ dist_fun <- function(target, target_star, n = nAges){
 
 To implement the ABC-rejection algorithm we must specify the tolerance.
 We specify a specific tolerance for each metric that means approximately
-1% of all simulations are accepted.
+0.1% of all simulations are accepted. To do so, we run the model 1000
+times with different parameter combinations drawn from the priors. We
+then calculate the error (distances) between the summary statistics from
+each simulation and the target summary statistics. We set the a range of
+tolerances using different percentiles of the distances and check the
+number of these simulations that are accepted for each tolerance, and
+use the smallest tolerance with at least 1 simulation accepted.
 
 ``` r
 #################################
@@ -110,7 +117,7 @@ set.seed(123)
 n_check <- 1000
 prior_params <- prior_fun(n_check)
 
-# simulating the summary statistics for each particle
+# simulating the summary statistics for each particle combination
 prior_distances <- sapply(1:n_check, function(i){
   parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, prior_params[i, ])
   
@@ -122,7 +129,7 @@ prior_distances <- sapply(1:n_check, function(i){
   return(dist_fun(target, summary_fun(out)))
 })
 
-# calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics 
+# calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics for all the particles 
 nsuccess <- rep(NA, n_check)
 q <- seq(0.01, 1, 0.01)
 for(i in 1:100){
@@ -130,7 +137,7 @@ for(i in 1:100){
   nsuccess[i] <- sum(sapply(1:100, function(j){all(prior_distances[,j] <= epsilon_check)}))
 }
 
-# selecting a tolerance where at least 1 particle is accepted for the 100 simulations
+# selecting a tolerance where at least 1 particle is accepted for the 1000 simulations
 epsilon <- round(apply(prior_distances, 1, quantile, probs = c(q[min(which(nsuccess >= 1))])), digits = 2)
 ```
 
@@ -165,6 +172,7 @@ fit <- RSVsim_ABC_rejection(target = target,
                             cohort_step_size = 0.2*365, # time at which to age people\
                             warm_up = NULL)
 
+# to visualise the posterior distributions
 fit_b0 <- unlist(fit[,"b0"])
 fit_b1 <- unlist(fit[,"b1"])
 fit_phi <- unlist(fit[,"phi"])
@@ -174,12 +182,14 @@ hist(fit_b1)
 hist(fit_phi)
 ```
 
-We also provide a function to run a Sequential Monte Carlo ABC algorithm
-(ABC-SMC). The ABC-SMC algorithm also requires a function to return the
-prior density and a sequential reduction in the tolerances.
+We also provide a function to fit the model using ABC-SMC. The ABC-SMC
+algorithm requires a function to return the prior density and a
+sequential reduction in the tolerances.
 
 ``` r
 
+# function that returns the prior likelihood of each parameter (prior density function)
+# returns a vector of the same length as the number of parameters
 prior_dens_fun <- function(x){
   
   # adjusting the prior distributions
@@ -189,7 +199,17 @@ prior_dens_fun <- function(x){
            )
          )
 }
+```
 
+Similar to the ABC-rejection algorithm we use the previously simulated
+summary statistics to calculate the tolerances corresponding to a given
+number of particle combinations that are accepted. We do this for a
+decreasing acceptance rate; the sequential reduction in tolerances is
+stored in a matrix with each column corresponding to each summary
+statistic and the rows corresponding to each tolerance level (`G`;
+generation).
+
+``` r
 nsuccess <- rep(NA, n_check)
 q <- seq(1/n_check, 1, 1/n_check)
 for(i in 1:n_check){
@@ -205,11 +225,27 @@ q_percentile <- lapply(acceptance_rate, function(ar){q[min(which(nsuccess/n_chec
 
 q_percentile_ar1 <- q_percentile[[which(acceptance_rate == 1)]]
 
-# selecting a tolerance where at least 1 particle is accepted for the 100 simulations
+# selecting a tolerance where at least 1 particle is accepted for the 1000 simulations
 epsilon_matrix <- as.matrix(do.call(rbind, lapply(q_percentile, function(q){round(apply(prior_distances, 1, quantile, probs = q), digits = 3)})))
 
 G <- nrow(epsilon_matrix)
+```
 
+We can then run the ABC-SMC using the code below. The function also
+requires: (1) a matrix of random seeds for each generation and accepted
+particle (`used_seed_matrix`), (2) the minimum and maximum values for
+each fitted parameter used in the prior distributions (`particle_low`
+and `particle_up` respectively), (3) the number of accepted particles
+for each generation (`nparticles`), (4) the number of prior samples to
+try for each accepted particle combination
+(`n_param_attempts_per_accept`), (5) the names of the fitted parameters
+(`fitted_parameter_names`, these must be characters and can include
+indexing into parameters that are stored as vectors or matrices), (6) a
+list of all parameters equivalent to those used in `RSVsim_run_model`
+`parameters` (`fixed_parameter_list`) and (7) the times and cohort step
+sizes used in `RSVsim_run_model`.
+
+``` r
 used_seed_matrix <- matrix(seq(1, nparticles * G), nrow = G)
 
 fit_smc <- RSVsim_ABC_SMC(target = target,
