@@ -66,7 +66,7 @@ RSVsim_run_model <- function(parameters,
                         "vacc_state" = vacc_states
                         )
 
-  # n_dust <- nrow(dust_df)
+  #n_dust <- nrow(dust_df)
 
   if(is.numeric(cohort_step_size)){
 
@@ -77,10 +77,10 @@ RSVsim_run_model <- function(parameters,
     # running the model with cohort aging (run for a single cohort, move cohort, change initial states, repeat)
     out_list <- vector(mode = "list", length = n_steps)
 
-    times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 10)))
+    times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 8)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
-      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 10) & times_all < base::round((i * cohort_step_size), digits = 10)])
+      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 8) & times_all < base::round((i * cohort_step_size), digits = 8)])
       })
 
     for(i in 1:n_steps){
@@ -98,7 +98,7 @@ RSVsim_run_model <- function(parameters,
         tidyr::pivot_longer(cols = 1:length(times_in[[i]]),
                             values_to = "value",
                             names_to = "time") |>
-        dplyr::mutate(time = base::round(as.numeric(time), digits = 10))
+        dplyr::mutate(time = base::round(as.numeric(time), digits = 8))
 
       out_list[[i]] <- out
 
@@ -152,7 +152,7 @@ RSVsim_run_model <- function(parameters,
       tidyr::pivot_longer(cols = 1:length(times),
                           values_to = "value",
                           names_to = "time") |>
-      dplyr::mutate(time = base::round(as.numeric(time), digits = 10)) |>
+      dplyr::mutate(time = base::round(as.numeric(time), digits = 8)) |>
       tidyr::pivot_wider(names_from = state, values_from = value)
   }
 
