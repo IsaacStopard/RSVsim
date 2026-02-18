@@ -69,7 +69,80 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/IsaacStopard/RSVsim" class="external-link">RSVsim</a></span><span class="op">)</span></span></code></pre></div>
 <p>In this vignette, we give an overview of how to implement vaccination
-in the model. By default, there are no vaccination campaigns. va</p>
+in the model. By default, the vaccination coverage is 0 (meaning there
+is no vaccination). Vaccination is implemented to those in the S, E and
+R states according to a vaccination rate (per person per day). The
+number of vaccination states (<code>nVaccStates</code>) must be input in
+the model parameters; the minimum number of vaccination states is 2,
+which corresponds to unvaccinated (U) and vaccinated (V). Intermediate
+vaccination states can also be implemented to account for a delay in
+vaccine-derived protection or Erlang vaccination waning time
+distributions.</p>
+<p><img src="../reference/figures/RSVsim_vaccination.png"></p>
+<p>In the example below we show how to implement a single 30-day
+vaccination campaign to achieve an approximate coverage of 80% in those
+over 70 years old.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># setting up the contact matrix and ages used</span></span>
+<span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">max_time</span> <span class="op">&lt;-</span> <span class="fl">365.25</span></span>
+<span></span>
+<span><span class="co"># vaccination times - must include 0 </span></span>
+<span><span class="co"># vaccination starts on day 90 and ends on day 120</span></span>
+<span><span class="va">vaccine_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">90</span>, <span class="fl">120</span><span class="op">)</span></span>
+<span><span class="va">vaccine_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">vaccine_times</span>, <span class="va">max_time</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">nVaccTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">vaccine_times</span><span class="op">)</span></span>
+<span><span class="va">nAges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">contact_population_list</span><span class="op">$</span><span class="va">age_limits</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># vaccination coverage</span></span>
+<span><span class="co"># set as zero unless in the oldest age group</span></span>
+<span><span class="va">vaccine_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">nVaccTimes</span><span class="op">)</span>, </span>
+<span>                            nrow <span class="op">=</span> <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="va">nVaccTimes</span><span class="op">)</span>, </span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.80</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># not necessary but included for completeness</span></span>
+<span><span class="va">nVaccStates</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">VE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="va">nAges</span> <span class="op">*</span> <span class="op">(</span><span class="va">nVaccStates</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span> <span class="co"># vaccine efficacy</span></span>
+<span><span class="va">gamma_vaccine</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">365.25</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># specify the parameters</span></span>
+<span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"vaccine_times"</span> <span class="op">=</span> <span class="va">vaccine_times</span>,</span>
+<span>                                                 <span class="st">"vaccine_period"</span> <span class="op">=</span> <span class="va">vaccine_period</span>,</span>
+<span>                                                 <span class="st">"nVaccTimes"</span> <span class="op">=</span> <span class="va">nVaccTimes</span>,</span>
+<span>                                                 <span class="st">"vaccine_cov"</span> <span class="op">=</span> <span class="va">vaccine_cov</span>,</span>
+<span>                                                 <span class="st">"nVaccStates"</span> <span class="op">=</span> <span class="va">nVaccStates</span>,</span>
+<span>                                                 <span class="st">"VE"</span> <span class="op">=</span> <span class="va">VE</span>,</span>
+<span>                                                 <span class="st">"gamma_vaccine"</span> <span class="op">=</span> <span class="va">gamma_vaccine</span></span>
+<span>                                                 <span class="op">)</span>,</span>
+<span>                                contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
+<span>                 times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">max_time</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>                 cohort_step_size <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365.25</span>,</span>
+<span>                 warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+<p>The <code>gamma_vaccine</code> parameter must be the length of
+<code>nVaccStates - 1</code> and corresponds to the transition rate
+between vaccinated states with the final value corresponding to the
+transition rate back to the unvaccinated state. Vaccine efficacy
+(<code>VE</code>; matrix) is age and vaccine state specific with the
+rows corresponding to the age group and the columns corresponding to the
+vaccinated state. To implement vaccination we must specify the times at
+which vaccination coverage changes (<code>vaccine_times</code>; vector
+of length <code>nVaccTimes</code>) and the approximate coverage at each
+vaccination distribution time (<code>vaccine_cov</code>; matrix: rows
+correspond to each age group and columns correspond to the vaccination
+time). The vaccination rate between each time is assumed to be constant
+and calculated to give the <code>vaccine_cov</code> value at the time
+when the vaccine coverage changes. To do so, the
+<code>vaccine_period</code> corresponding to the difference in times
+between the vaccination times is given. The vaccination rate is then
+calculated in the model thus,
+<code>-log(1 - vaccine_cov[i,j]) / vaccine_period[j]</code>, which
+assumes no vaccine waning and the effective vaccination coverage should
+be calculated from the model outputs. The number of doses administered
+are given as a default model output.</p>
   </main>
 </div>
 
