@@ -109,7 +109,7 @@ RSVsim_run_model <- function(parameters,
 
       next_state <- out_list[[i]] |>
         dplyr::filter(time == max(time)) |>
-        mutate(state = factor(state, levels = states_order)) |>
+        dplyr::mutate(state = factor(state, levels = states_order)) |>
         dplyr::arrange(state, vacc_state, age)
 
       # filling in births to keep the population size constant
