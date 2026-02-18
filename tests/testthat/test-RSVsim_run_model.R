@@ -17,13 +17,10 @@ test_that("RSVsim_run_model function works", {
                                                        "vaccine_times" = c(0.00, c(365.25, 395.25, 730.50, 760.50) + 365.25)),
                                       contact_population_list = contact_population_list)
 
-  s_time <- Sys.time()
   sim <- RSVsim_run_model(parameters = parameters,
                           times = seq(0, 365.25*5, 0.25),
                           cohort_step_size = 1/12 * 365.25,
                           warm_up = 365.25 * 1)
-  e_time <- Sys.time()
-  e_time - s_time
 
   testthat::expect_true(sum(is.na(subset(sim, vacc_state == 1))) == 0)
   testthat::expect_true(max(sim$time) <= 3650)
