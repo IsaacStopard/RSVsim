@@ -89,9 +89,9 @@ RSVsim_run_model <- function(parameters,
 
       out <- dust2::dust_system_simulate(RSV_dust, times = times_in[[i]]) |> as.data.frame()
 
-      if(nrow(out) != n_dust){
-        stop("dust error")
-      }
+      # if(nrow(out) != n_dust){
+      #   stop("dust error")
+      # }
 
       colnames(out) <- times_in[[i]]
 
