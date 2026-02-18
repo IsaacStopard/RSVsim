@@ -146,7 +146,7 @@ RSVsim_run_model <- function(parameters,
         dplyr::left_join(data.frame(age = round(parameters$age_limits, digits = 5), age_chr = parameters$age_chr), by = dplyr::join_by(age))
       )
 
-    duplicates <- out |> dplyr::count(time, age, vacc_state, state) |> dplyr::filter(n > 1)
+    duplicates <- out |> dplyr::count(time, age, vacc_state) |> dplyr::filter(n > 1)
     if(nrow(duplicates) > 0){
       stop(paste("Duplicate time/age/vacc_state/state combinations found:", nrow(duplicates), "rows"))
     }
