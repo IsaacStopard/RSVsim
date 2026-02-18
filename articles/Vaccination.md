@@ -80,5 +80,5 @@ corresponding to the difference in times between the vaccination times
 is given. The vaccination rate is then calculated in the model thus,
 `-log(1 - vaccine_cov[i,j]) / vaccine_period[j]`, which assumes no
 vaccine waning and the effective vaccination coverage should be
-calculated from the model outputs. The number of doses administered are
+calculated from the model outputs. The numbers of doses administered are
 given as a default model output.

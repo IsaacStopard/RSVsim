@@ -135,37 +135,6 @@ and in the default parameters we assume very few people (1%) over the
 age of 2 years old are tested. The age-specific prevalence is also
 calculated.</p>
 </div>
-<div class="section level2">
-<h2 id="turning-on-vaccination">Turning on vaccination<a class="anchor" aria-label="anchor" href="#turning-on-vaccination"></a>
-</h2>
-<p>By default the model is run without vaccination. To turn on
-vaccination we must specify the number of vaccination states
-(nVaccStates; at a minimum 2, corresponding to unvaccinated and
-vaccinated), times at which the vaccination rate changes (vaccine_times;
-vector), the duration of vaccination for each time (vaccine_period;
-vector of same length as vaccine_times), the proportion of unvaccinated
-people for each age that are vaccinated during each vaccination period
-assuming no waning (vaccine_cov; matrix with rows corresponding to the
-ages and columns corresponding to the vaccination time) and the vaccine
-efficacy (VE; vector of same length as nVaccStates).</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>nAges <span class="ot">&lt;-</span> <span class="fu">length</span>(contact_population_list<span class="sc">$</span>age_limits)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>parameters_vac <span class="ot">&lt;-</span> <span class="fu">RSVsim_parameters</span>(<span class="at">overrides =</span> <span class="fu">list</span>(<span class="st">"nVaccStates"</span> <span class="ot">=</span> <span class="dv">2</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                                                     <span class="st">"vaccine_times"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">365.25</span>, <span class="fl">395.25</span>, <span class="fl">730.50</span>, <span class="fl">760.50</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                                                     <span class="st">"vaccine_period"</span> <span class="ot">=</span> <span class="fu">rep</span>(<span class="dv">30</span>, <span class="dv">5</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>                                                     <span class="st">"vaccine_cov"</span> <span class="ot">=</span> <span class="fu">rbind</span>(<span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="dv">0</span>, (nAges<span class="dv">-1</span>) <span class="sc">*</span> <span class="dv">5</span>),</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                                                                                  <span class="at">nrow =</span> (nAges<span class="dv">-1</span>)),</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>                                                                           <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.99</span>, <span class="dv">0</span>, <span class="fl">0.99</span>, <span class="dv">0</span>)),</span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>                                                     <span class="st">"VE"</span> <span class="ot">=</span> <span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fl">0.85</span>, nAges), <span class="at">nrow =</span> nAges, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>                                    <span class="at">contact_population_list =</span> contact_population_list</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>                                    )</span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>out_vac <span class="ot">&lt;-</span> <span class="fu">RSVsim_run_model</span>(<span class="at">parameters =</span> parameters_vac,</span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>                        <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">365</span> <span class="sc">*</span> <span class="dv">10</span>, <span class="fl">0.25</span>), <span class="co"># maximum time to run the model for</span></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>                        <span class="at">cohort_step_size =</span> <span class="dv">5</span>, <span class="co"># time at which to age people\</span></span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>                        <span class="at">warm_up =</span> <span class="cn">NULL</span>)</span></code></pre></div>
-</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
