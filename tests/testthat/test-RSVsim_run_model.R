@@ -22,7 +22,14 @@ test_that("RSVsim_run_model function works", {
                           cohort_step_size = 1/12 * 365.25,
                           warm_up = NULL)
 
+  sim_no_cohort_ageing <- RSVsim_run_model(parameters = parameters,
+                                           times = seq(0, 365.25*5, 0.25),
+                                           cohort_step_size = NULL,
+                                           warm_up = NULL)
+
   testthat::expect_true(sum(is.na(subset(sim, vacc_state == 1))) == 0)
+  testthat::expect_true(sum(is.na(subset(sim_no_cohort_ageing, vacc_state == 1))) == 0)
+
   testthat::expect_true(max(sim$time) <= 3650)
 
   sim_vac <- RSVsim_run_model(parameters = parameters_vac,

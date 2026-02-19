@@ -46,7 +46,7 @@ RSVsim_ABC_rejection(
 
 \item{times}{Simulation times. Default: 0 to 365.25 days with intervals of 0.25 days. The minimum interval size is 1E-5.}
 
-\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 5 decimal places.}
+\item{cohort_step_size}{Time steps to run the model over before adjusting the ages of all cohorts. Default: 1 month. If \code{is.numeric(cohort_step_size) == FALSE} then cohort ageing is not applied. Can have a maximum of 7 decimal places.}
 
 \item{warm_up}{Length of time-points to exclude before calculating the likelihood. Default: \code{NULL}.}
 }
