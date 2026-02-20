@@ -180,6 +180,9 @@ RSVsim_ABC_rejection <- function(target,
 
       distance <- dist_fun(target, summary_stats)
 
+      rm(out)
+      gc(verbose = FALSE)
+
       if(all(distance <= epsilon)){
 
         acc_params <- c(unlist(fitted_parameters, recursive = FALSE), j, particle, used_seed)
@@ -369,6 +372,9 @@ RSVsim_ABC_SMC <- function(target,
           target_star <- summary_fun(out)
 
           distance[j,] <- dist_fun(target, target_star)
+
+          rm(out)
+          gc(verbose = FALSE)
 
           if(all(distance[j,] <= epsilon_matrix[g,])){
             m <- m + 1
