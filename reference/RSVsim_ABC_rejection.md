@@ -85,7 +85,7 @@ RSVsim_ABC_rejection(
 
   Time steps to run the model over before adjusting the ages of all
   cohorts. Default: 1 month. If `is.numeric(cohort_step_size) == FALSE`
-  then cohort ageing is not applied. Can have a maximum of 5 decimal
+  then cohort ageing is not applied. Can have a maximum of 7 decimal
   places.
 
 - warm_up:
