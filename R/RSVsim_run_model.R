@@ -49,11 +49,12 @@ RSVsim_run_model <- function(parameters,
   # no cohort aging in these variables
   output_variable_names <- states_order[!(states_order %in% c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R"))]
 
-  dust_df <- data.frame("state" = factor(states, levels = c(states_order)),
+  dust_df <- data.frame("state" = as.character(states),
                         "age" = ages,
                         "age_chr" = age_chr,
                         "vacc_state" = vacc_states,
-                        "index" = 1:length(states)
+                        "index" = 1:length(states),
+                        stringsAsFactors = FALSE
                         )
 
   if(is.numeric(cohort_step_size)){
@@ -166,8 +167,8 @@ RSVsim_run_model <- function(parameters,
                               dplyr::mutate(age = base::round(age, digits = 5),
                                             vacc_state = base::as.integer(vacc_state),
                                             time = base::round(time, digits = 5)) |>
-                              dplyr::arrange(state, vacc_state, age, time) |>
                               tidyr::pivot_wider(names_from = state, values_from = value) |>
+                              dplyr::arrange(vacc_state, age, time) |>
                               dplyr::group_by(age_chr, vacc_state) |>
                               dplyr::mutate(cumulativeIncidence = Incidence,
                                             cumulativeDetIncidence = DetIncidence,
