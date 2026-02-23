@@ -127,6 +127,10 @@ RSVsim_ABC_rejection <- function(target,
                                  cohort_step_size = 1/12*365.25, # time at which to age people
                                  warm_up = 365.25 * 4){
 
+  nparams <- length(fitted_parameter_names)
+
+  nAges <- fixed_parameter_list$nAges
+
   # checking the inputs
   if(!all(is.numeric(target))){
     stop("target must be numeric")
@@ -148,9 +152,11 @@ RSVsim_ABC_rejection <- function(target,
     stop('the length used_seeds_all must be nparticles')
   }
 
-  nparams <- length(fitted_parameter_names)
-
-  nAges <- fixed_parameter_list$nAges
+  # check the user provided functions return the correct dimensions
+  if(ncol(prior_fun(10)) != nparams || nrow(prior_fun(10)) != 10){
+    stop("RSVsim_ABC_SMC: prior_fun should return a matrix with the number of columns equal to the number of fitted parameters
+         and the number of rows equal to n_param_attempts_per_accept")
+  }
 
   while_fun <- function(particle){
 
@@ -260,7 +266,9 @@ RSVsim_ABC_rejection <- function(target,
 #' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
 #' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
 #' @param used_seed_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
-#' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.
+#' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions.
+#' The joint probability is the product of the values returned by this function.
+#' Note that the argument to the prior_dens_fun should be a vector of the same length as the number of fitted parameters.
 #' @param particle_low Lower bounds on the parameters.
 #' @param particle_up Upper bounds on the parameters.
 #' @inheritParams RSVsim_run_model
@@ -293,23 +301,33 @@ RSVsim_ABC_SMC <- function(target,
 
   # checking the inputs
   if(!all(is.numeric(target))){
-    stop("target must be numeric")
+    stop("RSVsim_ABC_SMC: target must be numeric")
   }
 
   if(!all(is.numeric(epsilon_matrix))){
-    stop("epsilon_matrix must be numeric")
+    stop("RSVsim_ABC_SMC: epsilon_matrix must be numeric")
   }
 
   if(any(epsilon_matrix <= 0)){
-    stop("increase all epsilon_matrix values above zero")
+    stop("RSVsim_ABC_SMC: increase all epsilon_matrix values above zero")
   }
 
   if(ncol(epsilon_matrix)!=ntargets){
-    stop("incorrect number of columns in epsilon_matrix")
+    stop("RSVsim_ABC_SMC: incorrect number of columns in epsilon_matrix")
   }
 
   if(length(particle_up) != length(particle_low) | length(particle_low) != nparams){
-    stop("incorrect number of lower or upper particle boundaries")
+    stop("RSVsim_ABC_SMC: incorrect number of lower or upper particle boundaries")
+  }
+
+  # check the user provided functions return the correct dimensions
+  if(ncol(prior_fun(10)) != nparams || nrow(prior_fun(10)) != 10){
+    stop("RSVsim_ABC_SMC: prior_fun should return a matrix with the number of columns equal to the number of fitted parameters
+         and the number of rows equal to n_param_attempts_per_accept")
+  }
+
+  if(length(prior_dens_fun(rep(1, nparams))) != nparams){
+    stop("RSVsim_ABC_SMC: prior_dens_fun should return a vector of the same length as the number of fitted parameters")
   }
 
   # number of generations
@@ -319,7 +337,7 @@ RSVsim_ABC_SMC <- function(target,
   n <- 1
 
   while_fun_SMC <- function(particle, g, w_old, res_old, nparticles, sigma, n_param_attempts_per_accept, n, target, epsilon_matrix, fitted_parameter_names, fixed_parameter_list,
-                            times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix, ntargets){
+                            times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix, ntargets, nparams){
 
     used_seed <- used_seed_matrix[g, particle]
     set.seed(used_seed)
@@ -340,23 +358,29 @@ RSVsim_ABC_SMC <- function(target,
               return(
                 tmvtnorm::rtmvnorm(1,
                                    mean = unlist(as.vector(unname(res_old[p[a],, drop = FALSE]))),
-                                   sigma = sigma, lower = particle_low, upper = particle_up))
+                                   sigma = sigma, lower = particle_low, upper = particle_up)
+                )
               },
               simplify = TRUE)
             )
           )
+
+        if(nparams == 1){
+          fitted_parameters <- t(unname(fitted_parameters))
+        }
+
       }
 
-    i <- 1  # initialise the number of accepted particles
+  i <- 1  # initialise the number of accepted particles
     k <- 1 # initialise the number of attempted particles
 
     while(i <= 1){
 
-      parameters <- fitted_parameters[k, ]
+      parameters <- as.numeric(fitted_parameters[k, ])
 
       parameters_ODE <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, parameters)
 
-      p_non_zero <- as.numeric(prod(prior_dens_fun(parameters)) > 0)
+      p_non_zero <- as.numeric(prod(prior_dens_fun(as.vector(parameters))) > 0)
 
       if(p_non_zero){
         m <- 0
@@ -384,7 +408,7 @@ RSVsim_ABC_SMC <- function(target,
         if(m > 0){
           res_new_out <- parameters
 
-          w1 <- prod(prior_dens_fun(parameters))
+          w1 <- prod(prior_dens_fun(as.vector(parameters)))
 
           if(g == 1){
             w2 <- 1
@@ -486,7 +510,8 @@ RSVsim_ABC_SMC <- function(target,
                              particle_low = particle_low,
                              particle_up = particle_up,
                              used_seed_matrix = used_seed_matrix,
-                             ntargets = ntargets)
+                             ntargets = ntargets,
+                             nparams = nparams)
 
     if(ncores > 1){
 
@@ -499,6 +524,7 @@ RSVsim_ABC_SMC <- function(target,
     res_new <- do.call(rbind, lapply(res, '[[', 'res_new'))
 
     sigma <- cov(res_new)
+
     res_old <- res_new
     w_old <- w_new / sum(w_new)
 

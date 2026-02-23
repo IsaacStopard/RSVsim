@@ -39,7 +39,9 @@ RSVsim_ABC_SMC(
 
 \item{used_seed_matrix}{Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.}
 
-\item{prior_dens_fun}{Function that calculates the probability density of all parameters given the prior distributions. The joint probability is the product of the values returned by this function.}
+\item{prior_dens_fun}{Function that calculates the probability density of all parameters given the prior distributions.
+The joint probability is the product of the values returned by this function.
+Note that the argument to the prior_dens_fun should be a vector of the same length as the number of fitted parameters.}
 
 \item{particle_low}{Lower bounds on the parameters.}
 
