@@ -66,7 +66,9 @@ RSVsim_ABC_SMC(
 
   Function that calculates the probability density of all parameters
   given the prior distributions. The joint probability is the product of
-  the values returned by this function.
+  the values returned by this function. Note that the argument to the
+  prior_dens_fun should be a vector of the same length as the number of
+  fitted parameters.
 
 - particle_low:
 
