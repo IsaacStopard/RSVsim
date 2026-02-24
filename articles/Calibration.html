@@ -129,18 +129,14 @@ provided to set up the parameters to run the model.</p>
 <span><span class="co"># we use latin hypercube sampling to efficiently sample from the prior distributions</span></span>
 <span><span class="va">prior_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_prior_attempts</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">lhs</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lhs/man/randomLHS.html" class="external-link">randomLHS</a></span><span class="op">(</span><span class="va">n_prior_attempts</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">lhs</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lhs/man/randomLHS.html" class="external-link">randomLHS</a></span><span class="op">(</span><span class="va">n_prior_attempts</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co"># adjusting the prior distributions</span></span>
 <span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0.05</span>, max <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
 <span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0</span>, max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># not necessary but added for completeness</span></span>
 <span>  <span class="va">x</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">qunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span>, min <span class="op">=</span> <span class="op">-</span><span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="va">x_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"b0"</span> <span class="op">=</span> <span class="va">x</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,</span>
-<span>                      <span class="st">"b1"</span> <span class="op">=</span> <span class="va">x</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
-<span>                      <span class="st">"phi"</span> <span class="op">=</span> <span class="va">x</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">x_out</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">x</span>, nrow <span class="op">=</span> <span class="va">n_prior_attempts</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># a function that calculates the distance between the summary statistics is required</span></span>
@@ -168,8 +164,8 @@ simulation accepted.</p>
 <code class="sourceCode R"><span><span class="co">#################################</span></span>
 <span><span class="co">##### setting the tolerance #####</span></span>
 <span><span class="co">#################################</span></span>
-<span><span class="co"># calculating a tolerance that means at least 1 particle combination is accepted every 100 simulations</span></span>
-<span><span class="co"># getting 100 samples from the priors</span></span>
+<span><span class="co"># calculating a tolerances that means at least 1 particle combination is accepted every 1000 simulations</span></span>
+<span><span class="co"># getting 1000 samples from the priors</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">n_check</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
 <span><span class="va">prior_params</span> <span class="op">&lt;-</span> <span class="fu">prior_fun</span><span class="op">(</span><span class="va">n_check</span><span class="op">)</span></span>
@@ -244,9 +240,9 @@ sequential reduction in the tolerances.</p>
 <span><span class="va">prior_dens_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="co"># adjusting the prior distributions</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0.05</span>, max <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0</span>, max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>, min <span class="op">=</span> <span class="op">-</span><span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0.05</span>, max <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, min <span class="op">=</span> <span class="fl">0</span>, max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">dunif</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, min <span class="op">=</span> <span class="op">-</span><span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span>, max <span class="op">=</span> <span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
 <span>           <span class="op">)</span></span>
 <span>         <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -284,14 +280,13 @@ values for each fitted parameter used in the prior distributions
 (<code>particle_low</code> and <code>particle_up</code> respectively),
 (3) the number of accepted particles for each generation
 (<code>nparticles</code>), (4) the number of prior samples to try for
-each accepted particle combination
-(<code>n_param_attempts_per_accept</code>), (5) the names of the fitted
-parameters (<code>fitted_parameter_names</code>, these must be
-characters and can include indexing into parameters that are stored as
-vectors or matrices), (6) a list of all parameters equivalent to those
-used in <code>RSVsim_run_model</code> <code>parameters</code>
-(<code>fixed_parameter_list</code>) and (7) the times and cohort step
-sizes used in <code>RSVsim_run_model</code>.</p>
+each accepted particle combination (<code>n_prior_attempts</code>), (5)
+the names of the fitted parameters (<code>fitted_parameter_names</code>,
+these must be characters and can include indexing into parameters that
+are stored as vectors or matrices), (6) a list of all parameters
+equivalent to those used in <code>RSVsim_run_model</code>
+<code>parameters</code> (<code>fixed_parameter_list</code>) and (7) the
+times and cohort step sizes used in <code>RSVsim_run_model</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">used_seed_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nparticles</span> <span class="op">*</span> <span class="va">G</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">G</span><span class="op">)</span></span>
 <span></span>
@@ -300,7 +295,7 @@ sizes used in <code>RSVsim_run_model</code>.</p>
 <span>                          summary_fun <span class="op">=</span> <span class="va">summary_fun</span>,</span>
 <span>                          dist_fun <span class="op">=</span> <span class="va">dist_fun</span>,</span>
 <span>                          prior_fun <span class="op">=</span> <span class="va">prior_fun</span>,</span>
-<span>                          n_param_attempts_per_accept <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>                          n_prior_attempts <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>                          used_seed_matrix <span class="op">=</span> <span class="va">used_seed_matrix</span>,</span>
 <span>                          prior_dens_fun <span class="op">=</span> <span class="va">prior_dens_fun</span>,</span>
 <span>                          particle_low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">365.25</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span>,</span>

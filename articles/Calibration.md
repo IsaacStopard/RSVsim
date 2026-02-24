@@ -70,18 +70,14 @@ target <- summary_fun(out)
 # we use latin hypercube sampling to efficiently sample from the prior distributions
 prior_fun <- function(n_prior_attempts){
   
-  x <- lhs::randomLHS(n_prior_attempts, 4)
+  x <- lhs::randomLHS(n_prior_attempts, 3)
   
   # adjusting the prior distributions
   x[,1] <- qunif(x[,1], min = 0.05, max = 0.25)
   x[,2] <- qunif(x[,2], min = 0, max = 1) # not necessary but added for completeness
   x[,3] <- qunif(x[,3], min = -365.25/2, max = 365.25/2)
   
-  x_out <- data.frame("b0" = x[,1],
-                      "b1" = x[,2],
-                      "phi" = x[,3])
-  
-  return(x_out)
+  return(as.matrix(x, nrow = n_prior_attempts))
 }
 
 # a function that calculates the distance between the summary statistics is required
@@ -111,8 +107,8 @@ use the smallest tolerance with at least 1 simulation accepted.
 #################################
 ##### setting the tolerance #####
 #################################
-# calculating a tolerance that means at least 1 particle combination is accepted every 100 simulations
-# getting 100 samples from the priors
+# calculating a tolerances that means at least 1 particle combination is accepted every 1000 simulations
+# getting 1000 samples from the priors
 set.seed(123)
 n_check <- 1000
 prior_params <- prior_fun(n_check)
@@ -193,9 +189,9 @@ sequential reduction in the tolerances.
 prior_dens_fun <- function(x){
   
   # adjusting the prior distributions
-  return(c(dunif(x[[1]], min = 0.05, max = 0.25),
-           dunif(x[[2]], min = 0, max = 1),
-           dunif(x[[3]], min = -365.25/2, max = 365.25/2)
+  return(c(dunif(x[1], min = 0.05, max = 0.25),
+           dunif(x[2], min = 0, max = 1),
+           dunif(x[3], min = -365.25/2, max = 365.25/2)
            )
          )
 }
@@ -237,13 +233,12 @@ particle (`used_seed_matrix`), (2) the minimum and maximum values for
 each fitted parameter used in the prior distributions (`particle_low`
 and `particle_up` respectively), (3) the number of accepted particles
 for each generation (`nparticles`), (4) the number of prior samples to
-try for each accepted particle combination
-(`n_param_attempts_per_accept`), (5) the names of the fitted parameters
-(`fitted_parameter_names`, these must be characters and can include
-indexing into parameters that are stored as vectors or matrices), (6) a
-list of all parameters equivalent to those used in `RSVsim_run_model`
-`parameters` (`fixed_parameter_list`) and (7) the times and cohort step
-sizes used in `RSVsim_run_model`.
+try for each accepted particle combination (`n_prior_attempts`), (5) the
+names of the fitted parameters (`fitted_parameter_names`, these must be
+characters and can include indexing into parameters that are stored as
+vectors or matrices), (6) a list of all parameters equivalent to those
+used in `RSVsim_run_model` `parameters` (`fixed_parameter_list`) and (7)
+the times and cohort step sizes used in `RSVsim_run_model`.
 
 ``` r
 used_seed_matrix <- matrix(seq(1, nparticles * G), nrow = G)
@@ -253,7 +248,7 @@ fit_smc <- RSVsim_ABC_SMC(target = target,
                           summary_fun = summary_fun,
                           dist_fun = dist_fun,
                           prior_fun = prior_fun,
-                          n_param_attempts_per_accept = 100,
+                          n_prior_attempts = 10000,
                           used_seed_matrix = used_seed_matrix,
                           prior_dens_fun = prior_dens_fun,
                           particle_low = c(0.05, 0, -365.25/2),

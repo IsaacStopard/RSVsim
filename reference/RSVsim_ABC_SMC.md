@@ -11,7 +11,7 @@ RSVsim_ABC_SMC(
   summary_fun,
   dist_fun,
   prior_fun,
-  n_param_attempts_per_accept,
+  n_prior_attempts,
   used_seed_matrix,
   prior_dens_fun,
   particle_low,
@@ -53,7 +53,7 @@ RSVsim_ABC_SMC(
   Function to sample from the priors for all parameters. Must return a
   vector.
 
-- n_param_attempts_per_accept:
+- n_prior_attempts:
 
   Number of samples to try for each accepted particle.
 
