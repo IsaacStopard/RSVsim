@@ -155,7 +155,7 @@ RSVsim_ABC_rejection <- function(target,
   # check the user provided functions return the correct dimensions
   if(ncol(prior_fun(10)) != nparams || nrow(prior_fun(10)) != 10){
     stop("RSVsim_ABC_SMC: prior_fun should return a matrix with the number of columns equal to the number of fitted parameters
-         and the number of rows equal to n_param_attempts_per_accept")
+         and the number of rows equal to n_prior_attempts")
   }
 
   while_fun <- function(particle){
@@ -170,7 +170,7 @@ RSVsim_ABC_rejection <- function(target,
     while(i <= 1){
 
       if(j > n_prior_attempts){
-        stop("No particle accepted: increase n_prior_attempts or the tolerance (epsilon)")
+        stop("RSVsim_ABC_rejection: no particle accepted - increase n_prior_attempts or the tolerance (epsilon)")
       }
 
       fitted_parameters <- fitted_parameters_all[j,]
@@ -264,7 +264,7 @@ RSVsim_ABC_rejection <- function(target,
 #' Runs the ABC-SMC algorithm.
 #'
 #' @param epsilon_matrix Matrix of tolerance values. Different columns correspond to the values for different data points and different rows correspond to the values for the different generations.
-#' @param n_param_attempts_per_accept Number of samples to try for each accepted particle.
+#' @param n_prior_attempts Number of samples to try for each accepted particle.
 #' @param used_seed_matrix Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.
 #' @param prior_dens_fun Function that calculates the probability density of all parameters given the prior distributions.
 #' The joint probability is the product of the values returned by this function.
@@ -280,7 +280,7 @@ RSVsim_ABC_SMC <- function(target,
                            summary_fun,
                            dist_fun,
                            prior_fun,
-                           n_param_attempts_per_accept,
+                           n_prior_attempts,
                            used_seed_matrix,
                            prior_dens_fun,
                            particle_low,
@@ -323,7 +323,7 @@ RSVsim_ABC_SMC <- function(target,
   # check the user provided functions return the correct dimensions
   if(ncol(prior_fun(10)) != nparams || nrow(prior_fun(10)) != 10){
     stop("RSVsim_ABC_SMC: prior_fun should return a matrix with the number of columns equal to the number of fitted parameters
-         and the number of rows equal to n_param_attempts_per_accept")
+         and the number of rows equal to n_prior_attempts")
   }
 
   if(length(prior_dens_fun(rep(1, nparams))) != nparams){
@@ -336,7 +336,7 @@ RSVsim_ABC_SMC <- function(target,
   # Number of simulations for each parameter set
   n <- 1
 
-  while_fun_SMC <- function(particle, g, w_old, res_old, nparticles, sigma, n_param_attempts_per_accept, n, target, epsilon_matrix, fitted_parameter_names, fixed_parameter_list,
+  while_fun_SMC <- function(particle, g, w_old, res_old, nparticles, sigma, n_prior_attempts, n, target, epsilon_matrix, fitted_parameter_names, fixed_parameter_list,
                             times, cohort_step_size, warm_up, prior_fun, prior_dens_fun, particle_low, particle_up, used_seed_matrix, ntargets, nparams){
 
     used_seed <- used_seed_matrix[g, particle]
@@ -345,16 +345,16 @@ RSVsim_ABC_SMC <- function(target,
     ### selecting parameters (particles)
       if(g == 1){
 
-        fitted_parameters <- prior_fun(n_param_attempts_per_accept)
+        fitted_parameters <- prior_fun(n_prior_attempts)
 
       } else{
 
-        p <- sample(seq(1, nparticles), n_param_attempts_per_accept, prob = w_old, replace = TRUE)
+        p <- sample(seq(1, nparticles), n_prior_attempts, prob = w_old, replace = TRUE)
 
         # sample particle set from previously fitted parameters
         fitted_parameters <- as.data.frame(
           t(
-            sapply(1:n_param_attempts_per_accept, function(a){
+            sapply(1:n_prior_attempts, function(a){
               return(
                 tmvtnorm::rtmvnorm(1,
                                    mean = unlist(as.vector(unname(res_old[p[a],, drop = FALSE]))),
@@ -375,6 +375,10 @@ RSVsim_ABC_SMC <- function(target,
     k <- 1 # initialise the number of attempted particles
 
     while(i <= 1){
+
+      if(k > n_prior_attempts){
+        stop("RSVsim_ABC_SMC: no particle accepted - increase n_prior_attempts or the tolerance (epsilon_matrix)")
+      }
 
       parameters <- as.numeric(fitted_parameters[k, ])
 
@@ -398,7 +402,6 @@ RSVsim_ABC_SMC <- function(target,
           distance[j,] <- dist_fun(target, target_star)
 
           rm(out)
-          gc(verbose = FALSE)
 
           if(all(distance[j,] <= epsilon_matrix[g,])){
             m <- m + 1
@@ -425,6 +428,8 @@ RSVsim_ABC_SMC <- function(target,
       k <- k + 1
 
     }
+
+    gc(verbose = FALSE)
 
     return(list("res_new" = res_new_out,
                 "w_new" = w_new_out,
@@ -466,7 +471,7 @@ RSVsim_ABC_SMC <- function(target,
                                               "epsilon_matrix",
                                               "prior_fun",
                                               "prior_dens_fun",
-                                              "n_param_attempts_per_accept",
+                                              "n_prior_attempts",
                                               "summary_fun",
                                               "dist_fun",
                                               "nparams",
@@ -496,7 +501,7 @@ RSVsim_ABC_SMC <- function(target,
                              res_old = res_old,
                              nparticles = nparticles,
                              sigma = sigma,
-                             n_param_attempts_per_accept = n_param_attempts_per_accept,
+                             n_prior_attempts = n_prior_attempts,
                              n = n,
                              target = target,
                              epsilon_matrix = epsilon_matrix,

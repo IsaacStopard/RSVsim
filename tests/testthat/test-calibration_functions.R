@@ -63,7 +63,7 @@ test_that("calibration functions", {
     summary_fun = RSVsim_total_incidence,
     dist_fun = RSVsim_abs_dist_fun,
     prior_fun = prior_fun,
-    n_param_attempts_per_accept = 10000,
+    n_prior_attempts = 10000,
     nparticles = 10,
     used_seed_matrix = matrix(seq(1,25*2), nrow = 2),
     prior_dens_fun = prior_dens_fun,

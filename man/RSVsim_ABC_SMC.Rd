@@ -10,7 +10,7 @@ RSVsim_ABC_SMC(
   summary_fun,
   dist_fun,
   prior_fun,
-  n_param_attempts_per_accept,
+  n_prior_attempts,
   used_seed_matrix,
   prior_dens_fun,
   particle_low,
@@ -35,7 +35,7 @@ RSVsim_ABC_SMC(
 
 \item{prior_fun}{Function to sample from the priors for all parameters. Must return a vector.}
 
-\item{n_param_attempts_per_accept}{Number of samples to try for each accepted particle.}
+\item{n_prior_attempts}{Number of samples to try for each accepted particle.}
 
 \item{used_seed_matrix}{Matrix of seeds: number of rows must be equal to the number of generations and number of columns must be equal to nparticles.}
 
