@@ -99,11 +99,11 @@ RSVsim_run_model <- function(parameters,
 
     times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 5)))
 
-    times_in <- lapply(1:n_steps, FUN = function(i){
-      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 5) & times_all < base::round((i * cohort_step_size), digits = 5)])
-      })
+    breaks <- seq(0, n_steps * cohort_step_size, by = cohort_step_size)
+    chunk_assignment <- findInterval(times_all, breaks, left.open = FALSE, rightmost.closed = TRUE)
+    chunk_assignment[chunk_assignment > n_steps] <- n_steps
 
-    times_in[[n_steps]] <- c(times_in[[n_steps]], times_all[length(times_all)])
+    times_in <- split(times_all, chunk_assignment)
 
     for(i in 1:n_steps){
 
@@ -157,27 +157,44 @@ RSVsim_run_model <- function(parameters,
   #  stop("RSVsim_run_model: matrix population not correct")
   #}
 
+  # warm up
+  if(!is.null(warm_up)){
+    out_checkout <- out_checkout |> dplyr::filter(time >= times[min(which(times >= warm_up)) - 1])
+  }
+
   # incidence calculation
-  out_checkout <- invisible(out_checkout |> tidyr::pivot_longer(cols = 1:(tidyr::last_col() - 1),
-                                                      values_to = "value",
-                                                      names_to = "index",
-                                                      names_transform = as.integer) |>
-                              dplyr::left_join(dust_df[,c("state", "age", "age_chr", "vacc_state", "index")], by = "index") |>
-                              dplyr::select(-index) |>
-                              dplyr::mutate(age = base::round(age, digits = 5),
-                                            vacc_state = base::as.integer(vacc_state),
-                                            time = base::round(time, digits = 5)) |>
-                              tidyr::pivot_wider(names_from = state, values_from = value) |>
-                              dplyr::arrange(vacc_state, age, time) |>
-                              dplyr::group_by(age_chr, vacc_state) |>
-                              dplyr::mutate(cumulativeIncidence = Incidence,
-                                            cumulativeDetIncidence = DetIncidence,
-                                            cumulativeDoses = doses,
-                                            Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
-                                            DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0),
-                                            doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)) |>
-                              dplyr::ungroup() |>
-                              dplyr::relocate(age, age_chr, vacc_state, time))
+  data.table::setDTthreads(1)
+  data.table::setDT(out_checkout)
+  data.table::setDT(dust_df)
+
+  # pivot longer
+  out_checkout <- data.table::melt(out_checkout,
+                                   id.vars = "time",
+                                   variable.name = "index",
+                                   value.name = "value")
+
+  # Combine with dust_df
+  out_checkout[, index := as.integer(as.character(index))]
+  out_checkout <- out_checkout[dust_df[, c("state", "age", "age_chr", "vacc_state", "index")], on = "index", nomatch = NA]
+
+  out_checkout[, `:=`(age = round(age, 5), vacc_state = as.integer(vacc_state), time = round(time, 5))]
+
+  # pivot wider
+  out_checkout <- data.table::dcast(out_checkout, age + age_chr + vacc_state + time ~ state, value.var = "value", drop = TRUE)
+
+  # calculating the population sizes by time
+  pop_check <- base::as.data.frame(out_checkout[, .(total = sum(rowSums(.SD))), by = time, .SDcols = c("Sp", "Ep", "Ip", "Ss", "Es", "Is", "R")])
+
+  # arrange
+  data.table::setorder(out_checkout, vacc_state, age, time)
+  data.table::setcolorder(out_checkout, c("age", "age_chr", "vacc_state", "time", states_order))
+
+  out_checkout <- as.data.frame(out_checkout) |>
+                                dplyr::group_by(age_chr, vacc_state) |>
+                                dplyr::mutate(Incidence = tidyr::replace_na(Incidence - dplyr::lag(Incidence, 1), 0),
+                                              DetIncidence = tidyr::replace_na(DetIncidence - dplyr::lag(DetIncidence, 1), 0),
+                                              doses = tidyr::replace_na(doses - dplyr::lag(doses, 1), 0)) |>
+                                dplyr::ungroup()
 
   # warm up
   if(!is.null(warm_up)){
@@ -185,8 +202,7 @@ RSVsim_run_model <- function(parameters,
   }
 
   # checking the total population is correct
-
-  if(any(abs(out_checkout |> dplyr::group_by(time) |> dplyr::summarise(total = base::sum(Sp) + base::sum(Ep) + base::sum(Ip) + base::sum(Ss) + base::sum(Es) + base::sum(Is) + base::sum(R)) |> dplyr::select(total) - parameters$total_population) > 1E-1)){
+  if(any(abs(pop_check[,"total"] - parameters$total_population) > 1E-1)){
     stop("RSVsim_run_model: population does not sum to the correct number")
   }
 

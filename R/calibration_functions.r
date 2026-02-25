@@ -399,9 +399,9 @@ RSVsim_ABC_SMC <- function(target,
 
           target_star <- summary_fun(out)
 
-          distance[j,] <- dist_fun(target, target_star)
-
           rm(out)
+
+          distance[j,] <- dist_fun(target, target_star)
 
           if(all(distance[j,] <= epsilon_matrix[g,])){
             m <- m + 1

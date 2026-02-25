@@ -69,7 +69,7 @@ test_that("calibration functions", {
     prior_dens_fun = prior_dens_fun,
     particle_low = c(0.05),
     particle_up = c(0.1),
-    ncores = 1,
+    ncores = 2,
     fitted_parameter_names = fitted_parameter_names,
     fixed_parameter_list = fixed_parameter_list,
     times = seq(0, 365*4, 0.5), # maximum time to run the model for

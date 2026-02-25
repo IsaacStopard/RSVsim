@@ -11,8 +11,6 @@ src/stan/**/*.exe
 src/stan/**/*.EXE
 *.o
 *.so
-*.gcda
-*.gcno
 src/stan/.DS_Store
 vignettes/Calibration_cache
 vignettes/Introduction_cache
