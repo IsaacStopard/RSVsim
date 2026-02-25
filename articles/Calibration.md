@@ -94,23 +94,29 @@ dist_fun <- function(target, target_star, n = nAges){
 ```
 
 To implement the ABC-rejection algorithm we must specify the tolerance.
-We specify a specific tolerance for each metric that means approximately
-0.1% of all simulations are accepted. To do so, we run the model 1000
-times with different parameter combinations drawn from the priors. We
-then calculate the error (distances) between the summary statistics from
-each simulation and the target summary statistics. We set the a range of
-tolerances using different percentiles of the distances and check the
-number of these simulations that are accepted for each tolerance, and
-use the smallest tolerance with at least 1 simulation accepted.
+We specify a specific tolerance for each metric. To calculate the
+tolerance values that means approximately 0.1% of all simulations are
+accepted we run the model 1000 times with different parameter
+combinations drawn from the priors. We then calculate the error
+(distances) between the summary statistics from each simulation and the
+target summary statistics. We set the a range of tolerances using
+different percentiles of the distances and check the number of these
+simulations that are accepted for each tolerance, and use the smallest
+tolerance with at least 1 simulation accepted. **This method of
+calculating suitable tolerance values is optional and custom values can
+be specified by the user.**
 
 ``` r
 #################################
 ##### setting the tolerance #####
 #################################
+
+# this code is optional but is used to approximate epsilon values that will give us an acceptance rate of 0.1%
+
 # calculating a tolerances that means at least 1 particle combination is accepted every 1000 simulations
 # getting 1000 samples from the priors
 set.seed(123)
-n_check <- 1000
+n_check <- 10
 prior_params <- prior_fun(n_check)
 
 # simulating the summary statistics for each particle combination
@@ -122,12 +128,17 @@ prior_distances <- sapply(1:n_check, function(i){
                    cohort_step_size = 0.2*365, # time at which to age people
                    warm_up = NULL)
   
-  return(dist_fun(target, summary_fun(out)))
+  return(dist_fun(target, 
+                  summary_fun(out)
+                  )
+         )
 })
 
 # calculating the number of particles for which all summary statistics are within the tolerance given different percentiles of the summary statistics for all the particles 
+# selecting the tolerance with at least 1 model simulation using the prior samples that is within the tolerance 
 nsuccess <- rep(NA, n_check)
 q <- seq(0.01, 1, 0.01)
+
 for(i in 1:100){
   epsilon_check <- round(apply(prior_distances, 1, quantile, probs = c(q[i])), digits = 2)
   nsuccess[i] <- sum(sapply(1:100, function(j){all(prior_distances[,j] <= epsilon_check)}))
@@ -203,7 +214,8 @@ number of particle combinations that are accepted. We do this for a
 decreasing acceptance rate; the sequential reduction in tolerances is
 stored in a matrix with each column corresponding to each summary
 statistic and the rows corresponding to each tolerance level (`G`;
-generation).
+generation). **Again, this method of calculating suitable tolerance
+values is optional and custom values can be specified by the user.**
 
 ``` r
 nsuccess <- rep(NA, n_check)
@@ -260,4 +272,28 @@ fit_smc <- RSVsim_ABC_SMC(target = target,
                           times = seq(0, 365, 0.25), # maximum time to run the model for
                           cohort_step_size = 0.2*365, # time at which to age people
                           warm_up = NULL)
+```
+
+**Running the model with the fitted parameters.** The ABC algorithms
+return matrices of the fitted parameter values. For this is the main
+output and for a list of the fitted parameter values is returned for
+each generation. The fitted parameter columns correspond to the
+parameter and the rows correspond to each accepted parameter
+combination. To run the model with one particle (combination of fitted
+parameters) we can therefore select the correct matrix of fitted
+parameters and use the to adjust the parameters. For example, if I want
+to run the *first* accepted particle:
+
+``` r
+
+# ABC rejection
+parameters_ABC_rejection <- RSVsim_update_parameters(parameters, fitted_parameter_names, c(fit[1, c("b0", "b1", "phi")]))
+
+# ABC SMC
+# for the ABC SMC algorithm I must select the fitted parameters from the last generation
+
+fit_params_SMC <- fit_smc$fitted_parameters[[G]]
+colnames(fit_params_SMC) <- fitted_parameter_names
+
+parameters_ABC_SMC <- RSVsim_update_parameters(parameters, fitted_parameter_names, c(fit_params_SMC[1, c("b0", "b1", "phi")]))
 ```
