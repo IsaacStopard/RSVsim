@@ -187,7 +187,6 @@ RSVsim_ABC_rejection <- function(target,
       distance <- dist_fun(target, summary_stats)
 
       rm(out)
-      gc(verbose = FALSE)
 
       if(all(distance <= epsilon)){
 

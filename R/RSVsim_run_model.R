@@ -99,11 +99,9 @@ RSVsim_run_model <- function(parameters,
 
     times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 5)))
 
-    breaks <- seq(0, n_steps * cohort_step_size, by = cohort_step_size)
-    chunk_assignment <- findInterval(times_all, breaks, left.open = FALSE, rightmost.closed = TRUE)
-    chunk_assignment[chunk_assignment > n_steps] <- n_steps
-
-    times_in <- split(times_all, chunk_assignment)
+    times_in <- lapply(1:n_steps, FUN = function(i){
+      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 7) & times_all < base::round((i * cohort_step_size), digits = 7)])
+    })
 
     for(i in 1:n_steps){
 
