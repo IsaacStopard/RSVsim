@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 library(RSVsim)
 ```
 
-In this vignette, we give an overview of how to implement vaccination in the model. By default, the vaccination coverage is 0 (meaning there is no vaccination). Vaccination is implemented to those in the S, E and R states according to a vaccination rate (per person per day). The number of vaccination states (`nVaccStates`) must be input in the model parameters; the minimum number of vaccination states is 2, which corresponds to unvaccinated (U) and vaccinated (V). Intermediate vaccination states can also be implemented to account for a delay in vaccine-derived protection or Erlang vaccination waning time distributions. 
+In this vignette, we give an overview of how to implement vaccination in the model. By default, the vaccination coverage is 0 (meaning there is no vaccination). Vaccination is implemented to those in the S, E and R states according to a vaccination rate (per person per day). The number of vaccination states (`nVaccStates`) must be input in the model parameters; the minimum number of vaccination states is 2, which corresponds to unvaccinated (U) and vaccinated (V). Intermediate vaccination states can also be implemented to account for a delay in vaccine-derived protection or Erlang distributed vaccination waning times. 
 
 ![](../man/figures/RSVsim_vaccination.png)
 

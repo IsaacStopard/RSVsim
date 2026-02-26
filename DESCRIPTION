@@ -21,7 +21,6 @@ Imports:
     dplyr,
     dust2 (>= 0.3.22),
     lhs,
-    methods,
     parallel,
     pbapply,
     Rcpp,
