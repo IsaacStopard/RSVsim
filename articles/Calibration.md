@@ -30,9 +30,9 @@ parameters <- fixed_parameter_list <- RSVsim_parameters(overrides = overrides,
                                                         contact_population_list = contact_population_list)
 
 out <- RSVsim_run_model(parameters = parameters,
-                        times = seq(0, 365, 0.25), # maximum time to run the model for
+                        times = seq(0, 365 * 2, 0.25), # maximum time to run the model for
                         cohort_step_size = 0.2 * 365, # time at which to age people\
-                        warm_up = NULL)
+                        warm_up = 365)
 
 fitted_parameter_names <- c("b0", "b1", "phi")
 
@@ -113,10 +113,10 @@ be specified by the user.**
 
 # this code is optional but is used to approximate epsilon values that will give us an acceptance rate of 0.1%
 
-# calculating a tolerances that means at least 1 particle combination is accepted every 1000 simulations
+# calculating a tolerances that means at least 1 particle combination is accepted every 100 simulations
 # getting 1000 samples from the priors
 set.seed(123)
-n_check <- 10
+n_check <- 1000
 prior_params <- prior_fun(n_check)
 
 # simulating the summary statistics for each particle combination
@@ -124,9 +124,9 @@ prior_distances <- sapply(1:n_check, function(i){
   parameters_in <- RSVsim_update_parameters(fixed_parameter_list, fitted_parameter_names, prior_params[i, ])
   
   out <- RSVsim_run_model(parameters = parameters_in,
-                   times = seq(0, 365*1, 0.25), # maximum time to run the model for
+                   times = seq(0, 365*2, 0.25), # maximum time to run the model for
                    cohort_step_size = 0.2*365, # time at which to age people
-                   warm_up = NULL)
+                   warm_up = 365)
   
   return(dist_fun(target, 
                   summary_fun(out)
