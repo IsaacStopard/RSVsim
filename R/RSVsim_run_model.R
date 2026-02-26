@@ -103,6 +103,10 @@ RSVsim_run_model <- function(parameters,
       c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 5) & times_all < base::round((i * cohort_step_size), digits = 5)])
     })
 
+    if(max(times_in[[n_steps]]) < max_t){
+      times_in[[n_steps]] <- c(times_in[[n_steps]], max_t)
+    }
+
     for(i in 1:n_steps){
 
       out <- dust2::dust_system_simulate(RSV_dust, times = times_in[[i]]) |> t()
