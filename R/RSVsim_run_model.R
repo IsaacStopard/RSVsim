@@ -100,7 +100,7 @@ RSVsim_run_model <- function(parameters,
     times_all <- sort(unique(base::round(c(times, 1:n_steps * cohort_step_size), digits = 5)))
 
     times_in <- lapply(1:n_steps, FUN = function(i){
-      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 7) & times_all < base::round((i * cohort_step_size), digits = 7)])
+      c(times_all[times_all >= base::round(((i - 1) * cohort_step_size), digits = 5) & times_all < base::round((i * cohort_step_size), digits = 5)])
     })
 
     for(i in 1:n_steps){
