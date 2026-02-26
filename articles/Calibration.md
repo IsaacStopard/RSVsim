@@ -208,14 +208,15 @@ prior_dens_fun <- function(x){
 }
 ```
 
-Similar to the ABC-rejection algorithm we use the previously simulated
+Similar to the ABC-rejection algorithm, we use the previously simulated
 summary statistics to calculate the tolerances corresponding to a given
 number of particle combinations that are accepted. We do this for a
-decreasing acceptance rate; the sequential reduction in tolerances is
-stored in a matrix with each column corresponding to each summary
-statistic and the rows corresponding to each tolerance level (`G`;
-generation). **Again, this method of calculating suitable tolerance
-values is optional and custom values can be specified by the user.**
+decreasing acceptance rate; the tolerances are stored in a matrix with
+each column corresponding to each summary statistic and the rows
+corresponding to each tolerance level (the lowest tolerance in the last
+row) (`G`; generation). **Again, this method of calculating suitable
+tolerance values is optional and custom values can be specified by the
+user.**
 
 ``` r
 nsuccess <- rep(NA, n_check)

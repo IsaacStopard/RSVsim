@@ -12,8 +12,8 @@ of vaccination states (`nVaccStates`) must be input in the model
 parameters; the minimum number of vaccination states is 2, which
 corresponds to unvaccinated (U) and vaccinated (V). Intermediate
 vaccination states can also be implemented to account for a delay in
-vaccine-derived protection or Erlang vaccination waning time
-distributions.
+vaccine-derived protection or Erlang distributed vaccination waning
+times.
 
 ![](../reference/figures/RSVsim_vaccination.png)
 
