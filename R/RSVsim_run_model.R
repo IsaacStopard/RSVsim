@@ -141,7 +141,7 @@ RSVsim_run_model <- function(parameters,
 
     out_checkout <- do.call(rbind, out_list) |> as.data.frame()
 
-    rm(list = c("out_list"))
+    rm(out_list)
 
     } else{
 

@@ -49,6 +49,21 @@ test_that("calibration functions", {
                                 cohort_step_size = min(parameters$size_cohorts), # time at which to age people\
                                 warm_up = 365 * 3)
 
+  check_p <- RSVsim_ABC_rejection(target = total_incidence,
+                                epsilon = total_incidence * 0.5,
+                                summary_fun = RSVsim_total_incidence,
+                                dist_fun = RSVsim_abs_dist_fun,
+                                prior_fun = prior_fun,
+                                n_prior_attempts = 10000,
+                                nparticles = 2,
+                                used_seeds_all = c(1,2),
+                                ncores = 2,
+                                fitted_parameter_names = fitted_parameter_names,
+                                fixed_parameter_list = fixed_parameter_list,
+                                times = seq(0, 365*4, 0.25), # maximum time to run the model for
+                                cohort_step_size = min(parameters$size_cohorts), # time at which to age people\
+                                warm_up = 365 * 3)
+
   testthat::expect_true(sum(is.na(check)) == 0)
   testthat::expect_true(all(dim(check) == c(1, 4)))
   testthat::expect_true(check[1, "particle_number"] == 1)
@@ -57,7 +72,7 @@ test_that("calibration functions", {
     return(c(dunif(x[1], 0.05, 0.1, log = FALSE)))
   }
 
-  check_smc <- RSVsim_ABC_SMC(
+  check_smc_p <- RSVsim_ABC_SMC(
     target = total_incidence,
     epsilon_matrix = matrix(c(total_incidence * 0.75, total_incidence * 0.5), nrow = 2),
     summary_fun = RSVsim_total_incidence,
@@ -70,6 +85,26 @@ test_that("calibration functions", {
     particle_low = c(0.05),
     particle_up = c(0.1),
     ncores = 2,
+    fitted_parameter_names = fitted_parameter_names,
+    fixed_parameter_list = fixed_parameter_list,
+    times = seq(0, 365*4, 0.5), # maximum time to run the model for
+    cohort_step_size = min(parameters$size_cohorts), # time at which to age people\
+    warm_up = 365 * 3
+  )
+
+  check_smc <- RSVsim_ABC_SMC(
+    target = total_incidence,
+    epsilon_matrix = matrix(c(total_incidence * 0.75, total_incidence * 0.5), nrow = 2),
+    summary_fun = RSVsim_total_incidence,
+    dist_fun = RSVsim_abs_dist_fun,
+    prior_fun = prior_fun,
+    n_prior_attempts = 10000,
+    nparticles = 5,
+    used_seed_matrix = matrix(seq(1,25*2), nrow = 2),
+    prior_dens_fun = prior_dens_fun,
+    particle_low = c(0.05),
+    particle_up = c(0.1),
+    ncores = 1,
     fitted_parameter_names = fitted_parameter_names,
     fixed_parameter_list = fixed_parameter_list,
     times = seq(0, 365*4, 0.5), # maximum time to run the model for

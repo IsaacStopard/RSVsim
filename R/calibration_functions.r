@@ -205,6 +205,8 @@ RSVsim_ABC_rejection <- function(target,
 
   if(ncores > 1){
     cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
+    #stop cluster
+    base::on.exit(parallel::stopCluster(cl))
     parallel::clusterExport(cl, varlist = c("RSV_ODE",
                                             "while_fun",
                                             "RSVsim_update_parameters",
@@ -236,6 +238,7 @@ RSVsim_ABC_rejection <- function(target,
       library(RSVsim)
       library(tidyr)
       library(dplyr)
+      data.table::setDTthreads(1)
       }
       )
 
@@ -247,13 +250,6 @@ RSVsim_ABC_rejection <- function(target,
   res <- pbapply::pblapply(cl = cl, X = 1:nparticles, FUN = while_fun)
 
   res <- do.call(rbind, res)
-
-  if(ncores > 1){
-
-    #stop cluster
-    parallel::stopCluster(cl)
-
-  }
 
   return(res)
 }
@@ -428,13 +424,54 @@ RSVsim_ABC_SMC <- function(target,
 
     }
 
-    gc(verbose = FALSE)
-
     return(list("res_new" = res_new_out,
                 "w_new" = w_new_out,
                 "seed" = used_seed))
   }
 
+  # setting up the cluster
+  if(ncores > 1){
+    cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
+
+    base::on.exit(parallel::stopCluster(cl)) #stop cluster
+
+    parallel::clusterExport(cl, varlist = c("RSV_ODE",
+                                            "while_fun_SMC",
+                                            "RSVsim_run_model",
+                                            "RSVsim_update_parameters",
+                                            "fixed_parameter_list",
+                                            "fitted_parameter_names",
+                                            "nAges",
+                                            "times",
+                                            "cohort_step_size",
+                                            "warm_up",
+                                            "target",
+                                            "epsilon_matrix",
+                                            "prior_fun",
+                                            "prior_dens_fun",
+                                            "n_prior_attempts",
+                                            "summary_fun",
+                                            "dist_fun",
+                                            "nparams",
+                                            "used_seed_matrix",
+                                            "particle_low",
+                                            "particle_up",
+                                            "ntargets"),
+                            envir = environment()
+    )
+
+    t_c <- parallel::clusterEvalQ(cl, {
+      library(RSVsim)
+      library(tidyr)
+      library(dplyr)
+      library(tmvtnorm)
+      base::invisible(data.table::setDTthreads(1))
+    }
+    )
+
+  } else{
+    cl <- NULL
+  }
 
   w_list <- vector(mode = "list", length = G)
   res_list <- vector(mode = "list", length = G)
@@ -454,43 +491,8 @@ RSVsim_ABC_SMC <- function(target,
 
     print(paste("Generation", g, "of", G))
 
-    if(ncores > 1){
-      cl <- parallel::makePSOCKcluster(ncores) #not to overload your computer
-      parallel::clusterExport(cl, varlist = c("RSV_ODE",
-                                              "while_fun_SMC",
-                                              "RSVsim_run_model",
-                                              "RSVsim_update_parameters",
-                                              "fixed_parameter_list",
-                                              "fitted_parameter_names",
-                                              "nAges",
-                                              "times",
-                                              "cohort_step_size",
-                                              "warm_up",
-                                              "target",
-                                              "epsilon_matrix",
-                                              "prior_fun",
-                                              "prior_dens_fun",
-                                              "n_prior_attempts",
-                                              "summary_fun",
-                                              "dist_fun",
-                                              "nparams",
-                                              "used_seed_matrix",
-                                              "particle_low",
-                                              "particle_up",
-                                              "ntargets"),
-                              envir = environment()
-      )
-
-      parallel::clusterEvalQ(cl, {
-        library(RSVsim)
-        library(tidyr)
-        library(dplyr)
-        library(tmvtnorm)
-      }
-      )
-
-    } else{
-      cl <- NULL
+    if(ncores > 1) {
+      parallel::clusterExport(cl, varlist = c("w_old", "res_old", "sigma", "g"), envir = environment())
     }
 
     pbapply::pboptions(type = "timer", char = "-")
@@ -516,13 +518,6 @@ RSVsim_ABC_SMC <- function(target,
                              used_seed_matrix = used_seed_matrix,
                              ntargets = ntargets,
                              nparams = nparams)
-
-    if(ncores > 1){
-
-      #stop cluster
-      parallel::stopCluster(cl)
-
-    }
 
     w_new <- sapply(res, '[[', "w_new")
     res_new <- do.call(rbind, lapply(res, '[[', 'res_new'))
