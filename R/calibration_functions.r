@@ -67,7 +67,7 @@ RSVsim_abs_dist_fun <- function(target, target_star){
 #' @return Absolute difference.
 #' @export
 RSVsim_shortest_periodic_dist_fun <- function(target, target_star, period){
-  return(abs(pmin(target - target_star, period - (target - target_star))))
+  return(abs(((target - target_star + period / 2) %% period) - period / 2))
 }
 
 #' Helper function to update the parameter list by names
