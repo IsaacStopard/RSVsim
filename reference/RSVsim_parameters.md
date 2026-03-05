@@ -21,8 +21,8 @@ RSVsim_parameters(overrides = list(), contact_population_list)
 ## Value
 
 Parameter list. Default values:  
-`b0`: 0.08. Transmission rate coefficient.  
-`b1`: 0. Amplitude of seasonal forcing in the transmission rate.  
+`b0`: 0.125. Transmission rate coefficient.  
+`b1`: 0.1. Amplitude of seasonal forcing in the transmission rate.  
 `phi`: 0. Phase shift of the seasonal forcing.  
 `delta`: 1/4. Inverse of the latent period.  
 `gamma_s`: 1/8. Inverse of the infectious period of subsequent
@@ -66,10 +66,10 @@ by the end of the vaccination distribution for each `vaccine_time`,
 assuming no waning of vaccination. The vaccination rate is calculated as
 `-log(1 - vaccine_cov) / vaccine_period`. Default is 0 coverage for all
 ages. Changes in effective coverage with are given as a model output.  
-`VE`: 0.85 for all ages and vaccinated states. Vaccine efficacy for each
-age group and vaccinated state. Number of rows must be equal to the
-number of age groups, and the number of columns should be equal to
-nVaccStates - 1.  
+`VE_INF`: 0.85 for all ages and vaccinated states. Vaccine efficacy
+against infection for each age group and vaccinated state. Number of
+rows must be equal to the number of age groups, and the number of
+columns should be equal to nVaccStates - 1.  
 `Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0, doses0`: initial
 conditions to run the model for each compartment - these are given as
 prevalence and the initial conditions calculated in this function. List.

@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/Calibration.html">Calibration</a></li>
+    <li><a class="dropdown-item" href="../articles/Hospitalisations.html">Hospitalisations</a></li>
     <li><a class="dropdown-item" href="../articles/Introduction.html">Introduction</a></li>
     <li><a class="dropdown-item" href="../articles/Vaccination.html">Vaccination</a></li>
   </ul>
@@ -122,9 +123,12 @@ determined by the length of time before people are aged
 (cohort_step_size) as a proportion of the total length of time in each
 age group.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
-<span>                        times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span>, <span class="fl">0.25</span><span class="op">)</span>, <span class="co"># maximum time to run the model for</span></span>
-<span>                        cohort_step_size <span class="op">=</span> <span class="fl">5</span>, <span class="co"># time at which to age people\</span></span>
+<code class="sourceCode R"><span></span>
+<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365</span> <span class="op">*</span> <span class="fl">10</span>, <span class="fl">0.25</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
+<span>                        times <span class="op">=</span> <span class="va">times</span>, <span class="co"># maximum time to run the model for</span></span>
+<span>                        cohort_step_size <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365</span>, <span class="co"># time at which to age people\</span></span>
 <span>                        warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p>The simulated number of people that are susceptible and infected, and
 whether the infection is primary or secondary is tracked in the model
@@ -134,6 +138,21 @@ the detected incidence age-specific detection probabilities are used,
 and in the default parameters we assume very few people (1%) over the
 age of 2 years old are tested. The age-specific prevalence is also
 calculated.</p>
+<p>The incidence and doses are given as the number that occurred for
+each time step. The time-steps when cohort ageing occurs are included in
+the simulation. Usually the difference between these and the time-steps
+provided in are different meaning the incidence or doses are not
+consistently calculated over the time frame and can therefore appear to
+rapidly change. To estimate the incidence or doses over consistent
+time-steps we must therefore sum the incidence grouped by the primary
+simulation times.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># times are incremented by 0.25 when running the model in this example</span></span>
+<span></span>
+<span><span class="va">out</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>time_round <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">time</span> <span class="op">/</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">time_round</span>, <span class="va">vacc_state</span>, <span class="va">age</span>, <span class="va">age_chr</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>Incidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">Incidence</span><span class="op">)</span>, doses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">doses</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

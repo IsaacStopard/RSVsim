@@ -61,9 +61,12 @@ determined by the length of time before people are aged
 age group.
 
 ``` r
+
+times <- seq(0, 365 * 10, 0.25)
+
 out <- RSVsim_run_model(parameters = parameters,
-                        times = seq(0, 365 * 10, 0.25), # maximum time to run the model for
-                        cohort_step_size = 5, # time at which to age people\
+                        times = times, # maximum time to run the model for
+                        cohort_step_size = 1/12 * 365, # time at which to age people\
                         warm_up = NULL)
 ```
 
@@ -75,3 +78,21 @@ the detected incidence age-specific detection probabilities are used,
 and in the default parameters we assume very few people (1%) over the
 age of 2 years old are tested. The age-specific prevalence is also
 calculated.
+
+The incidence and doses are given as the number that occurred for each
+time step. The time-steps when cohort ageing occurs are included in the
+simulation. Usually the difference between these and the time-steps
+provided in are different meaning the incidence or doses are not
+consistently calculated over the time frame and can therefore appear to
+rapidly change. To estimate the incidence or doses over consistent
+time-steps we must therefore sum the incidence grouped by the primary
+simulation times.
+
+``` r
+
+# times are incremented by 0.25 when running the model in this example
+
+out |> dplyr::mutate(time_round = round(time / 0.25) * 0.25) |> 
+  dplyr::group_by(time_round, vacc_state, age, age_chr) |> 
+  dplyr::summarise(Incidence = sum(Incidence), doses = sum(doses))
+```

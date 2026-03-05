@@ -5,13 +5,14 @@ library(RSVsim)
 ```
 
 In this vignette, we give an overview of how to use Approximate Bayesian
-Computation (ABC) rejection and Sequential Monte Carlo ABC algorithm
-(ABC-SMC) algorithms to calibrate the mathematical model of RSV
-transmission to simulated data. The code to run these samplers was
-adapted from code provided in Minter, Amanda, and Renata Retkute.
-“Approximate Bayesian Computation for infectious disease modelling.”
-Epidemics 29 (2019): 100368
-<https://doi.org/10.1016/j.epidem.2019.100368>.
+Computation (ABC) rejection and Sequential Monte Carlo ABC (ABC-SMC)
+algorithms to calibrate the mathematical model of RSV transmission to
+simulated data. The code to run these samplers was adapted from code
+provided in Minter, Amanda, and Renata Retkute. “Approximate Bayesian
+Computation for infectious disease modelling.” Epidemics 29 (2019):
+100368 <https://doi.org/10.1016/j.epidem.2019.100368>.
+
+## Set-up
 
 First, we run the model to generate some data to fit to.
 
@@ -92,6 +93,8 @@ dist_fun <- function(target, target_star, n = nAges){
 
 }
 ```
+
+## ABC-rejection
 
 To implement the ABC-rejection algorithm we must specify the tolerance.
 We specify a specific tolerance for each metric. To calculate the
@@ -188,6 +191,8 @@ hist(fit_b0)
 hist(fit_b1)
 hist(fit_phi)
 ```
+
+## ABC-SMC
 
 We also provide a function to fit the model using ABC-SMC. The ABC-SMC
 algorithm requires a function to return the prior density and a

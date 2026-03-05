@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/Calibration.html">Calibration</a></li>
+    <li><a class="dropdown-item" href="../articles/Hospitalisations.html">Hospitalisations</a></li>
     <li><a class="dropdown-item" href="../articles/Introduction.html">Introduction</a></li>
     <li><a class="dropdown-item" href="../articles/Vaccination.html">Vaccination</a></li>
   </ul>
@@ -70,11 +71,14 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/IsaacStopard/RSVsim" class="external-link">RSVsim</a></span><span class="op">)</span></span></code></pre></div>
 <p>In this vignette, we give an overview of how to use Approximate
 Bayesian Computation (ABC) rejection and Sequential Monte Carlo ABC
-algorithm (ABC-SMC) algorithms to calibrate the mathematical model of
-RSV transmission to simulated data. The code to run these samplers was
+(ABC-SMC) algorithms to calibrate the mathematical model of RSV
+transmission to simulated data. The code to run these samplers was
 adapted from code provided in Minter, Amanda, and Renata Retkute.
 “Approximate Bayesian Computation for infectious disease modelling.”
 Epidemics 29 (2019): 100368 <a href="https://doi.org/10.1016/j.epidem.2019.100368" class="external-link uri">https://doi.org/10.1016/j.epidem.2019.100368</a>.</p>
+<div class="section level2">
+<h2 id="set-up">Set-up<a class="anchor" aria-label="anchor" href="#set-up"></a>
+</h2>
 <p>First, we run the model to generate some data to fit to.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -150,6 +154,10 @@ provided to set up the parameters to run the model.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="abc-rejection">ABC-rejection<a class="anchor" aria-label="anchor" href="#abc-rejection"></a>
+</h2>
 <p>To implement the ABC-rejection algorithm we must specify the
 tolerance. We specify a specific tolerance for each metric. To calculate
 the tolerance values that means approximately 0.1% of all simulations
@@ -240,6 +248,10 @@ parallel socket cluster with the parallel R package.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_b1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">fit_phi</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="abc-smc">ABC-SMC<a class="anchor" aria-label="anchor" href="#abc-smc"></a>
+</h2>
 <p>We also provide a function to fit the model using ABC-SMC. The
 ABC-SMC algorithm requires a function to return the prior density and a
 sequential reduction in the tolerances.</p>
@@ -340,7 +352,9 @@ to run the <em>first</em> accepted particle:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">fit_params_SMC</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">fitted_parameter_names</span></span>
 <span></span>
 <span><span class="va">parameters_ABC_SMC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_update_parameters.html">RSVsim_update_parameters</a></span><span class="op">(</span><span class="va">parameters</span>, <span class="va">fitted_parameter_names</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">fit_params_SMC</span><span class="op">[</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b0"</span>, <span class="st">"b1"</span>, <span class="st">"phi"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-  </main>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
