@@ -5,8 +5,8 @@
 #' @param overrides List of default parameters to change.
 #' @param contact_population_list List of outputs from the \code{create_contact_matrix} function.
 #' @return Parameter list. Default values: \cr
-#' \code{b0}: 0.08. Transmission rate coefficient. \cr
-#' \code{b1}: 0. Amplitude of seasonal forcing in the transmission rate. \cr
+#' \code{b0}: 0.125. Transmission rate coefficient. \cr
+#' \code{b1}: 0.1. Amplitude of seasonal forcing in the transmission rate. \cr
 #' \code{phi}: 0. Phase shift of the seasonal forcing. \cr
 #' \code{delta}: 1/4. Inverse of the latent period. \cr
 #' \code{gamma_s}: 1/8. Inverse of the infectious period of subsequent (secondary) infections. \cr
@@ -33,7 +33,7 @@
 #' Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
 #' assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
 #' Changes in effective coverage with are given as a model output.  \cr
-#' \code{VE}: 0.85 for all ages and vaccinated states. Vaccine efficacy for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
+#' \code{VE_INF}: 0.85 for all ages and vaccinated states. Vaccine efficacy against infection for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
 #' and the number of columns should be equal to nVaccStates - 1. \cr
 #' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0, doses0}: initial conditions to run the model for each compartment -
 #' these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
@@ -96,8 +96,8 @@ RSVsim_parameters <- function(overrides = list(),
          alpha_vect[age_limits < 10] <- 0.4
 
          parameters <- list(
-           "b0" = 0.08, # transmission rate coefficient 0.087
-           "b1" = 0,#-0.193, # amplitude of seasonal forcing
+           "b0" = 0.125, # transmission rate coefficient 0.087
+           "b1" = 0.1,#-0.193, # amplitude of seasonal forcing
            "phi" = 0, # phase shift of seasonal forcing
            "delta" = 1/4, # inverse of the latent period
            "gamma_s" = 1/8, # inverse of the infectious period of subsequent (secondary +) infections
@@ -121,7 +121,7 @@ RSVsim_parameters <- function(overrides = list(),
            "vaccine_times" = c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30),
            "vaccine_period" = rep(30, 5),
            "vaccine_cov" = matrix(rep(0, nAges * 5), nrow = nAges, ncol = 5),
-           "VE" = matrix(rep(0.85, nAges), ncol = 1, nrow = nAges)
+           "VE_INF" = matrix(rep(0.85, nAges), ncol = 1, nrow = nAges)
          )
          }
   )
@@ -150,8 +150,8 @@ RSVsim_parameters <- function(overrides = list(),
       stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
     }
 
-    if(name == "VE" & length(overrides[[name]]) != nAges * (nVaccStates - 1)){
-      stop("RSVsim_parameters: VE is not the correct dimensions")
+    if(name == "VE_INF" & length(overrides[[name]]) != nAges * (nVaccStates - 1)){
+      stop("RSVsim_parameters: VE_INF is not the correct dimensions")
     }
 
     if(name == "max_cov" &&
@@ -225,8 +225,8 @@ RSVsim_parameters <- function(overrides = list(),
     stop("vaccine_cov values must be between 0 and 1")
   }
 
-  if(max(parameters$VE) > 1 | min(parameters$VE) < 0){
-    stop("VE must be between 0 and 1")
+  if(max(parameters$VE_INF) > 1 | min(parameters$VE_INF) < 0){
+    stop("VE_INF must be between 0 and 1")
   }
 
   with(parameters,
