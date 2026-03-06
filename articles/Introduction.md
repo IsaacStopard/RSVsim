@@ -82,7 +82,7 @@ calculated.
 The incidence and doses are given as the number that occurred for each
 time step. The time-steps when cohort ageing occurs are included in the
 simulation. Usually the difference between these and the time-steps
-provided in are different meaning the incidence or doses are not
+provided in `times` are different meaning the incidence or doses are not
 consistently calculated over the time frame and can therefore appear to
 rapidly change. To estimate the incidence or doses over consistent
 time-steps we must therefore sum the incidence grouped by the primary

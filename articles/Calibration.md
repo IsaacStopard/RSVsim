@@ -106,8 +106,8 @@ target summary statistics. We set the a range of tolerances using
 different percentiles of the distances and check the number of these
 simulations that are accepted for each tolerance, and use the smallest
 tolerance with at least 1 simulation accepted. **This method of
-calculating suitable tolerance values is optional and custom values can
-be specified by the user.**
+calculating suitable tolerance values is optional and custom `epsilon`
+values can be specified by the user.**
 
 ``` r
 #################################
@@ -220,8 +220,8 @@ decreasing acceptance rate; the tolerances are stored in a matrix with
 each column corresponding to each summary statistic and the rows
 corresponding to each tolerance level (the lowest tolerance in the last
 row) (`G`; generation). **Again, this method of calculating suitable
-tolerance values is optional and custom values can be specified by the
-user.**
+tolerance values is optional and custom `epsilon_matrix` values can be
+specified by the user.**
 
 ``` r
 nsuccess <- rep(NA, n_check)
@@ -281,14 +281,15 @@ fit_smc <- RSVsim_ABC_SMC(target = target,
 ```
 
 **Running the model with the fitted parameters.** The ABC algorithms
-return matrices of the fitted parameter values. For this is the main
-output and for a list of the fitted parameter values is returned for
-each generation. The fitted parameter columns correspond to the
-parameter and the rows correspond to each accepted parameter
-combination. To run the model with one particle (combination of fitted
-parameters) we can therefore select the correct matrix of fitted
-parameters and use the to adjust the parameters. For example, if I want
-to run the *first* accepted particle:
+return matrices of the fitted parameter values. For
+`RSVsim_ABC_rejection` this is the main output and for `RSVsim_ABC_SMC`
+a list of the fitted parameter values is returned for each generation.
+The fitted parameter columns correspond to the parameter and the rows
+correspond to each accepted parameter combination. To run the model with
+one particle (combination of fitted parameters) we can therefore select
+the correct matrix of fitted parameters and use the
+`RSVsim_update_parameters` to adjust the parameters. For example, if I
+want to run the *first* accepted particle:
 
 ``` r
 

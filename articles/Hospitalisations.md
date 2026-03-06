@@ -11,21 +11,22 @@ the time until hospitalisation is therefore ignored.
 ## Probability of hospitalisation given infection
 
 Hospitalisation rates (among the whole population) might be sampled but
-the total incidence not known. If so, we can use to estimate the
-incidence in the setting in which the age specific hospitalisation rates
-were estimated and use this incidence and the hospitalisation rates to
-calculate the probability of hospitalisation given infection (infection
-hospitalisation rate; IHR). The probability of hospitalisation given
-unvaccinated infection for age group $i$ is calculated as
-$p\left( hosp|inf,i \right) = \frac{H_{i}}{I_{i}}$, where $H_{i}$ is the
-number of hospitalisations in age group $i$ and $I_{i}$ is the
-corresponding incidence. The age-specific hospitalisation rates per
-person is $h_{i} = \frac{H_{i}}{N_{i}}$, where $N_{i}$ is the population
-size, meaning $p\left( hosp|inf \right) = \frac{h_{i}}{I_{i}/N_{i}}$.
-Similarly, we can calculate $p\left( hosp|inf \right)$ in unvaccinated
-people assuming a given vaccine efficacy against hospitalisation
-conditional on infection for each vaccinated state ($VE_{v}^{C}$) and
-hospitalisation rates, thus,
+the total incidence not known. If so, we can use `RSVsim` to estimate
+the incidence in the setting in which the age specific hospitalisation
+rates were estimated and use this incidence and the hospitalisation
+rates to calculate the probability of hospitalisation given infection
+(infection hospitalisation rate; IHR). The probability of
+hospitalisation given unvaccinated infection for age group $i$ is
+calculated as $p\left( hosp|inf,i \right) = \frac{H_{i}}{I_{i}}$, where
+$H_{i}$ is the number of hospitalisations in age group $i$ and $I_{i}$
+is the corresponding incidence. The age-specific hospitalisation rates
+per person is $h_{i} = \frac{H_{i}}{N_{i}}$, where $N_{i}$ is the
+population size, meaning
+$p\left( hosp|inf \right) = \frac{h_{i}}{I_{i}/N_{i}}$. Similarly, we
+can calculate $p\left( hosp|inf \right)$ in unvaccinated people assuming
+a given vaccine efficacy against hospitalisation conditional on
+infection for each vaccinated state ($VE_{v}^{C}$) and hospitalisation
+rates, thus,
 
 $$p\left( hosp|inf,i \right) = \frac{h_{i}}{\frac{I_{1i}}{N_{1i}} + \sum\limits_{2}^{V}\frac{I_{vi}}{N_{vi}}\left( 1 - VE_{vi}^{C} \right)}$$
 
@@ -34,11 +35,11 @@ vaccine efficacy against infection ($VE_{I}$) we can calculate the
 vaccine efficacy against hospitalisation conditional on infection thus,
 
 $$VE_{i}^{C} = 1 - \frac{1 - VE_{i}^{H}}{1 - VE_{i}^{I}}$$ We provide
-the function to calculate this; when $VE^{I}$ has more ages than
-$VE^{H}$ the function only calculates the values for ages which are
-present in both. In this example we assume no existing vaccination. The
-default vaccination states are 1 (unvaccinated) and 2 (vaccinated).
-First, we use to approximate the incidence.
+the `RSVsim_VE_hosp_given_inf` function to calculate this; $VE^{I}$
+should have the same ages $VE^{H}$. In this example we assume no
+existing vaccination. The default vaccination states are 1
+(unvaccinated) and 2 (vaccinated). First, we use `RSVsim_run_model` to
+approximate the incidence.
 
 ``` r
 
@@ -58,10 +59,11 @@ sim_status_quo <- RSVsim_run_model(parameters = parameters,
                                    warm_up = warm_up)
 ```
 
-We can then use the function to estimate $p\left( hosp|inf \right)$ for
-given values of $h_{i}$ (note these must be per person). We must also
-provide the times over which the hospitalisations are estimated and the
-vaccine efficacy against hospitalisation for each vaccinated state.
+We can then use the `RSVsim_prob_hosp_given_inf` function to estimate
+$p\left( hosp|inf \right)$ for given values of $h_{i}$ (note these must
+be per person). We must also provide the times over which the
+hospitalisations are estimated and the vaccine efficacy against
+hospitalisation for each vaccinated state.
 
 ``` r
 
@@ -91,13 +93,14 @@ prob_hosp_given_inf_list <- RSVsim_prob_hosp_given_inf(hosp_rate = hosp_rate,
 ## Hospitalisations
 
 We also provide a function to estimate the number of hospitalisations in
-different scenarios from the outputs and known
+different scenarios from the `RSVsim_run_model` outputs and known
 $p\left( hosp|inf \right)$. First, we simulate a novel scenario and then
-use the function to estimate the number of hospitalisations over each
-time-step. In this example, we will use the $p\left( hosp|inf \right)$
-values estimated using the function. The function returns a list of
-$p\left( hosp|inf,i \right)$ and the model outputs with
-hospitalisations.
+use the `RSVsim_hospitalisations` function to estimate the number of
+hospitalisations over each time-step. In this example, we will use the
+$p\left( hosp|inf \right)$ values estimated using the
+`RSVsim_prob_hosp_given_inf` function. The `RSVsim_prob_hosp_given_inf`
+function returns a list of $p\left( hosp|inf,i \right)$ and the
+`sim_status_quo` model outputs with hospitalisations.
 
 ``` r
 

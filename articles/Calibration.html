@@ -168,8 +168,8 @@ target summary statistics. We set the a range of tolerances using
 different percentiles of the distances and check the number of these
 simulations that are accepted for each tolerance, and use the smallest
 tolerance with at least 1 simulation accepted. <strong>This method of
-calculating suitable tolerance values is optional and custom values can
-be specified by the user.</strong></p>
+calculating suitable tolerance values is optional and custom
+<code>epsilon</code> values can be specified by the user.</strong></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#################################</span></span>
 <span><span class="co">##### setting the tolerance #####</span></span>
@@ -275,8 +275,9 @@ for a decreasing acceptance rate; the tolerances are stored in a matrix
 with each column corresponding to each summary statistic and the rows
 corresponding to each tolerance level (the lowest tolerance in the last
 row) (<code>G</code>; generation). <strong>Again, this method of
-calculating suitable tolerance values is optional and custom values can
-be specified by the user.</strong></p>
+calculating suitable tolerance values is optional and custom
+<code>epsilon_matrix</code> values can be specified by the
+user.</strong></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nsuccess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="va">n_check</span><span class="op">)</span></span>
 <span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="va">n_check</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">/</span><span class="va">n_check</span><span class="op">)</span></span>
@@ -332,14 +333,16 @@ times and cohort step sizes used in <code>RSVsim_run_model</code>.</p>
 <span>                          cohort_step_size <span class="op">=</span> <span class="fl">0.2</span><span class="op">*</span><span class="fl">365</span>, <span class="co"># time at which to age people</span></span>
 <span>                          warm_up <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Running the model with the fitted parameters.</strong> The
-ABC algorithms return matrices of the fitted parameter values. For this
-is the main output and for a list of the fitted parameter values is
+ABC algorithms return matrices of the fitted parameter values. For
+<code>RSVsim_ABC_rejection</code> this is the main output and for
+<code>RSVsim_ABC_SMC</code> a list of the fitted parameter values is
 returned for each generation. The fitted parameter columns correspond to
 the parameter and the rows correspond to each accepted parameter
 combination. To run the model with one particle (combination of fitted
 parameters) we can therefore select the correct matrix of fitted
-parameters and use the to adjust the parameters. For example, if I want
-to run the <em>first</em> accepted particle:</p>
+parameters and use the <code>RSVsim_update_parameters</code> to adjust
+the parameters. For example, if I want to run the <em>first</em>
+accepted particle:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># ABC rejection</span></span>
