@@ -10,14 +10,14 @@ RSVsim_prob_hosp_given_inf(
   hosp_rate_min_time,
   hosp_rate_max_time,
   sim_status_quo,
-  VE_HOSP,
-  VE_HOSP_vacc_states
+  VE_hosp_given_inf,
+  VE_hosp_vacc_states
 )
 }
 \arguments{
 \item{hosp_rate}{Vector of age-specific RSV hospitalisation rates (per person) in the status quo scenario.}
 
-\item{age_limits_hosp_rate}{Vector of ages corresponding to the first age of each age category for the hospitalisation rates and probability of hospitalisation given infection. These ages must be present in the age_limits used to run the simulations.}
+\item{age_limits_hosp_rate}{Vector of ages corresponding to the first age of each age category in (1) the hospitalisation rates (\code{hosp_rate}) and (2) the probability of hospitalisation given infection (\code{prob_hosp_given_inf}). These ages must be present in the age_limits used to run the simulations.}
 
 \item{hosp_rate_min_time}{Minimum simulation time to select when summing the hospitalisations to calculate the hospitalisation rates.}
 
@@ -25,9 +25,9 @@ RSVsim_prob_hosp_given_inf(
 
 \item{sim_status_quo}{\code{RSVsim_run_model} output used to estimate the number of infections when calculating the probability of hospitalisation given infection.}
 
-\item{VE_HOSP}{Matrix of age-specific vaccine efficacy against hospitalisation. Rows must correspond to the ages in \code{age_limits_hosp_rate}, and columns must correspond to the vaccinated states used in \code{RSVsim_run_model}.}
+\item{VE_hosp_given_inf}{Matrix of age-specific vaccine efficacy against hospitalisation given infection (\code{VE_hosp_given_inf}). Rows must correspond to the ages in \code{age_limits}, and columns must correspond to the vaccinated states used in \code{RSVsim_run_model}.}
 
-\item{VE_HOSP_vacc_states}{vector of integers indicating the vaccinated states used in \code{RSVsim_run_model}.}
+\item{VE_hosp_vacc_states}{vector of integers indicating the vaccinated states used in \code{RSVsim_run_model}.}
 }
 \value{
 List of probability of hospitalisation given infection  and \code{sim_status_quo} model outputs with hospitalisations.

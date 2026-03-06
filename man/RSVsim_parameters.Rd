@@ -41,7 +41,7 @@ Parameter list. Default values: \cr
 Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
 assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
 Changes in effective coverage with are given as a model output.  \cr
-\code{VE_INF}: 0.85 for all ages and vaccinated states. Vaccine efficacy against infection for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
+\code{VE_inf}: 0.5 for all ages and vaccinated states. Vaccine efficacy against infection for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
 and the number of columns should be equal to nVaccStates - 1. \cr
 \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0, doses0}: initial conditions to run the model for each compartment -
 these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.

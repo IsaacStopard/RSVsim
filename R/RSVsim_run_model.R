@@ -166,8 +166,8 @@ RSVsim_run_model <- function(parameters,
 
   # incidence calculation
   data.table::setDTthreads(1)
-  data.table::setDT(out_checkout)
-  data.table::setDT(dust_df)
+  out_checkout <- data.table::as.data.table(out_checkout)
+  dust_df <- data.table::as.data.table(dust_df)
 
   # pivot longer
   out_checkout <- data.table::melt(out_checkout,

@@ -18,19 +18,28 @@ knitr::opts_chunk$set(
 library(RSVsim)
 ```
 
-We do not explicitly include hospitalisation in the ODE model, but can estimate the hospitalisations from the simulated incidence. Note the time until hospitalisation is therefore ignored.
+We do not explicitly include hospitalisation in the transmission model, but can estimate the hospitalisations from the simulated incidence. Note the time until hospitalisation is therefore ignored.
 
 ## Probability of hospitalisation given infection
 
-The probability of hospitalisation given unvaccinated infection for age group $i$ is calculated as $p(hosp|inf,i) = \frac{H_{i}}{I_{i}}$, where $H_{i}$ is the number of hospitalisations in age group $i$ and $I_{i}$ is the corresponding incidence. The age-specific hospitalisation rates per person is $h_{i}=\frac{H_{i}}{N_{i}}$, where $N_{i}$ is the population size, meaning $p(hosp|inf) = \frac{h_{i}}{I_{i}/N_{i}}$. Similarly, we can calculate $p(hosp|inf)$ in unvaccinated people assuming a given vaccine efficacy against hospitalisation for each vaccinated state ($VE_{v}$) and hospitalisation rates, thus,
+Hospitalisation rates (among the whole population) might be sampled but the total incidence not known. If so, we can use \code{RSVsim} to estimate the incidence in the setting in which the age specific hospitalisation rates were estimated and use this incidence and the hospitalisation rates to calculate the probability of hospitalisation given infection (infection hospitalisation rate; IHR). The probability of hospitalisation given unvaccinated infection for age group $i$ is calculated as $p(hosp|inf,i) = \frac{H_{i}}{I_{i}}$, where $H_{i}$ is the number of hospitalisations in age group $i$ and $I_{i}$ is the corresponding incidence. The age-specific hospitalisation rates per person is $h_{i}=\frac{H_{i}}{N_{i}}$, where $N_{i}$ is the population size, meaning $p(hosp|inf) = \frac{h_{i}}{I_{i}/N_{i}}$. Similarly, we can calculate $p(hosp|inf)$ in unvaccinated people assuming a given vaccine efficacy against hospitalisation conditional on infection for each vaccinated state ($VE^{C}_{v}$) and hospitalisation rates, thus,
 
 $$
-p(hosp|inf,i) = \frac{h_{i}}{\frac{I_{1i}}{N_{1i}} + \sum_{2}^{V} \frac{I_{vi}}{N_{vi}}(1 - VE_{vi})}
+p(hosp|inf,i) = \frac{h_{i}}{\frac{I_{1i}}{N_{1i}} + \sum_{2}^{V} \frac{I_{vi}}{N_{vi}}(1 - VE^{C}_{vi})}
 $$
 
-In reality, hospitalisation rates are typically sampled, but the total incidence is unknown. We can therefore use \code{RSVsim} to estimate the incidence in the scenario corresponding to setting in which the age specific hospitalisation rates were estimated. In this example we assume no existing vaccination. The default vaccination states are 1 (unvaccinated) and 2 (vaccinated). First, we use \code{RSVsim_run_model} to approximate the incidence.
+With an overall vaccine efficacy against hospitalisation ($VE_{H}$) and vaccine efficacy against infection ($VE_{I}$) we can calculate the vaccine efficacy against hospitalisation conditional on infection thus,
+
+$$
+VE_{i}^{C} = 1 - \frac{1 - VE_{i}^{H}}{1 - VE_{i}^{I}}
+$$
+We provide the \code{RSVsim_VE_hosp_given_inf} function to calculate this; when $VE^{I}$ has more ages than $VE^{H}$ the function only calculates the values for ages which are present in both. In this example we assume no existing vaccination. The default vaccination states are 1 (unvaccinated) and 2 (vaccinated). First, we use \code{RSVsim_run_model} to approximate the incidence.
 
 ```{r, eval=FALSE}
+
+times <- seq(0, 365.25*11, 0.25)
+warm_up <- 365.25 * 10
+cohort_step_size <- 1/12 * 365.25
 
 age_limits <- c(seq(0, 5, 1/12), seq(10, 75, 5))
 
@@ -39,9 +48,9 @@ contact_population_list <- RSVsim_contact_matrix(age_limits = age_limits)
 parameters <- RSVsim_parameters(contact_population_list = contact_population_list)
 
 sim_status_quo <- RSVsim_run_model(parameters = parameters,
-                                   times = seq(0, 365.25*11, 0.25),
-                                   cohort_step_size = 1/12 * 365.25,
-                                   warm_up = 365.25 * 10)
+                                   times = times,
+                                   cohort_step_size = cohort_step_size,
+                                   warm_up = warm_up)
 
 ```
 
@@ -57,53 +66,70 @@ hosp_rate <- c(5338.91375, 1751.145228, 715.9402014, 208.4621667, 10.86702733, 2
 
 age_limits_hosp_rate <- c(0, 0.5, 1, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75) # lower age limits of the hospitalisation rate data
 
-VE_HOSP <- matrix(rep(0.1, length(age_limits_hosp_rate)), ncol = 1)
+# vaccine efficacy against hospitalisation conditional on infection
+VE_hosp <- matrix(rep(0.8, length(age_limits)), ncol = 1) # age-specific vaccine efficacy against hospitalisation
+VE_inf <- parameters$VE_inf
+VE_hosp_given_inf <- RSVsim_VE_hosp_given_inf(VE_hosp = VE_hosp, VE_inf = VE_inf)
 
 prob_hosp_given_inf_list <- RSVsim_prob_hosp_given_inf(hosp_rate = hosp_rate,
                                                        age_limits_hosp_rate = age_limits_hosp_rate,
-                                                       hosp_rate_min_time = 0,
+                                                       hosp_rate_min_time = 0, # time frame over which to sum incidence
                                                        hosp_rate_max_time = 365.25,
                                                        sim_status_quo = sim_status_quo,
-                                                       VE_HOSP = VE_HOSP,
-                                                       VE_HOSP_vacc_states = c(2) # vector identifying the vaccination states that are vaccinated (position corresponds to the column position in VE_HOSP)
+                                                       VE_hosp_given_inf = VE_hosp_given_inf,
+                                                       VE_hosp_vacc_states = c(2) # vector identifying the vaccination states that are vaccinated (position corresponds to the column position in VE_hosp)
                                                        )
-
 ```
 
 ## Hospitalisations
 
-The \code{RSVsim_prob_hosp_given_inf} function returns a list of $p(hosp|inf,i)$ and the \code{sim_status_quo} model outputs with hospitalisations. We can then use these probabilities to calculate the hospitalisations from the simulated incidence in different scenarios.
+We also provide a function to estimate the number of hospitalisations in different scenarios from the \code{RSVsim_run_model} outputs and known $p(hosp|inf)$. First, we simulate a novel scenario and then use the \code{RSVsim_hospitalisations} function to estimate the number of hospitalisations over each time-step. In this example, we will use the $p(hosp|inf)$ values estimated using the \code{RSVsim_prob_hosp_given_inf} function. The \code{RSVsim_prob_hosp_given_inf} function returns a list of $p(hosp|inf,i)$ and the \code{sim_status_quo} model outputs with hospitalisations.
 
 ```{r, eval=FALSE}
 
-# single 30 day vaccination campaign in the oldest age group
+#################################
+##### transmission dynamics #####
+#################################
+
+# single 30 day vaccination campaign
 vaccine_times <- c(0, c(90, 120) + 365.25 * 10)
 vaccine_period <- diff(c(vaccine_times, max(vaccine_times)))
+vaccine_period[vaccine_period == 0] <- 30
 nVaccTimes <- length(vaccine_times)
 
 nAges <- length(contact_population_list$age_limits)
 
-# vaccination campaign target coverage: 80%
-vaccine_cov <- rbind(matrix(rep(0, (nAges-1) * nVaccTimes),
-                            nrow = (nAges-1), ncol = nVaccTimes),
-                     c(0, 0.70, 0))
+# vaccination campaign target coverage: 80% in the oldest age group
+vaccine_cov <- rbind(matrix(rep(0, (nAges-1) * nVaccTimes), nrow = (nAges-1), ncol = nVaccTimes),
+                     c(0, 0.8, 0))
 
-# not necessary due to default settings but included for completeness
 nVaccStates <- 2
-VE <- matrix(rep(0.85, nAges * (nVaccStates-1)), nrow = nAges) # vaccine efficacy against infection
+VE_inf <- matrix(rep(0.5, nAges * (nVaccStates-1)), nrow = nAges) # vaccine efficacy against infection
 gamma_vaccine <- 1 / (365.25 * 2)
 
-sim_vaccination <- RSVsim_run_model(parameters = RSVsim_parameters(overrides = list("vaccine_times" = vaccine_times,
-                                                                                    "vaccine_period" = vaccine_period,
-                                                                                    "nVaccTimes" = nVaccTimes,
-                                                                                    "vaccine_cov" = vaccine_cov,
-                                                                                    "nVaccStates" = nVaccStates,
-                                                                                    "VE" = VE,
-                                                                                    "gamma_vaccine" = gamma_vaccine),
-                                                                   contact_population_list = contact_population_list),
-                                    times = seq(0, 365.25*11, 0.25),
-                                    cohort_step_size = 1/12 * 365.25, # time at which to age people
-                                    warm_up = 365.25 * 10)
+vac_parameters <- RSVsim_parameters(overrides = list("vaccine_times" = vaccine_times,
+                                                     "vaccine_period" = vaccine_period,
+                                                     "nVaccTimes" = nVaccTimes,
+                                                     "vaccine_cov" = vaccine_cov,
+                                                     "nVaccStates" = nVaccStates,
+                                                     "VE_inf" = VE_inf,
+                                                     "gamma_vaccine" = gamma_vaccine),
+                                    contact_population_list = contact_population_list)
+
+sim_vaccination <- RSVsim_run_model(parameters = vac_parameters,
+                                    times = times,
+                                    cohort_step_size = cohort_step_size, # time at which to age people
+                                    warm_up = warm_up)
+
+############################
+##### hospitalisations #####
+############################
+
+sim_vaccination <- RSVsim_hospitalisations(prob_hosp_given_inf = prob_hosp_given_inf_list[["prob_hosp_given_inf_uv"]],
+                                           age_limits_hosp_rate = age_limits_hosp_rate,
+                                           sim_scenario = sim_vaccination,
+                                           VE_hosp_given_inf = VE_hosp_given_inf,
+                                           VE_hosp_vacc_states = c(2))
 
 ```
 

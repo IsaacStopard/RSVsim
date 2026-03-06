@@ -19,7 +19,7 @@
 // [[dust2::parameter(sigma_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(alpha_vect, type = "real_type", rank = 1, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(matrix_per_person, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
-// [[dust2::parameter(VE_INF, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
+// [[dust2::parameter(VE_inf, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Sp0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ep0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
 // [[dust2::parameter(Ip0, type = "real_type", rank = 2, required = TRUE, constant = FALSE)]]
@@ -58,7 +58,7 @@ public:
       dust2::array::dimensions<1> temp;
       dust2::array::dimensions<2> s_ij;
       dust2::array::dimensions<1> lambda;
-      dust2::array::dimensions<2> VE_INF;
+      dust2::array::dimensions<2> VE_inf;
       dust2::array::dimensions<2> doses;
       dust2::array::dimensions<2> Sp;
       dust2::array::dimensions<2> Ep;
@@ -112,7 +112,7 @@ public:
     std::vector<real_type> sigma_vect;
     std::vector<real_type> alpha_vect;
     std::vector<real_type> matrix_per_person;
-    std::vector<real_type> VE_INF;
+    std::vector<real_type> VE_inf;
     std::vector<real_type> Sp0;
     std::vector<real_type> Ep0;
     std::vector<real_type> Ip0;
@@ -174,7 +174,7 @@ public:
     dim.temp.set({static_cast<size_t>(nAges)});
     dim.s_ij.set({static_cast<size_t>(nAges), static_cast<size_t>(nAges)});
     dim.lambda.set({static_cast<size_t>(nAges)});
-    dim.VE_INF.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates - 1)});
+    dim.VE_inf.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates - 1)});
     dim.doses.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
     dim.Sp.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
     dim.Ep.set({static_cast<size_t>(nAges), static_cast<size_t>(nVaccStates)});
@@ -223,8 +223,8 @@ public:
     dust2::r::read_real_array(parameters, dim.alpha_vect, alpha_vect.data(), "alpha_vect", true);
     std::vector<real_type> matrix_per_person(dim.matrix_per_person.size);
     dust2::r::read_real_array(parameters, dim.matrix_per_person, matrix_per_person.data(), "matrix_per_person", true);
-    std::vector<real_type> VE_INF(dim.VE_INF.size);
-    dust2::r::read_real_array(parameters, dim.VE_INF, VE_INF.data(), "VE_INF", true);
+    std::vector<real_type> VE_inf(dim.VE_inf.size);
+    dust2::r::read_real_array(parameters, dim.VE_inf, VE_inf.data(), "VE_inf", true);
     std::vector<real_type> Sp0(dim.Sp0.size);
     dust2::r::read_real_array(parameters, dim.Sp0, Sp0.data(), "Sp0", true);
     std::vector<real_type> Ep0(dim.Ep0.size);
@@ -280,7 +280,7 @@ public:
       {"VaccState_rate", std::vector<size_t>(dim.VaccState_rate.dim.begin(), dim.VaccState_rate.dim.end())}
     };
     odin.packing.state.copy_offset(odin.offset.state.begin());
-    return shared_state{odin, dim, nAges, nVaccStates, b0, b1, phi, delta, gamma_s, gamma_p, nu, nVaccTimes, gamma_vaccine, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_per_person, VE_INF, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0, doses0, vaccine_times, vaccine_cov, vaccine_period, vaccine_rate, gamma_vaccine_I, interpolate_vr};
+    return shared_state{odin, dim, nAges, nVaccStates, b0, b1, phi, delta, gamma_s, gamma_p, nu, nVaccTimes, gamma_vaccine, omega_vect, prop_detected_vect, sigma_vect, alpha_vect, matrix_per_person, VE_inf, Sp0, Ep0, Ip0, Ss0, Es0, Is0, R0, Incidence0, doses0, vaccine_times, vaccine_cov, vaccine_period, vaccine_rate, gamma_vaccine_I, interpolate_vr};
   }
   static internal_state build_internal(const shared_state& shared) {
     std::vector<real_type> N(shared.dim.N.size);
@@ -316,7 +316,7 @@ public:
     dust2::r::read_real_array(parameters, shared.dim.sigma_vect, shared.sigma_vect.data(), "sigma_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.alpha_vect, shared.alpha_vect.data(), "alpha_vect", false);
     dust2::r::read_real_array(parameters, shared.dim.matrix_per_person, shared.matrix_per_person.data(), "matrix_per_person", false);
-    dust2::r::read_real_array(parameters, shared.dim.VE_INF, shared.VE_INF.data(), "VE_INF", false);
+    dust2::r::read_real_array(parameters, shared.dim.VE_inf, shared.VE_inf.data(), "VE_inf", false);
     dust2::r::read_real_array(parameters, shared.dim.Sp0, shared.Sp0.data(), "Sp0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ep0, shared.Ep0.data(), "Ep0", false);
     dust2::r::read_real_array(parameters, shared.dim.Ip0, shared.Ip0.data(), "Ip0", false);
@@ -436,7 +436,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_INF[i - 1 + ((j - 1) - 1) * shared.dim.VE_INF.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_inf[i - 1 + ((j - 1) - 1) * shared.dim.VE_inf.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -444,7 +444,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_INF[i - 1 + ((j - 1) - 1) * shared.dim.VE_INF.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_inf[i - 1 + ((j - 1) - 1) * shared.dim.VE_inf.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -578,7 +578,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_INF[i - 1 + ((j - 1) - 1) * shared.dim.VE_INF.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
+        internal.incidence_rate_p[i - 1 + (j - 1) * shared.dim.incidence_rate_p.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_inf[i - 1 + ((j - 1) - 1) * shared.dim.VE_inf.mult[1]]) * Sp[i - 1 + (j - 1) * shared.dim.Sp.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
@@ -586,7 +586,7 @@ public:
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {
       for (size_t j = 2; j <= static_cast<size_t>(shared.nVaccStates); ++j) {
-        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_INF[i - 1 + ((j - 1) - 1) * shared.dim.VE_INF.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
+        internal.incidence_rate_s[i - 1 + (j - 1) * shared.dim.incidence_rate_s.mult[1]] = internal.lambda[i - 1] * shared.sigma_vect[i - 1] * (1 - shared.VE_inf[i - 1 + ((j - 1) - 1) * shared.dim.VE_inf.mult[1]]) * shared.alpha_vect[i - 1] * Ss[i - 1 + (j - 1) * shared.dim.Ss.mult[1]];
       }
     }
     for (size_t i = 1; i <= static_cast<size_t>(shared.nAges); ++i) {

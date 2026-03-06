@@ -33,7 +33,7 @@
 #' Age-specific proportion of unvaccinated people to have been vaccinated by the end of the vaccination distribution for each \code{vaccine_time},
 #' assuming no waning of vaccination. The vaccination rate is calculated as \code{-log(1 - vaccine_cov) / vaccine_period}. Default is 0 coverage for all ages.
 #' Changes in effective coverage with are given as a model output.  \cr
-#' \code{VE_INF}: 0.85 for all ages and vaccinated states. Vaccine efficacy against infection for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
+#' \code{VE_inf}: 0.5 for all ages and vaccinated states. Vaccine efficacy against infection for each age group and vaccinated state. Number of rows must be equal to the number of age groups,
 #' and the number of columns should be equal to nVaccStates - 1. \cr
 #' \code{Sp0, Ss0, Ep0, Es0, Ip0, Is0, R0, Incidence0, doses0}: initial conditions to run the model for each compartment -
 #' these are given as prevalence and the initial conditions calculated in this function. List. Default: \code{NULL}.
@@ -121,7 +121,7 @@ RSVsim_parameters <- function(overrides = list(),
            "vaccine_times" = c(0, 365.25, 365.25 + 30, 730.5, 730.5 + 30),
            "vaccine_period" = rep(30, 5),
            "vaccine_cov" = matrix(rep(0, nAges * 5), nrow = nAges, ncol = 5),
-           "VE_INF" = matrix(rep(0.85, nAges), ncol = 1, nrow = nAges)
+           "VE_inf" = matrix(rep(0.5, nAges), ncol = 1, nrow = nAges)
          )
          }
   )
@@ -150,8 +150,8 @@ RSVsim_parameters <- function(overrides = list(),
       stop(paste("RSVsim_parameters:", name, "is not the correct length", sep = ' '))
     }
 
-    if(name == "VE_INF" & length(overrides[[name]]) != nAges * (nVaccStates - 1)){
-      stop("RSVsim_parameters: VE_INF is not the correct dimensions")
+    if(name == "VE_inf" & length(overrides[[name]]) != nAges * (nVaccStates - 1)){
+      stop("RSVsim_parameters: VE_inf is not the correct dimensions")
     }
 
     if(name == "max_cov" &&
@@ -222,11 +222,15 @@ RSVsim_parameters <- function(overrides = list(),
   }
 
   if(max(parameters$vaccine_cov) > 1 | min(parameters$vaccine_cov)){
-    stop("vaccine_cov values must be between 0 and 1")
+    stop("RSVsim_parameters: vaccine_cov values must be between 0 and 1")
   }
 
-  if(max(parameters$VE_INF) > 1 | min(parameters$VE_INF) < 0){
-    stop("VE_INF must be between 0 and 1")
+  if(max(parameters$VE_inf) > 1 | min(parameters$VE_inf) < 0){
+    stop("RSVsim_parameters: VE_inf must be between 0 and 1")
+  }
+
+  if(min(parameters$vaccine_period) <= 0){
+    stop("RSVsim_parameters: vaccine_period must be greater than 0")
   }
 
   with(parameters,
