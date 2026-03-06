@@ -66,7 +66,7 @@ by the end of the vaccination distribution for each `vaccine_time`,
 assuming no waning of vaccination. The vaccination rate is calculated as
 `-log(1 - vaccine_cov) / vaccine_period`. Default is 0 coverage for all
 ages. Changes in effective coverage with are given as a model output.  
-`VE_INF`: 0.85 for all ages and vaccinated states. Vaccine efficacy
+`VE_inf`: 0.5 for all ages and vaccinated states. Vaccine efficacy
 against infection for each age group and vaccinated state. Number of
 rows must be equal to the number of age groups, and the number of
 columns should be equal to nVaccStates - 1.  

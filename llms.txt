@@ -55,6 +55,9 @@ contacts per person, $M$). The population is stratified into susceptible
   : Function to run an Approximate Bayesian Computation (ABC) rejection
   algorithm
 
+- [`RSVsim_VE_hosp_given_inf()`](https://isaacstopard.github.io/RSVsim/reference/RSVsim_VE_hosp_given_inf.md)
+  : Vaccine efficacy against hospitalisation conditional on infection
+
 - [`RSVsim_abs_dist_fun()`](https://isaacstopard.github.io/RSVsim/reference/RSVsim_abs_dist_fun.md)
   : Distance function to calculate the absolute difference between two
   vectors.

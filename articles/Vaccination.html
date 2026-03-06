@@ -93,6 +93,7 @@ over 70 years old.</p>
 <span></span>
 <span><span class="co"># vaccination times - must include 0 </span></span>
 <span><span class="co"># vaccination starts on day 90 + warm_up and ends on day 120 + warm_up</span></span>
+<span><span class="co"># vaccine_period must be greater than 0</span></span>
 <span><span class="va">vaccine_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">120</span><span class="op">)</span> <span class="op">+</span> <span class="va">warm_up</span><span class="op">)</span></span>
 <span><span class="va">vaccine_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">vaccine_times</span>, <span class="va">max_time</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">nVaccTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">vaccine_times</span><span class="op">)</span></span>
@@ -106,7 +107,7 @@ over 70 years old.</p>
 <span></span>
 <span><span class="co"># not necessary but included for completeness</span></span>
 <span><span class="va">nVaccStates</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
-<span><span class="va">VE_INF</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="va">nAges</span> <span class="op">*</span> <span class="op">(</span><span class="va">nVaccStates</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span> <span class="co"># vaccine efficacy against infection</span></span>
+<span><span class="va">VE_inf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="va">nAges</span> <span class="op">*</span> <span class="op">(</span><span class="va">nVaccStates</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span> <span class="co"># vaccine efficacy against infection</span></span>
 <span><span class="va">gamma_vaccine</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">365.25</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># specify the parameters</span></span>
@@ -115,7 +116,7 @@ over 70 years old.</p>
 <span>                                                 <span class="st">"nVaccTimes"</span> <span class="op">=</span> <span class="va">nVaccTimes</span>,</span>
 <span>                                                 <span class="st">"vaccine_cov"</span> <span class="op">=</span> <span class="va">vaccine_cov</span>,</span>
 <span>                                                 <span class="st">"nVaccStates"</span> <span class="op">=</span> <span class="va">nVaccStates</span>,</span>
-<span>                                                 <span class="st">"VE_INF"</span> <span class="op">=</span> <span class="va">VE_INF</span>,</span>
+<span>                                                 <span class="st">"VE_inf"</span> <span class="op">=</span> <span class="va">VE_inf</span>,</span>
 <span>                                                 <span class="st">"gamma_vaccine"</span> <span class="op">=</span> <span class="va">gamma_vaccine</span></span>
 <span>                                                 <span class="op">)</span>,</span>
 <span>                                contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
@@ -128,7 +129,7 @@ over 70 years old.</p>
 <code>nVaccStates - 1</code> and corresponds to the transition rate
 between vaccinated states with the final value corresponding to the
 transition rate back to the unvaccinated state. Vaccine efficacy against
-infection (<code>VE_INF</code>; matrix) is age and vaccine state
+infection (<code>VE_inf</code>; matrix) is age and vaccine state
 specific with the rows corresponding to the age group and the columns
 corresponding to the vaccinated state. To implement vaccination we must
 specify the times at which vaccination coverage changes

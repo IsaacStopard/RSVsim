@@ -69,14 +69,19 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/IsaacStopard/RSVsim" class="external-link">RSVsim</a></span><span class="op">)</span></span></code></pre></div>
-<p>We do not explicitly include hospitalisation in the ODE model, but
-can estimate the hospitalisations from the simulated incidence. Note the
-time until hospitalisation is therefore ignored.</p>
+<p>We do not explicitly include hospitalisation in the transmission
+model, but can estimate the hospitalisations from the simulated
+incidence. Note the time until hospitalisation is therefore ignored.</p>
 <div class="section level2">
 <h2 id="probability-of-hospitalisation-given-infection">Probability of hospitalisation given infection<a class="anchor" aria-label="anchor" href="#probability-of-hospitalisation-given-infection"></a>
 </h2>
-<p>The probability of hospitalisation given unvaccinated infection for
-age group
+<p>Hospitalisation rates (among the whole population) might be sampled
+but the total incidence not known. If so, we can use to estimate the
+incidence in the setting in which the age specific hospitalisation rates
+were estimated and use this incidence and the hospitalisation rates to
+calculate the probability of hospitalisation given infection (infection
+hospitalisation rate; IHR). The probability of hospitalisation given
+unvaccinated infection for age group
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 is calculated as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo>,</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><msub><mi>H</mi><mi>i</mi></msub><msub><mi>I</mi><mi>i</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">p(hosp|inf,i) = \frac{H_{i}}{I_{i}}</annotation></semantics></math>,
@@ -96,21 +101,35 @@ is the population size, meaning
 Similarly, we can calculate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(hosp|inf)</annotation></semantics></math>
 in unvaccinated people assuming a given vaccine efficacy against
-hospitalisation for each vaccinated state
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msub><mi>E</mi><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">VE_{v}</annotation></semantics></math>)
+hospitalisation conditional on infection for each vaccinated state
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msubsup><mi>E</mi><mi>v</mi><mi>C</mi></msubsup></mrow><annotation encoding="application/x-tex">VE^{C}_{v}</annotation></semantics></math>)
 and hospitalisation rates, thus,</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo>,</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mfrac><msub><mi>I</mi><mrow><mn>1</mn><mi>i</mi></mrow></msub><msub><mi>N</mi><mrow><mn>1</mn><mi>i</mi></mrow></msub></mfrac><mo>+</mo><munderover><mo>∑</mo><mn>2</mn><mi>V</mi></munderover><mfrac><msub><mi>I</mi><mrow><mi>v</mi><mi>i</mi></mrow></msub><msub><mi>N</mi><mrow><mi>v</mi><mi>i</mi></mrow></msub></mfrac><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>V</mi><msub><mi>E</mi><mrow><mi>v</mi><mi>i</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">
-p(hosp|inf,i) = \frac{h_{i}}{\frac{I_{1i}}{N_{1i}} + \sum_{2}^{V} \frac{I_{vi}}{N_{vi}}(1 - VE_{vi})}
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo>,</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mfrac><msub><mi>I</mi><mrow><mn>1</mn><mi>i</mi></mrow></msub><msub><mi>N</mi><mrow><mn>1</mn><mi>i</mi></mrow></msub></mfrac><mo>+</mo><munderover><mo>∑</mo><mn>2</mn><mi>V</mi></munderover><mfrac><msub><mi>I</mi><mrow><mi>v</mi><mi>i</mi></mrow></msub><msub><mi>N</mi><mrow><mi>v</mi><mi>i</mi></mrow></msub></mfrac><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>V</mi><msubsup><mi>E</mi><mrow><mi>v</mi><mi>i</mi></mrow><mi>C</mi></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+p(hosp|inf,i) = \frac{h_{i}}{\frac{I_{1i}}{N_{1i}} + \sum_{2}^{V} \frac{I_{vi}}{N_{vi}}(1 - VE^{C}_{vi})}
 </annotation></semantics></math></p>
-<p>In reality, hospitalisation rates are typically sampled, but the
-total incidence is unknown. We can therefore use to estimate the
-incidence in the scenario corresponding to setting in which the age
-specific hospitalisation rates were estimated. In this example we assume
-no existing vaccination. The default vaccination states are 1
-(unvaccinated) and 2 (vaccinated). First, we use to approximate the
-incidence.</p>
+<p>With an overall vaccine efficacy against hospitalisation
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msub><mi>E</mi><mi>H</mi></msub></mrow><annotation encoding="application/x-tex">VE_{H}</annotation></semantics></math>)
+and vaccine efficacy against infection
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msub><mi>E</mi><mi>I</mi></msub></mrow><annotation encoding="application/x-tex">VE_{I}</annotation></semantics></math>)
+we can calculate the vaccine efficacy against hospitalisation
+conditional on infection thus,</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msubsup><mi>E</mi><mi>i</mi><mi>C</mi></msubsup><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mn>1</mn><mo>−</mo><mi>V</mi><msubsup><mi>E</mi><mi>i</mi><mi>H</mi></msubsup></mrow><mrow><mn>1</mn><mo>−</mo><mi>V</mi><msubsup><mi>E</mi><mi>i</mi><mi>I</mi></msubsup></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+VE_{i}^{C} = 1 - \frac{1 - VE_{i}^{H}}{1 - VE_{i}^{I}}
+</annotation></semantics></math> We provide the function to calculate
+this; when
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msup><mi>E</mi><mi>I</mi></msup></mrow><annotation encoding="application/x-tex">VE^{I}</annotation></semantics></math>
+has more ages than
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><msup><mi>E</mi><mi>H</mi></msup></mrow><annotation encoding="application/x-tex">VE^{H}</annotation></semantics></math>
+the function only calculates the values for ages which are present in
+both. In this example we assume no existing vaccination. The default
+vaccination states are 1 (unvaccinated) and 2 (vaccinated). First, we
+use to approximate the incidence.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
+<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365.25</span><span class="op">*</span><span class="fl">11</span>, <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="va">warm_up</span> <span class="op">&lt;-</span> <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">10</span></span>
+<span><span class="va">cohort_step_size</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365.25</span></span>
+<span></span>
 <span><span class="va">age_limits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">12</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">75</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">contact_population_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_contact_matrix.html">RSVsim_contact_matrix</a></span><span class="op">(</span>age_limits <span class="op">=</span> <span class="va">age_limits</span><span class="op">)</span></span>
@@ -118,9 +137,9 @@ incidence.</p>
 <span><span class="va">parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sim_status_quo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">parameters</span>,</span>
-<span>                                   times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365.25</span><span class="op">*</span><span class="fl">11</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>                                   cohort_step_size <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365.25</span>,</span>
-<span>                                   warm_up <span class="op">=</span> <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span>                                   times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>                                   cohort_step_size <span class="op">=</span> <span class="va">cohort_step_size</span>,</span>
+<span>                                   warm_up <span class="op">=</span> <span class="va">warm_up</span><span class="op">)</span></span></code></pre></div>
 <p>We can then use the function to estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(hosp|inf)</annotation></semantics></math>
 for given values of
@@ -138,55 +157,78 @@ against hospitalisation for each vaccinated state.</p>
 <span></span>
 <span><span class="va">age_limits_hosp_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">15</span>, <span class="fl">20</span>, <span class="fl">25</span>, <span class="fl">30</span>, <span class="fl">35</span>, <span class="fl">40</span>, <span class="fl">45</span>, <span class="fl">50</span>, <span class="fl">55</span>, <span class="fl">60</span>, <span class="fl">65</span>, <span class="fl">70</span>, <span class="fl">75</span><span class="op">)</span> <span class="co"># lower age limits of the hospitalisation rate data</span></span>
 <span></span>
-<span><span class="va">VE_HOSP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">age_limits_hosp_rate</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co"># vaccine efficacy against hospitalisation conditional on infection</span></span>
+<span><span class="va">VE_hosp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">age_limits</span><span class="op">)</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># age-specific vaccine efficacy against hospitalisation</span></span>
+<span><span class="va">VE_inf</span> <span class="op">&lt;-</span> <span class="va">parameters</span><span class="op">$</span><span class="va">VE_inf</span></span>
+<span><span class="va">VE_hosp_given_inf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_VE_hosp_given_inf.html">RSVsim_VE_hosp_given_inf</a></span><span class="op">(</span>VE_hosp <span class="op">=</span> <span class="va">VE_hosp</span>, VE_inf <span class="op">=</span> <span class="va">VE_inf</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">prob_hosp_given_inf_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_prob_hosp_given_inf.html">RSVsim_prob_hosp_given_inf</a></span><span class="op">(</span>hosp_rate <span class="op">=</span> <span class="va">hosp_rate</span>,</span>
 <span>                                                       age_limits_hosp_rate <span class="op">=</span> <span class="va">age_limits_hosp_rate</span>,</span>
-<span>                                                       hosp_rate_min_time <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>                                                       hosp_rate_min_time <span class="op">=</span> <span class="fl">0</span>, <span class="co"># time frame over which to sum incidence</span></span>
 <span>                                                       hosp_rate_max_time <span class="op">=</span> <span class="fl">365.25</span>,</span>
 <span>                                                       sim_status_quo <span class="op">=</span> <span class="va">sim_status_quo</span>,</span>
-<span>                                                       VE_HOSP <span class="op">=</span> <span class="va">VE_HOSP</span>,</span>
-<span>                                                       VE_HOSP_vacc_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="co"># vector identifying the vaccination states that are vaccinated (position corresponds to the column position in VE_HOSP)</span></span>
+<span>                                                       VE_hosp_given_inf <span class="op">=</span> <span class="va">VE_hosp_given_inf</span>,</span>
+<span>                                                       VE_hosp_vacc_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="co"># vector identifying the vaccination states that are vaccinated (position corresponds to the column position in VE_hosp)</span></span>
 <span>                                                       <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="hospitalisations">Hospitalisations<a class="anchor" aria-label="anchor" href="#hospitalisations"></a>
 </h2>
-<p>The function returns a list of
+<p>We also provide a function to estimate the number of hospitalisations
+in different scenarios from the outputs and known
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(hosp|inf)</annotation></semantics></math>.
+First, we simulate a novel scenario and then use the function to
+estimate the number of hospitalisations over each time-step. In this
+example, we will use the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(hosp|inf)</annotation></semantics></math>
+values estimated using the function. The function returns a list of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mi>o</mi><mi>s</mi><mi>p</mi><mo stretchy="false" form="prefix">|</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo>,</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p(hosp|inf,i)</annotation></semantics></math>
-and the model outputs with hospitalisations. We can then use these
-probabilities to calculate the hospitalisations from the simulated
-incidence in different scenarios.</p>
+and the model outputs with hospitalisations.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co"># single 30 day vaccination campaign in the oldest age group</span></span>
+<span><span class="co">#################################</span></span>
+<span><span class="co">##### transmission dynamics #####</span></span>
+<span><span class="co">#################################</span></span>
+<span></span>
+<span><span class="co"># single 30 day vaccination campaign</span></span>
 <span><span class="va">vaccine_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">120</span><span class="op">)</span> <span class="op">+</span> <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">vaccine_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">vaccine_times</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">vaccine_times</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vaccine_period</span><span class="op">[</span><span class="va">vaccine_period</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
 <span><span class="va">nVaccTimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">vaccine_times</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">nAges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">contact_population_list</span><span class="op">$</span><span class="va">age_limits</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># vaccination campaign target coverage: 80%</span></span>
-<span><span class="va">vaccine_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">nVaccTimes</span><span class="op">)</span>,</span>
-<span>                            nrow <span class="op">=</span> <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="va">nVaccTimes</span><span class="op">)</span>,</span>
-<span>                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.70</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># vaccination campaign target coverage: 80% in the oldest age group</span></span>
+<span><span class="va">vaccine_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">nVaccTimes</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="op">(</span><span class="va">nAges</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="va">nVaccTimes</span><span class="op">)</span>,</span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.8</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># not necessary due to default settings but included for completeness</span></span>
 <span><span class="va">nVaccStates</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
-<span><span class="va">VE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="va">nAges</span> <span class="op">*</span> <span class="op">(</span><span class="va">nVaccStates</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span> <span class="co"># vaccine efficacy against infection</span></span>
+<span><span class="va">VE_inf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="va">nAges</span> <span class="op">*</span> <span class="op">(</span><span class="va">nVaccStates</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">nAges</span><span class="op">)</span> <span class="co"># vaccine efficacy against infection</span></span>
 <span><span class="va">gamma_vaccine</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">365.25</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sim_vaccination</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"vaccine_times"</span> <span class="op">=</span> <span class="va">vaccine_times</span>,</span>
-<span>                                                                                    <span class="st">"vaccine_period"</span> <span class="op">=</span> <span class="va">vaccine_period</span>,</span>
-<span>                                                                                    <span class="st">"nVaccTimes"</span> <span class="op">=</span> <span class="va">nVaccTimes</span>,</span>
-<span>                                                                                    <span class="st">"vaccine_cov"</span> <span class="op">=</span> <span class="va">vaccine_cov</span>,</span>
-<span>                                                                                    <span class="st">"nVaccStates"</span> <span class="op">=</span> <span class="va">nVaccStates</span>,</span>
-<span>                                                                                    <span class="st">"VE"</span> <span class="op">=</span> <span class="va">VE</span>,</span>
-<span>                                                                                    <span class="st">"gamma_vaccine"</span> <span class="op">=</span> <span class="va">gamma_vaccine</span><span class="op">)</span>,</span>
-<span>                                                                   contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span>,</span>
-<span>                                    times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">365.25</span><span class="op">*</span><span class="fl">11</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
-<span>                                    cohort_step_size <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">12</span> <span class="op">*</span> <span class="fl">365.25</span>, <span class="co"># time at which to age people</span></span>
-<span>                                    warm_up <span class="op">=</span> <span class="fl">365.25</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">vac_parameters</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_parameters.html">RSVsim_parameters</a></span><span class="op">(</span>overrides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"vaccine_times"</span> <span class="op">=</span> <span class="va">vaccine_times</span>,</span>
+<span>                                                     <span class="st">"vaccine_period"</span> <span class="op">=</span> <span class="va">vaccine_period</span>,</span>
+<span>                                                     <span class="st">"nVaccTimes"</span> <span class="op">=</span> <span class="va">nVaccTimes</span>,</span>
+<span>                                                     <span class="st">"vaccine_cov"</span> <span class="op">=</span> <span class="va">vaccine_cov</span>,</span>
+<span>                                                     <span class="st">"nVaccStates"</span> <span class="op">=</span> <span class="va">nVaccStates</span>,</span>
+<span>                                                     <span class="st">"VE_inf"</span> <span class="op">=</span> <span class="va">VE_inf</span>,</span>
+<span>                                                     <span class="st">"gamma_vaccine"</span> <span class="op">=</span> <span class="va">gamma_vaccine</span><span class="op">)</span>,</span>
+<span>                                    contact_population_list <span class="op">=</span> <span class="va">contact_population_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sim_vaccination</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_run_model.html">RSVsim_run_model</a></span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">vac_parameters</span>,</span>
+<span>                                    times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>                                    cohort_step_size <span class="op">=</span> <span class="va">cohort_step_size</span>, <span class="co"># time at which to age people</span></span>
+<span>                                    warm_up <span class="op">=</span> <span class="va">warm_up</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">############################</span></span>
+<span><span class="co">##### hospitalisations #####</span></span>
+<span><span class="co">############################</span></span>
+<span></span>
+<span><span class="va">sim_vaccination</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/RSVsim_hospitalisations.html">RSVsim_hospitalisations</a></span><span class="op">(</span>prob_hosp_given_inf <span class="op">=</span> <span class="va">prob_hosp_given_inf_list</span><span class="op">[[</span><span class="st">"prob_hosp_given_inf_uv"</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                                           age_limits_hosp_rate <span class="op">=</span> <span class="va">age_limits_hosp_rate</span>,</span>
+<span>                                           sim_scenario <span class="op">=</span> <span class="va">sim_vaccination</span>,</span>
+<span>                                           VE_hosp_given_inf <span class="op">=</span> <span class="va">VE_hosp_given_inf</span>,</span>
+<span>                                           VE_hosp_vacc_states <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

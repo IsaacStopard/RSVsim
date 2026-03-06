@@ -54,8 +54,8 @@ and RSVsim to estimate number of infections per person.</p>
 <span>  <span class="va">hosp_rate_min_time</span>,</span>
 <span>  <span class="va">hosp_rate_max_time</span>,</span>
 <span>  <span class="va">sim_status_quo</span>,</span>
-<span>  <span class="va">VE_HOSP</span>,</span>
-<span>  <span class="va">VE_HOSP_vacc_states</span></span>
+<span>  <span class="va">VE_hosp_given_inf</span>,</span>
+<span>  <span class="va">VE_hosp_vacc_states</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -68,7 +68,7 @@ and RSVsim to estimate number of infections per person.</p>
 
 
 <dt id="arg-age-limits-hosp-rate">age_limits_hosp_rate<a class="anchor" aria-label="anchor" href="#arg-age-limits-hosp-rate"></a></dt>
-<dd><p>Vector of ages corresponding to the first age of each age category for the hospitalisation rates and probability of hospitalisation given infection. These ages must be present in the age_limits used to run the simulations.</p></dd>
+<dd><p>Vector of ages corresponding to the first age of each age category in (1) the hospitalisation rates (<code>hosp_rate</code>) and (2) the probability of hospitalisation given infection (<code>prob_hosp_given_inf</code>). These ages must be present in the age_limits used to run the simulations.</p></dd>
 
 
 <dt id="arg-hosp-rate-min-time">hosp_rate_min_time<a class="anchor" aria-label="anchor" href="#arg-hosp-rate-min-time"></a></dt>
@@ -83,11 +83,11 @@ and RSVsim to estimate number of infections per person.</p>
 <dd><p><code>RSVsim_run_model</code> output used to estimate the number of infections when calculating the probability of hospitalisation given infection.</p></dd>
 
 
-<dt id="arg-ve-hosp">VE_HOSP<a class="anchor" aria-label="anchor" href="#arg-ve-hosp"></a></dt>
-<dd><p>Matrix of age-specific vaccine efficacy against hospitalisation. Rows must correspond to the ages in <code>age_limits_hosp_rate</code>, and columns must correspond to the vaccinated states used in <code>RSVsim_run_model</code>.</p></dd>
+<dt id="arg-ve-hosp-given-inf">VE_hosp_given_inf<a class="anchor" aria-label="anchor" href="#arg-ve-hosp-given-inf"></a></dt>
+<dd><p>Matrix of age-specific vaccine efficacy against hospitalisation given infection (<code>VE_hosp_given_inf</code>). Rows must correspond to the ages in <code>age_limits</code>, and columns must correspond to the vaccinated states used in <code>RSVsim_run_model</code>.</p></dd>
 
 
-<dt id="arg-ve-hosp-vacc-states">VE_HOSP_vacc_states<a class="anchor" aria-label="anchor" href="#arg-ve-hosp-vacc-states"></a></dt>
+<dt id="arg-ve-hosp-vacc-states">VE_hosp_vacc_states<a class="anchor" aria-label="anchor" href="#arg-ve-hosp-vacc-states"></a></dt>
 <dd><p>vector of integers indicating the vaccinated states used in <code>RSVsim_run_model</code>.</p></dd>
 
 </dl></div>

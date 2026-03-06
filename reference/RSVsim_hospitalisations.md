@@ -1,8 +1,8 @@
 # Calculate number of hospitalisations for `RSVsim_run_model` output
 
 Function to estimate the number of hospitalisations from the modelled
-incidence and estimated probability of hospitalisation given
-unvaccinated infection.
+incidence and probability of hospitalisation given unvaccinated
+infection.
 
 ## Usage
 
@@ -11,8 +11,8 @@ RSVsim_hospitalisations(
   prob_hosp_given_inf,
   age_limits_hosp_rate,
   sim_scenario,
-  VE_HOSP,
-  VE_HOSP_vacc_states
+  VE_hosp_given_inf,
+  VE_hosp_vacc_states
 )
 ```
 
@@ -25,10 +25,10 @@ RSVsim_hospitalisations(
 
 - age_limits_hosp_rate:
 
-  Vector of ages corresponding to the first age of each age category for
-  the hospitalisation rates and probability of hospitalisation given
-  infection. These ages must be present in the age_limits used to run
-  the simulations.
+  Vector of ages corresponding to the first age of each age category
+  in (1) the hospitalisation rates (`hosp_rate`) and (2) the probability
+  of hospitalisation given infection (`prob_hosp_given_inf`). These ages
+  must be present in the age_limits used to run the simulations.
 
 - sim_scenario:
 
@@ -36,13 +36,14 @@ RSVsim_hospitalisations(
   scenario using the estimated probability of hospitalisation given
   infection.
 
-- VE_HOSP:
+- VE_hosp_given_inf:
 
-  Matrix of age-specific vaccine efficacy against hospitalisation. Rows
-  must correspond to the ages in `age_limits_hosp_rate`, and columns
-  must correspond to the vaccinated states used in `RSVsim_run_model`.
+  Matrix of age-specific vaccine efficacy against hospitalisation given
+  infection (`VE_hosp_given_inf`). Rows must correspond to the ages in
+  `age_limits`, and columns must correspond to the vaccinated states
+  used in `RSVsim_run_model`.
 
-- VE_HOSP_vacc_states:
+- VE_hosp_vacc_states:
 
   vector of integers indicating the vaccinated states used in
   `RSVsim_run_model`.

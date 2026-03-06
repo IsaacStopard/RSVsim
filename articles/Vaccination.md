@@ -31,6 +31,7 @@ warm_up <- 365.25
 
 # vaccination times - must include 0 
 # vaccination starts on day 90 + warm_up and ends on day 120 + warm_up
+# vaccine_period must be greater than 0
 vaccine_times <- c(0, c(90, 120) + warm_up)
 vaccine_period <- diff(c(vaccine_times, max_time))
 nVaccTimes <- length(vaccine_times)
@@ -44,7 +45,7 @@ vaccine_cov <- rbind(matrix(rep(0, (nAges-1) * nVaccTimes),
 
 # not necessary but included for completeness
 nVaccStates <- 2
-VE_INF <- matrix(rep(0.5, nAges * (nVaccStates-1)), nrow = nAges) # vaccine efficacy against infection
+VE_inf <- matrix(rep(0.5, nAges * (nVaccStates-1)), nrow = nAges) # vaccine efficacy against infection
 gamma_vaccine <- 1 / (365.25 * 2)
 
 # specify the parameters
@@ -53,7 +54,7 @@ parameters <- RSVsim_parameters(overrides = list("vaccine_times" = vaccine_times
                                                  "nVaccTimes" = nVaccTimes,
                                                  "vaccine_cov" = vaccine_cov,
                                                  "nVaccStates" = nVaccStates,
-                                                 "VE_INF" = VE_INF,
+                                                 "VE_inf" = VE_inf,
                                                  "gamma_vaccine" = gamma_vaccine
                                                  ),
                                 contact_population_list = contact_population_list)
@@ -67,7 +68,7 @@ sim_vacc <- RSVsim_run_model(parameters = parameters,
 The `gamma_vaccine` parameter must be the length of `nVaccStates - 1`
 and corresponds to the transition rate between vaccinated states with
 the final value corresponding to the transition rate back to the
-unvaccinated state. Vaccine efficacy against infection (`VE_INF`;
+unvaccinated state. Vaccine efficacy against infection (`VE_inf`;
 matrix) is age and vaccine state specific with the rows corresponding to
 the age group and the columns corresponding to the vaccinated state. To
 implement vaccination we must specify the times at which vaccination
