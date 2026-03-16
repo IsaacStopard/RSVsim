@@ -13,7 +13,7 @@
 #' \code{gamma_p}: 1/9. Inverse of the infectious period of first (primary) infections. \cr
 #' \code{nu}: 1/200. Inverse of the duration of natural immunity. \cr
 #' \code{omega_vect}: 0.35 if greater than 5 years old else 1. Reduced infectiousness due to immunity in early life. \cr
-#' \code{prop_detected_vect}: age-specific proportion detected. \cr
+#' \code{prop_detected_vect}: age-specific proportion detected (must be between 0 and 1). Default 1 for all ages. \cr
 #' \code{sigma_vect}: 0.7 if 1 months old, 0.8 if 2 months old, 0.9 if 3 months old, else 1. Reduced susceptibility due to immunity in early life. \cr
 #' \code{alpha_vect} = 0.4 if less than 10 years old else 0.3. Reduced susceptibility to secondary infections in each age group. \cr
 #' \code{nAges}: must be obtained from \code{contact_population_list}. Number of age groups - same length as age_limits. \cr
@@ -76,7 +76,7 @@ RSVsim_parameters <- function(overrides = list(),
            stop("RSVsim_parameters: contact_population_list$matrix_per_person must be a square matrix with the same age groups specified in age_limits")
          }
 
-         alpha_vect <- sigma_vect <- prop_detected_vect <- omega_vect <- rep(NA, nAges)
+         alpha_vect <- sigma_vect <- omega_vect <- rep(NA, nAges)
 
          omega_vect[age_limits >= 5] <- 0.35
          omega_vect[age_limits < 5] <- 1
@@ -86,14 +86,10 @@ RSVsim_parameters <- function(overrides = list(),
          sigma_vect[age_limits >= 2/12 & age_limits < 3/12] <- 0.9
          sigma_vect[age_limits >= 3/12] <- 1
 
-         prop_detected_vect[age_limits < 3 * 1/12] <- 0.424
-         prop_detected_vect[age_limits >= 3 * 1/12 & age_limits < 6 * 1/12] <- 0.088
-         prop_detected_vect[age_limits >= 6 * 1/12 & age_limits < 1] <- 0.047
-         prop_detected_vect[age_limits >= 1 & age_limits < 2] <- 0.02
-         prop_detected_vect[age_limits >= 2] <- 0.01 # very little detection in > 2 year olds
-
          alpha_vect[age_limits >= 10] <- 0.3
          alpha_vect[age_limits < 10] <- 0.4
+
+         prop_detected_vect <- rep(1, nAges)
 
          parameters <- list(
            "b0" = 0.125, # transmission rate coefficient 0.087
