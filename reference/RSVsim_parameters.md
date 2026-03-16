@@ -32,7 +32,8 @@ infections.
 `nu`: 1/200. Inverse of the duration of natural immunity.  
 `omega_vect`: 0.35 if greater than 5 years old else 1. Reduced
 infectiousness due to immunity in early life.  
-`prop_detected_vect`: age-specific proportion detected.  
+`prop_detected_vect`: age-specific proportion detected (must be between
+0 and 1). Default 1 for all ages.  
 `sigma_vect`: 0.7 if 1 months old, 0.8 if 2 months old, 0.9 if 3 months
 old, else 1. Reduced susceptibility due to immunity in early life.  
 `alpha_vect` = 0.4 if less than 10 years old else 0.3. Reduced
